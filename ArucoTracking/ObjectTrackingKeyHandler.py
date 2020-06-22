@@ -1,4 +1,4 @@
-from KeyHandler import KeyHandler
+from packages.KeyHandler import KeyHandler
 import cv2
 import os
 import glob

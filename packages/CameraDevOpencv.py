@@ -9,17 +9,21 @@ else:
 
 class OpencvCapture(CameraDev):
 
-    def __new__(cls, devIndex):
-        # check if device is existed..
-        vcap = cv2.VideoCapture(devIndex)
-        vcapOpened = vcap.isOpened()
-        if(vcapOpened == True):
-            camdev = object.__new__(cls)
-        else:
-            camdev = None
-        vcap.release()
+    # TODO: check if any uvc device exists.
+    # def __new__(cls, devIndex):
+
+    #     #camdev = object.__new__(cls)
+    #     # check if device is existed..
+    #     vcap = cv2.VideoCapture(devIndex)
+    #     vcapOpened = vcap.isOpened()
+    #     if(vcapOpened == True):
+    #         camdev = object.__new__(cls)
+    #     else:
+    #         camdev = None
+            
+    #     vcap.release()
        
-        return camdev
+    #     return camdev
 
     def __init__(self, devIndex):
         # open VideoCapture
@@ -59,10 +63,10 @@ class OpencvCapture(CameraDev):
 ###############################################################################
 if __name__ == '__main__':
 
-    rsCamDev = OpencvCapture(0)
+    rsCamDev = OpencvCapture(2)
 
     if(rsCamDev is None):
-        print("Realsense device can't be found..")
+        print("OpenCV device can't be found..")
         sys.exit()
 
     rsCamDev.initialize(640, 480, 30)

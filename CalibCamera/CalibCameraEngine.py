@@ -4,11 +4,13 @@ import cv2
 import os
 import sys
 import datetime
+import argparse
 
 # add src root directory to python path
 print(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
 
+from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
 from CalibCamera import CalibrationCamera
@@ -33,17 +35,39 @@ def makeFrameImageDirectory():
 
 if __name__ == '__main__':
 
-    # create the camera device object of intel realsense
-    rsCamDev = RealsenseCapture(0)
+    # parse program parameters to get necessary aruments
+    argPar = argparse.ArgumentParser(description="Camera Calibration")
+    argPar.add_argument('--camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'Camera Type(rs: Intel Realsense, uvc: UVC-Supported')
+    argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = 'Camera Index(zero-based)')
+    argPar.add_argument('frameWidth', type= int, metavar='FrameWidth', help = 'Camera Frame Width')
+    argPar.add_argument('frameHeight', type= int, metavar='FrameHeight', help = 'Camera Frame Height')
+    argPar.add_argument('fps', type= int, metavar='FPS', help = 'Camera Frame Per Seconds')
+    argPar.add_argument('chessWidth', type= int, metavar='ChessBoardWidth', help = 'Chess Board Width')
+    argPar.add_argument('chessHeight', type= int, metavar='ChessBoardHeight', help = 'Chess Board Height')
+    args = argPar.parse_args()
+
+    camType = args.camType
+    camIndex = args.camIndex
+    frameWidth = args.frameWidth
+    frameHeight = args.frameHeight
+    fps = args.fps
+    chessWidth = args.chessWidth
+    chessHeight = args.chessHeight
+
+    # create the camera device object
+    if(camType == 'rs'):
+        rsCamDev = RealsenseCapture(camIndex)
+    elif(camType == 'uvc'):
+        rsCamDev = OpencvCapture(camIndex)
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, 1280, 720, 30)
+    vcap = VideoCapture(rsCamDev, frameWidth, frameHeight, fps)
 
     # Start streaming
     vcap.start()
 
     # create a camera calibration object
-    calibcam = CalibrationCamera(10, 7)
+    calibcam = CalibrationCamera(args.chessWidth, args.chessHeight)
 
     # TODO: check where an image directory is created..
     dirFrameImage = makeFrameImageDirectory()

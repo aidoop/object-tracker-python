@@ -8,6 +8,7 @@ from time import sleep
 import math
 import os
 import datetime
+import argparse
 
 # add src root directory to python path
 print(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
@@ -90,6 +91,22 @@ def drawText(img, text, imgpt):
 
 if __name__ == '__main__':
 
+    # parse program parameters to get necessary aruments
+    argPar = argparse.ArgumentParser(description="HandEye Calibration")
+    argPar.add_argument('--camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'Camera Type(rs: Intel Realsense, uvc: UVC-Supported')
+    argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = 'Camera Index(zero-based)')
+    argPar.add_argument('frameWidth', type= int, metavar='FrameWidth', help = 'Camera Frame Width')
+    argPar.add_argument('frameHeight', type= int, metavar='FrameHeight', help = 'Camera Frame Height')
+    argPar.add_argument('fps', type= int, metavar='FPS', help = 'Camera Frame Per Seconds')
+    argPar.add_argument('arucoID', type= int, metavar='ArucoMarkID', help = 'Aruco Mark ID for HandEye Calibration')
+    args = argPar.parse_args()
+    camType = args.camType
+    camIndex = args.camIndex
+    frameWidth = args.frameWidth
+    frameHeight = args.frameHeight
+    fps = args.fps
+    arucoID = args.arucoID
+
     # connect to Indy
     indy = indyConnect(Config.INDY_SERVER_IP, Config.INDY_SERVER_NAME)
     if(indy == None):
@@ -110,11 +127,14 @@ if __name__ == '__main__':
     # create a handeye calib. object
     handeye = HandEyeCalibration()
 
-    # create the camera device object of intel realsense
-    rsCamDev = RealsenseCapture(0)
+    # create the camera device object
+    if(camType == 'rs'):
+        rsCamDev = RealsenseCapture(camIndex)
+    elif(camType == 'uvc'):
+        rsCamDev = OpencvCapture(camIndex)
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, 1280, 720, 30)
+    vcap = VideoCapture(rsCamDev, frameWidth, frameHeight, fps)
 
     # Start streaming
     vcap.start()
@@ -127,7 +147,7 @@ if __name__ == '__main__':
 
     # create handeye object
     handeyeAruco = HandEyeAruco()
-    handeyeAruco.setCalibMarkerID(2)
+    handeyeAruco.setCalibMarkerID(arucoID)
 
     # start indy7 as a direct-teaching mode as default
     indy.direct_teaching(True)

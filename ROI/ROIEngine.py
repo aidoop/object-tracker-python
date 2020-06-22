@@ -6,14 +6,15 @@ import time
 import datetime
 import glob
 import sys
-
+import argparse
 
 # add src root directory to python path
 print(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
 
 import Config
-from packages import *
+from packages.CameraDevRealsense import RealsenseCapture
+from packages.CameraVideoCapture import VideoCapture
 from ROIArucoManager import ROIAruco2DManager
 from ROIKeyHandler import ROIKeyHandler
 
@@ -24,11 +25,30 @@ from ROIKeyHandler import ROIKeyHandler
 
 if __name__ == '__main__':
 
-    # create the camera device object of intel realsense
-    rsCamDev = CameraDevRealsense.RealsenseCapture(0)
+    # parse program parameters to get necessary aruments
+    argPar = argparse.ArgumentParser(description="HandEye Calibration")
+    argPar.add_argument('--camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'Camera Type(rs: Intel Realsense, uvc: UVC-Supported')
+    argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = 'Camera Index(zero-based)')
+    argPar.add_argument('frameWidth', type= int, metavar='FrameWidth', help = 'Camera Frame Width')
+    argPar.add_argument('frameHeight', type= int, metavar='FrameHeight', help = 'Camera Frame Height')
+    argPar.add_argument('fps', type= int, metavar='FPS', help = 'Camera Frame Per Seconds')
+    argPar.add_argument('-l', '--list', action='append', metavar='ArucoPairList', help = 'Aruco Mark ID Pairs for ROI Regions ex) -l 9,10 -l 30, 40')
+    args = argPar.parse_args()
+    camType = args.camType
+    camIndex = args.camIndex
+    frameWidth = args.frameWidth
+    frameHeight = args.frameHeight
+    fps = args.fps
+    arucoPairList = args.list
+
+    # create the camera device object
+    if(camType == 'rs'):
+        rsCamDev = RealsenseCapture(camIndex)
+    elif(camType == 'uvc'):
+        rsCamDev = OpencvCapture(camIndex)    
 
     # create video capture object using realsense camera device object
-    vcap = CameraVideoCapture.VideoCapture(rsCamDev, 1280, 720, 30)
+    vcap = VideoCapture(rsCamDev, frameWidth, frameHeight, fps)
 
     # Start streaming
     vcap.start()
@@ -36,9 +56,10 @@ if __name__ == '__main__':
     # create aruco manager
     ROIMgr = ROIAruco2DManager()
 
-    ROIMgr.setMarkIdPair((9, 10))
-    ROIMgr.setMarkIdPair((30, 40))
-
+    for arucoPair in arucoPairList:
+        arucoPairValues = arucoPair.split(',')
+        ROIMgr.setMarkIdPair((int(arucoPairValues[0]), int(arucoPairValues[1])))
+    
     # get instrinsics
     mtx, dist = vcap.getIntrinsicsMat(Config.UseRealSenseInternalMatrix)
 

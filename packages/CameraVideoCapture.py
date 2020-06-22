@@ -11,9 +11,13 @@ else:
 class VideoCapture:
 
     def __new__(cls, camDev, width, height, fps):
-        if camDev is None:
+        if camDev == None:
             print("Camera Device is not opened...")
-            return None
+            videoCap = None
+        else:
+            videoCap = object.__new__(cls)
+        
+        return videoCap
     
     def __init__(self, camDev, width, height, fps):
 

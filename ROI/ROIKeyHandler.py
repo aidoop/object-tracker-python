@@ -1,8 +1,9 @@
-from KeyHandler import KeyHandler
 import cv2
 import os
 import glob
 import numpy as np
+
+from packages.KeyHandler import KeyHandler
 
 class ROIKeyHandler(KeyHandler):
 
@@ -25,6 +26,8 @@ class ROIKeyHandler(KeyHandler):
             ROIRegionFile.write("ROI" + str(idx), np.array(ROIRegions[idx]))
 
         ROIRegionFile.release()
+
+        print("ROI Regions saved.")
 
     
 
