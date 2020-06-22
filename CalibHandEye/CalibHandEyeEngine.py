@@ -1,16 +1,13 @@
-import pyrealsense2 as rs
 import cv2
 
-import numpy as np 
-import sys 
 from time import sleep
-import math
 import os
-import datetime
 import argparse
 
 # add src root directory to python path
+import sys 
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
+
 import Config
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture

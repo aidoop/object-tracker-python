@@ -1,11 +1,10 @@
 import cv2
-import os
-import glob
 
 import Config
 from packages.KeyHandler import KeyHandler
-from HandEyeUtilSet import *
 from packages.RobotIndy7Dev import RobotIndy7Dev
+from HandEyeUtilSet import *
+from HandEye import *
 
 class CalibHandEyeKeyHandler(KeyHandler):
 
@@ -97,14 +96,14 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 print(xyzuvw)
 
                 ############################################################################################
-                # test move to the destination
-                [x,y,z,u,v,w] = xyzuvw
+                # # test move to the destination
+                # [x,y,z,u,v,w] = xyzuvw
 
-                # indy7 base position to gripper position
-                xyzuvw = [x,y,z,u*(-1),v+180.0,w] 
-                print("Modifed TCP XYZUVW: ")
-                print(xyzuvw)
-                indy.moveTaskPos(xyzuvw)
+                # # indy7 base position to gripper position
+                # xyzuvw = [x,y,z,u*(-1),v+180.0,w] 
+                # print("Modifed TCP XYZUVW: ")
+                # print(xyzuvw)
+                # indy.moveTaskPos(xyzuvw)
     
 
     

@@ -77,13 +77,6 @@ class HandEyeAruco:
         return (flagFindMainAruco, ids, rvec, tvec)
 
 
-
-
-
-
-
-
-
 class HandEyeCalibration:
 
     def __init__(self):
