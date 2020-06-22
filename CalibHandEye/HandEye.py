@@ -2,12 +2,10 @@
 import numpy as np
 import cv2
 import cv2.aruco as aruco
-
-import Config
-
-from HandEyeUtilSet import *
 import math
 
+import Config
+from CalibHandEye.HandEyeUtilSet import *
 
 class HandEyeAruco:
 
@@ -207,6 +205,7 @@ class HandEyeCalibration:
             print("Distance: %f" % math.sqrt(math.pow(self.t_cam2gripper[0], 2.0)+math.pow(self.t_cam2gripper[1], 2.0)+math.pow(self.t_cam2gripper[2], 2.0)))
             print("--------------------------------------")
 
+            # select HORAUD algorithm on temporary
             if(mth == cv2.CALIB_HAND_EYE_HORAUD):
                 # for idx in range(len(self.R_gripper2base)):
                 #     print("######")
@@ -230,13 +229,15 @@ class HandEyeCalibration:
         return hmResultTransform
 
     # save a transform matrix to xml data as a file
-    def saveTransformMatrix(self, resultMatrix):
+    @staticmethod
+    def saveTransformMatrix(resultMatrix):
         calibFile = cv2.FileStorage("HandEyeCalibResult.json", cv2.FILE_STORAGE_WRITE)
         calibFile.write("HEMatrix", resultMatrix)
         calibFile.release()
 
     # get a transformation matrix which was created by calibration process
-    def loadTransformMatrix(self):
+    @staticmethod
+    def loadTransformMatrix():
         calibFile = cv2.FileStorage("HandEyeCalibResult.json", cv2.FILE_STORAGE_READ)
         hmnode = calibFile.getNode("HEMatrix")
         hmmtx = hmnode.mat()

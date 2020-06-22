@@ -1,4 +1,3 @@
-import indydcp_client as indycli
 import pyrealsense2 as rs
 import cv2
 
@@ -11,68 +10,14 @@ import datetime
 import argparse
 
 # add src root directory to python path
-print(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
-
+import Config
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
-
+from packages.RobotIndy7Dev import RobotIndy7Dev
 from CalibHandEyeKeyHandler import CalibHandEyeKeyHandler
-
-import Config
 from HandEyeUtilSet import *
 from HandEye import *
-
-
-#####################################################################################
-# TODO: through Robot abstaraction class
-# Robot API Wrapper
-#####################################################################################
-def indyConnect(servIP, connName):
-    # Connect
-    obj = indycli.IndyDCPClient(servIP, connName)
-    conResult = obj.connect()
-    if conResult == False:
-        print("Connection Failed")
-        obj = None
-    return obj
-
-def initializeIndy7(indy):
-    indy.reset_robot()
-    status = indy.get_robot_status()
-    print("Resetting robot")
-    print("is in resetting? ", status['resetting'])
-    print("is robot ready? ", status['ready'])
-    if( status['direct_teaching'] == True):
-        indy.direct_teaching(False)
-    if( status['emergency'] == True):
-        indy.stop_emergency()
-    sleep(5)
-    status = indy.get_robot_status()
-    print("Reset robot done")
-    print("is in resetting? ", status['resetting'])
-    print("is robot ready? ", status['ready'])
-
-def indyPrintJointPosition():
-    print('### Test: GetJointPos() ###')
-    joint_pos = indy.get_joint_pos()
-    print ("Joint Pos: ")
-    print (joint_pos)    
-
-def indyPrintTaskPosition():
-    task_pos = indy.get_task_pos()
-    task_pos_mm = [task_pos[0], task_pos[1], task_pos[2],task_pos[3], task_pos[4], task_pos[5]]
-    print ("Task Pos: ")
-    print (task_pos_mm) 
-
-def indyGetCurrentHMPose():
-    task_pos = indy.get_task_pos()
-    hm = HMUtil.convertXYZABCtoHMDeg(task_pos)
-    return hm
-
-def indyGetTaskPose():
-    task_pos = indy.get_task_pos()
-    return task_pos    
 
 
 #####################################################################################
@@ -81,8 +26,6 @@ def indyGetTaskPose():
 def drawText(img, text, imgpt):
     font = cv2.FONT_HERSHEY_PLAIN
     cv2.putText(img, text, imgpt, font, 1, (0,255,0),1,cv2.LINE_AA)
-
-
 
 ###############################################################################
 # Hand-eye calibration process 
@@ -100,23 +43,12 @@ if __name__ == '__main__':
     argPar.add_argument('fps', type= int, metavar='FPS', help = 'Camera Frame Per Seconds')
     argPar.add_argument('arucoID', type= int, metavar='ArucoMarkID', help = 'Aruco Mark ID for HandEye Calibration')
     args = argPar.parse_args()
-    camType = args.camType
-    camIndex = args.camIndex
-    frameWidth = args.frameWidth
-    frameHeight = args.frameHeight
-    fps = args.fps
-    arucoID = args.arucoID
 
-    # connect to Indy
-    indy = indyConnect(Config.INDY_SERVER_IP, Config.INDY_SERVER_NAME)
-    if(indy == None):
+    # create an indy7 object
+    indy7 = RobotIndy7Dev()
+    if(indy7.initalize(Config.INDY_SERVER_IP, Config.INDY_SERVER_NAME) == False):
         print("Can't connect the robot and exit this process..")
         sys.exit()
-
-    # intialize the robot
-    print("Intialize the robot...")
-    initializeIndy7(indy)
-    sleep(1)
 
     # create a window to display video frames
     cv2.namedWindow('HandEye Calibration')
@@ -128,13 +60,13 @@ if __name__ == '__main__':
     handeye = HandEyeCalibration()
 
     # create the camera device object
-    if(camType == 'rs'):
-        rsCamDev = RealsenseCapture(camIndex)
-    elif(camType == 'uvc'):
-        rsCamDev = OpencvCapture(camIndex)
+    if(args.camType == 'rs'):
+        rsCamDev = RealsenseCapture(args.camIndex)
+    elif(args.camType == 'uvc'):
+        rsCamDev = OpencvCapture(args.camIndex)
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, frameWidth, frameHeight, fps)
+    vcap = VideoCapture(rsCamDev, args.frameWidth, args.frameHeight, args.fps)
 
     # Start streaming
     vcap.start()
@@ -147,10 +79,10 @@ if __name__ == '__main__':
 
     # create handeye object
     handeyeAruco = HandEyeAruco()
-    handeyeAruco.setCalibMarkerID(arucoID)
+    handeyeAruco.setCalibMarkerID(args.arucoID)
 
     # start indy7 as a direct-teaching mode as default
-    indy.direct_teaching(True)
+    indy7.setDirectTeachingMode(True)
 
     # get frames and process a key event
     try:
@@ -165,17 +97,19 @@ if __name__ == '__main__':
             
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
-            if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, indy):
+            if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, indy7):
                 break
+            
+            # have a delay to make CPU usage lower...
+            sleep(0.2)
     finally:
         # direct teaching mode is disalbe before exit
-        robotStatus = indy.get_robot_status()
-        if( robotStatus['direct_teaching'] == True):
-            indy.direct_teaching(False)
+        if( indy7.getDirectTeachingMode() == True):
+            indy7.setDirectTeachingMode(False)
         # Stop streaming
         vcap.stop()
     
     # arrange all to finitsh this application here
     cv2.destroyAllWindows()
-    indy.disconnect()
+    indy7.finalize()
         

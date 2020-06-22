@@ -33,21 +33,16 @@ if __name__ == '__main__':
     argPar.add_argument('-l', '--list', action='append', metavar='ArucoMarkIDs', help = 'Aruco Mark Infos (ID, PivotOffset(XYZUVW)) ex) -l 14, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0')
     argPar.add_argument('duration', type= float, metavar='ProcessDuration', help = 'Process Duration(sec)')
     args = argPar.parse_args()
-    camType = args.camType
-    camIndex = args.camIndex
-    frameWidth = args.frameWidth
-    frameHeight = args.frameHeight
-    fps = args.fps
     arucoParamList = args.list
 
     # create the camera device object
-    if(camType == 'rs'):
-        rsCamDev = RealsenseCapture(camIndex)
-    elif(camType == 'uvc'):
-        rsCamDev = OpencvCapture(camIndex)    
+    if(args.camType == 'rs'):
+        rsCamDev = RealsenseCapture(args.camIndex)
+    elif(args.camType == 'uvc'):
+        rsCamDev = OpencvCapture(args.camIndex)    
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, frameWidth, frameHeight, fps)
+    vcap = VideoCapture(rsCamDev, args.frameWidth, args.frameHeight, args.fps)
 
     # Start streaming
     vcap.start()
@@ -55,31 +50,28 @@ if __name__ == '__main__':
     # get instrinsics
     mtx, dist = vcap.getIntrinsicsMat(Config.UseRealSenseInternalMatrix)
 
+    # TODO: need to make 
     # create objs and an object tracker 
-    # TODO: abstarcatoin.............
     objTracker = ArucoMarkerTracker()
     objTracker.initialize(aruco.DICT_5X5_250, 0.05)
     for argParam in arucoParamList:
         parsedData = argParam.split(',')
-        obj = ArucoMarkerObject(int(parsedData[0]), [[float(parsedData[1]), float(parsedData[2]), float(parsedData[3]), float(parsedData[4]), float(parsedData[5]), float(parsedData[6])]])
+        obj = ArucoMarkerObject(int(parsedData[0]), [float(parsedData[1]), float(parsedData[2]), float(parsedData[3]), float(parsedData[4]), float(parsedData[5]), float(parsedData[6])])
         objTracker.setTrackingObject(obj)    
 
+    # TODO: this kinds of file process should be moved together to a specific module.
     # load ROI Region from a json file
     ROIMgr = ROIRetangleManager()
     ROIRegionFile = cv2.FileStorage("ROIRegions.json", cv2.FILE_STORAGE_READ)
     roiCntNode = ROIRegionFile.getNode("ROICnt")
     roiCnt = int(roiCntNode.real())
     for idx in range(roiCnt):
-        #roiNode = ROIRegionFile.getNode("ROI" + str(idx))
         ROIRegionNode = ROIRegionFile.getNode("ROI" + str(idx))
         ROIMgr.appendROI(ROIRegionNode.mat())
     ROIRegionFile.release()
 
     # creat key handler
     keyhandler = ObjectTrackingKeyHandler()
-
-    # TODO: get duration (unit: sec)
-    processDuration = 0.5
 
     #print("press 'c' to capture an image or press 'q' to exit...")
     try:
@@ -103,8 +95,8 @@ if __name__ == '__main__':
             # display the captured image
             cv2.imshow('Object Tracking Engine',color_image)
 
-            # delay for the specific duration 
-            time.sleep(processDuration)
+            # sleep for the specific duration.
+            time.sleep(args.duration)
 
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)

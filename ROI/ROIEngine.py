@@ -9,9 +9,7 @@ import sys
 import argparse
 
 # add src root directory to python path
-print(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
-
 import Config
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
@@ -34,21 +32,16 @@ if __name__ == '__main__':
     argPar.add_argument('fps', type= int, metavar='FPS', help = 'Camera Frame Per Seconds')
     argPar.add_argument('-l', '--list', action='append', metavar='ArucoPairList', help = 'Aruco Mark ID Pairs for ROI Regions ex) -l 9,10 -l 30, 40')
     args = argPar.parse_args()
-    camType = args.camType
-    camIndex = args.camIndex
-    frameWidth = args.frameWidth
-    frameHeight = args.frameHeight
-    fps = args.fps
     arucoPairList = args.list
 
     # create the camera device object
-    if(camType == 'rs'):
-        rsCamDev = RealsenseCapture(camIndex)
-    elif(camType == 'uvc'):
-        rsCamDev = OpencvCapture(camIndex)    
+    if(args.camType == 'rs'):
+        rsCamDev = RealsenseCapture(args.camIndex)
+    elif(args.camType == 'uvc'):
+        rsCamDev = OpencvCapture(args.camIndex)    
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, frameWidth, frameHeight, fps)
+    vcap = VideoCapture(rsCamDev, args.frameWidth, args.frameHeight, args.fps)
 
     # Start streaming
     vcap.start()

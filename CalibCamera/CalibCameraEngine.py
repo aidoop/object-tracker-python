@@ -7,9 +7,8 @@ import datetime
 import argparse
 
 # add src root directory to python path
-print(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
-
+from Config
 from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
@@ -46,22 +45,14 @@ if __name__ == '__main__':
     argPar.add_argument('chessHeight', type= int, metavar='ChessBoardHeight', help = 'Chess Board Height')
     args = argPar.parse_args()
 
-    camType = args.camType
-    camIndex = args.camIndex
-    frameWidth = args.frameWidth
-    frameHeight = args.frameHeight
-    fps = args.fps
-    chessWidth = args.chessWidth
-    chessHeight = args.chessHeight
-
     # create the camera device object
-    if(camType == 'rs'):
-        rsCamDev = RealsenseCapture(camIndex)
-    elif(camType == 'uvc'):
-        rsCamDev = OpencvCapture(camIndex)
+    if(args.camType == 'rs'):
+        rsCamDev = RealsenseCapture(args.camIndex)
+    elif(args.camType == 'uvc'):
+        rsCamDev = OpencvCapture(args.camIndex)
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, frameWidth, frameHeight, fps)
+    vcap = VideoCapture(rsCamDev, args.frameWidth, args.frameHeight, args.fps)
 
     # Start streaming
     vcap.start()
@@ -79,7 +70,7 @@ if __name__ == '__main__':
     print("press 'g' to calcuate the result using the captured images")
     print("press 'q' to exit...")
     iteration = 0
-    try:
+    try: 
         while(True):
             # Wait for a coherent pair of frames: depth and color
             color_image = vcap.getFrame()

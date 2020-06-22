@@ -15,15 +15,13 @@ class ObjectTracker(metaclass=ABCMeta):
     @abstractmethod
     def initialize(self, *args):
         pass
-		
-	# TODO: should define interface methods later
 
-    # ## set detectable object like aruco marker
-    # @abstractmethod
-    # def setTrackingObject(self, object):
-    #     pass
+    # set an object to track
+    @abstractmethod
+    def setTrackingObject(self, object):
+        pass
 
-    # ## set detectable features and return the 2D or 3D positons in case that objects are detected..
-    # @abstractmethod
-    # def findObjects(self, *args):
-    #     pass
+    # find objects in the registered object list
+    @abstractmethod
+    def findObjects(self, *args):
+        pass

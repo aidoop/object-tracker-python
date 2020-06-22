@@ -1,10 +1,11 @@
-from packages.KeyHandler import KeyHandler
 import cv2
 import os
 import glob
 
 import Config
+from packages.KeyHandler import KeyHandler
 from HandEyeUtilSet import *
+from packages.RobotIndy7Dev import RobotIndy7Dev
 
 class CalibHandEyeKeyHandler(KeyHandler):
 
@@ -16,6 +17,8 @@ class CalibHandEyeKeyHandler(KeyHandler):
         super().setKeyHandler('c', self.processC)
         super().setKeyHandler('z', self.processZ)
         super().setKeyHandler('g', self.processG)
+
+        # option: task move test..
         super().setKeyHandler('n', self.processN)
 
         self.interation = 0
@@ -27,13 +30,13 @@ class CalibHandEyeKeyHandler(KeyHandler):
         indy = args[8]
         # set direct-teaching mode on
         print("direct teaching mode: On")
-        indy.direct_teaching(True)
+        indy.setDirectTeachingMode(True)
 
     def processF(self, *args):
         indy = args[8]
         # set direct-teaching mode off
         print("direct teaching mode: Off")
-        indy.direct_teaching(False)        
+        indy.setDirectTeachingMode(False)        
 
     def processC(self, *args):
         tvec = args[3]
@@ -45,7 +48,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         for idx in range(0, ids.size):
             if(ids[idx] == Config.CalibMarkerID):
                 # get the current robot position
-                currTaskPose = indy.get_task_pos()
+                currTaskPose = indy.getCurrentPos()
                 # capture additional matrices here
                 handeye.captureHandEyeInputs(currTaskPose, rvec[idx], tvec[idx])
                 print("Input Data Count: " + str(handeye.cntInputData))
@@ -60,7 +63,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         hmTransform = handeye.getHandEyeResultMatrixUsingOpenCV()
         print("Transform Matrix = ")
         print(hmTransform)
-        handeye.saveTransformMatrix(hmTransform)
+        HandEyeCalibration.saveTransformMatrix(hmTransform)
 
     def processN(self, *args):
         tvec = args[3]
@@ -79,7 +82,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec[idx])
 
                 # get a transformation matrix which was created by calibration process
-                hmmtx = handeye.loadTransformMatrix()
+                hmmtx = HandEyeCalibration.loadTransformMatrix()
 
                 # calcaluate the specific position based on hmInput
                 hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.0, 0.0, Config.HandEyeTargetZ]).T)
@@ -101,7 +104,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 xyzuvw = [x,y,z,u*(-1),v+180.0,w] 
                 print("Modifed TCP XYZUVW: ")
                 print(xyzuvw)
-                indy.task_move_to(xyzuvw)
+                indy.moveTaskPos(xyzuvw)
     
 
     
