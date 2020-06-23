@@ -96,14 +96,14 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 print(xyzuvw)
 
                 ############################################################################################
-                # # test move to the destination
-                # [x,y,z,u,v,w] = xyzuvw
+                # test move to the destination
+                [x,y,z,u,v,w] = xyzuvw
 
-                # # indy7 base position to gripper position
-                # xyzuvw = [x,y,z,u*(-1),v+180.0,w] 
-                # print("Modifed TCP XYZUVW: ")
-                # print(xyzuvw)
-                # indy.moveTaskPos(xyzuvw)
+                # indy7 base position to gripper position
+                xyzuvw = [x,y,z,u*(-1),v+180.0,w] 
+                print("Modifed TCP XYZUVW: ")
+                print(xyzuvw)
+                indy.moveTaskPos(xyzuvw)
     
 
     

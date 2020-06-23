@@ -73,11 +73,6 @@ class ROIAruco2DManager:
         return self.getROIRegition()
 
 
-    
-
-       
-
-
 
 ###############################################################################
 # sample codes

@@ -41,7 +41,7 @@ class RobotIndy7Dev(RobotDev):
         self.indy.disconnect()
 
     ## start to move TCP
-    def moveTaskPos(self):
+    def moveTaskPos(self, xyzuvw):
         self.indy.task_move_to(xyzuvw)
 
     ## get the current hand position
