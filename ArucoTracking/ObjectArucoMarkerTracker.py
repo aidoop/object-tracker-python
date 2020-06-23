@@ -7,6 +7,7 @@ import Config
 from ObjectTracker import ObjectTracker
 from CalibHandEye.HandEye import HandEyeCalibration
 from CalibHandEye.HandEyeUtilSet import HMUtil
+from packages.Aruco import ArucoDetect
 
 # TODO: should be derived in a abstraction class like TrackingObject later.......
 class ArucoMarkerObject:
@@ -15,9 +16,6 @@ class ArucoMarkerObject:
         self.pivotOffset = pivotOffset
         self.corners = None
         self.targetPos = None
-
-    def print(self):
-        print("hi")
 
 # 
 class ArucoMarkerTracker(ObjectTracker):
@@ -28,8 +26,11 @@ class ArucoMarkerTracker(ObjectTracker):
     def initialize(self, *args):
         self.markerSelectDict = args[0]
         self.markerSize = args[1]
+        self.camMtx = args[2]
+        self.dist = args[3]
         self.markerObjectList.clear()
         self.handEyeMat = HandEyeCalibration.loadTransformMatrix()
+        self.arucoDetect = ArucoDetect(self.markerSelectDict, self.markerSize, self.camMtx, self.dist)
 
     ## set detectable features like marker id of aruco marker
     def setTrackingObject(self, object):
@@ -47,20 +48,23 @@ class ArucoMarkerTracker(ObjectTracker):
 
         gray = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)
 
-        # set dictionary size depending on the aruco marker selected
-        aruco_dict = aruco.Dictionary_get(self.markerSelectDict)
+        # # set dictionary size depending on the aruco marker selected
+        # aruco_dict = aruco.Dictionary_get(self.markerSelectDict)
 
-        # detector parameters can be set here (List of detection parameters[3])
-        parameters = aruco.DetectorParameters_create()
-        parameters.adaptiveThreshConstant = 10
+        # # detector parameters can be set here (List of detection parameters[3])
+        # parameters = aruco.DetectorParameters_create()
+        # parameters.adaptiveThreshConstant = 10
 
-        # lists of ids and the corners belonging to each id
-        corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+        # # lists of ids and the corners belonging to each id
+        # corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+
+        corners, ids = self.arucoDetect.detect(gray)
 
         # set detected objects to the result list..
         if np.all(ids != None):
             # estimate pose of each marker and return the values
-            rvec, tvec ,_ = aruco.estimatePoseSingleMarkers(corners, Config.ArucoSize, mtx, dist)
+            #rvec, tvec ,_ = aruco.estimatePoseSingleMarkers(corners, Config.ArucoSize, mtx, dist)
+            rvec, tvec = self.arucoDetect.estimatePose(corners)
 
             for markerObject in self.markerObjectList:
                 for idx in range(len(ids)):

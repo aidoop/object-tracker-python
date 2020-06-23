@@ -6,15 +6,20 @@ import Config
 import cv2
 import cv2.aruco as aruco
 
+from packages.Aruco import ArucoDetect
+
 # TODO: should be derived in abstract class??
 class ROIAruco2DManager:
-    
-    def __init__(self):
+
+    def __init__(self, markerSelectDict, markerSize, mtx, dist):
         # arouco marker id list
         self.arucoRangeList = []
 
         # ROI Region List
         self.ROIRegions = []
+
+        # create an aruco detect object
+        self.arucoDetect = ArucoDetect(markerSelectDict, markerSize, mtx, dist)
 
     def setMarkIdPair(self, arucoRangeData):
         self.arucoRangeList.append(arucoRangeData)
@@ -42,20 +47,13 @@ class ROIAruco2DManager:
         # operations on the frame
         gray = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)
 
-        # set dictionary size depending on the aruco marker selected
-        aruco_dict = aruco.Dictionary_get(aruco.DICT_5X5_250)
-
-        # detector parameters can be set here (List of detection parameters[3])
-        parameters = aruco.DetectorParameters_create()
-        parameters.adaptiveThreshConstant = 10
-
         # lists of ids and the corners belonging to each id
-        corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+        corners, ids = self.arucoDetect.detect(gray)
 
         if np.all(ids != None):
             # estimate pose of each marker and return the values
             # rvet and tvec-different from camera coefficients
-            rvec, tvec ,_ = aruco.estimatePoseSingleMarkers(corners, Config.ArucoSize, mtx, dist)            
+            rvec, tvec = self.arucoDetect.estimatePose(corners)
 
             centerPoint = dict()
             for arucoIDRange in self.arucoRangeList:

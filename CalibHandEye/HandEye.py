@@ -6,16 +6,20 @@ import math
 
 import Config
 from CalibHandEye.HandEyeUtilSet import *
+from packages.Aruco import ArucoDetect
 
 class HandEyeAruco:
 
-    def __init__(self):
+    def __init__(self, markerSelectDict, markerSize, mtx, dist):
 
         # calibration aruco marker id
         self.calibMarkerID = 2
 
         # test aruco marker id
         self.testMarkerID = 14
+
+        # create an aruco detect object
+        self.arucoDetect = ArucoDetect(markerSelectDict, markerSize, mtx, dist)
 
     def setCalibMarkerID(self, markerID):
         self.calibMarkerID = markerID
@@ -25,22 +29,15 @@ class HandEyeAruco:
         # operations on the frame
         gray = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)
 
-        # set dictionary size depending on the aruco marker selected
-        aruco_dict = aruco.Dictionary_get(aruco.DICT_5X5_250)
-
-        # detector parameters can be set here (List of detection parameters[3])
-        parameters = aruco.DetectorParameters_create()
-        parameters.adaptiveThreshConstant = 10
-
         # lists of ids and the corners belonging to each id
-        corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+        corners, ids = self.arucoDetect.detect(gray)
 
         # check if the ids list is not empty
         # if no check is added the code will crash
         if np.all(ids != None):
             # estimate pose of each marker and return the values
             # rvet and tvec-different from camera coefficients
-            rvec, tvec ,_ = aruco.estimatePoseSingleMarkers(corners, Config.ArucoSize, mtx, dist)
+            rvec, tvec = self.arucoDetect.estimatePose(corners)
 
             # should do something here using extracted aruco marker ids here
             flagFindMainAruco = False

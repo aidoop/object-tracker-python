@@ -34,17 +34,30 @@ if __name__ == '__main__':
     args = argPar.parse_args()
     arucoParamList = args.list
 
+
+    # TODO: get object, camera workspace from gql server
+
+
+
+
     # create the camera device object
     if(args.camType == 'rs'):
         rsCamDev = RealsenseCapture(args.camIndex)
     elif(args.camType == 'uvc'):
-        rsCamDev = OpencvCapture(args.camIndex)    
+        rsCamDev = OpencvCapture(args.camIndex)
+
 
     # create video capture object using realsense camera device object
     vcap = VideoCapture(rsCamDev, args.frameWidth, args.frameHeight, args.fps)
 
+
+    # rsCamDev2 = RealsenseCapture(1)
+    # vcap2 = VideoCapture(rsCamDev2, args.frameWidth, args.frameHeight, args.fps)
+
+
     # Start streaming
     vcap.start()
+    # vcap2.start()
 
     # get instrinsics
     mtx, dist = vcap.getIntrinsicsMat(Config.UseRealSenseInternalMatrix)
@@ -52,7 +65,7 @@ if __name__ == '__main__':
     # TODO: need to make 
     # create objs and an object tracker 
     objTracker = ArucoMarkerTracker()
-    objTracker.initialize(aruco.DICT_5X5_250, 0.05)
+    objTracker.initialize(aruco.DICT_5X5_250, 0.05, mtx, dist)
     for argParam in arucoParamList:
         parsedData = argParam.split(',')
         obj = ArucoMarkerObject(int(parsedData[0]), [float(parsedData[1]), float(parsedData[2]), float(parsedData[3]), float(parsedData[4]), float(parsedData[5]), float(parsedData[6])])
@@ -77,6 +90,7 @@ if __name__ == '__main__':
         while(True):
             # wait for a coherent pair of frames: depth and color
             color_image = vcap.getFrame()
+            #color_image2 = vcap2.getFrame()
 
             # detect markers here..
             resultObjs = objTracker.findObjects(color_image, mtx, dist)
@@ -93,6 +107,7 @@ if __name__ == '__main__':
 
             # display the captured image
             cv2.imshow('Object Tracking Engine',color_image)
+            #cv2.imshow('Object Tracking Engine2',color_image2)
 
             # sleep for the specific duration.
             time.sleep(args.duration)

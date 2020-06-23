@@ -75,7 +75,7 @@ if __name__ == '__main__':
     keyhandler = CalibHandEyeKeyHandler()
 
     # create handeye object
-    handeyeAruco = HandEyeAruco()
+    handeyeAruco = HandEyeAruco(aruco.DICT_5X5_250, 0.05, mtx, dist)
     handeyeAruco.setCalibMarkerID(args.arucoID)
 
     # start indy7 as a direct-teaching mode as default

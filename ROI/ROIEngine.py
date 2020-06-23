@@ -1,6 +1,7 @@
 
 import numpy as np
 import cv2
+import cv2.aruco as aruco
 import os
 import time
 import datetime
@@ -46,15 +47,15 @@ if __name__ == '__main__':
     # Start streaming
     vcap.start()
 
+    # get instrinsics
+    mtx, dist = vcap.getIntrinsicsMat(Config.UseRealSenseInternalMatrix)
+
     # create aruco manager
-    ROIMgr = ROIAruco2DManager()
+    ROIMgr = ROIAruco2DManager(aruco.DICT_5X5_250, 0.05, mtx, dist)
 
     for arucoPair in arucoPairList:
         arucoPairValues = arucoPair.split(',')
-        ROIMgr.setMarkIdPair((int(arucoPairValues[0]), int(arucoPairValues[1])))
-    
-    # get instrinsics
-    mtx, dist = vcap.getIntrinsicsMat(Config.UseRealSenseInternalMatrix)
+        ROIMgr.setMarkIdPair((int(arucoPairValues[0]), int(arucoPairValues[1])))    
 
     # create key handler for camera calibration1
     keyhander = ROIKeyHandler()    
