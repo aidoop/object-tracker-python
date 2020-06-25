@@ -16,9 +16,11 @@ class ROIKeyHandler(KeyHandler):
         super().enableExitFlag()
 
     def processG(self, *args):
-        ROIRegions = args[0]
+        camIndex = args[0]
+        ROIRegions = args[1]
 
-        ROIRegionFile = cv2.FileStorage("ROIRegions.json", cv2.FILE_STORAGE_WRITE)
+        savedFileName = "ROIRegions" + str(camIndex) + ".json" 
+        ROIRegionFile = cv2.FileStorage(savedFileName, cv2.FILE_STORAGE_WRITE)
         regionCnt = len(ROIRegions)
         ROIRegionFile.write("ROICnt", regionCnt)
 

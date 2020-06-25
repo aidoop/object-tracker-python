@@ -26,14 +26,9 @@ if __name__ == '__main__':
 
     # parse program parameters to get necessary aruments
     argPar = argparse.ArgumentParser(description="HandEye Calibration")
-    argPar.add_argument('--camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'Camera Type(rs: Intel Realsense, uvc: UVC-Supported')
+    argPar.add_argument('-camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'Camera Type(rs: Intel Realsense, uvc: UVC-Supported')
     argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = 'Camera Index(zero-based)')
-    argPar.add_argument('frameWidth', type= int, metavar='FrameWidth', help = 'Camera Frame Width')
-    argPar.add_argument('frameHeight', type= int, metavar='FrameHeight', help = 'Camera Frame Height')
-    argPar.add_argument('fps', type= int, metavar='FPS', help = 'Camera Frame Per Seconds')
-    argPar.add_argument('-l', '--list', action='append', metavar='ArucoPairList', help = 'Aruco Mark ID Pairs for ROI Regions ex) -l 9,10 -l 30, 40')
     args = argPar.parse_args()
-    arucoPairList = args.list
 
     # create the camera device object
     if(args.camType == 'rs'):
@@ -42,7 +37,7 @@ if __name__ == '__main__':
         rsCamDev = OpencvCapture(args.camIndex)    
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, args.frameWidth, args.frameHeight, args.fps)
+    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec)
 
     # Start streaming
     vcap.start()
@@ -51,11 +46,11 @@ if __name__ == '__main__':
     mtx, dist = vcap.getIntrinsicsMat(Config.UseRealSenseInternalMatrix)
 
     # create aruco manager
-    ROIMgr = ROIAruco2DManager(aruco.DICT_5X5_250, 0.05, mtx, dist)
+    ROIMgr = ROIAruco2DManager(Config.ArucoDict, Config.ArucoSize, mtx, dist)
 
-    for arucoPair in arucoPairList:
-        arucoPairValues = arucoPair.split(',')
-        ROIMgr.setMarkIdPair((int(arucoPairValues[0]), int(arucoPairValues[1])))    
+    # for arucoPair in arucoPairList:
+    #     arucoPairValues = arucoPair.split(',')
+    #     ROIMgr.setMarkIdPair((int(arucoPairValues[0]), int(arucoPairValues[1])))
 
     # create key handler for camera calibration1
     keyhander = ROIKeyHandler()    
@@ -67,7 +62,7 @@ if __name__ == '__main__':
             color_image = vcap.getFrame()
 
             # find ROI region
-            ROIRegions = ROIMgr.findROI(color_image, mtx, dist)
+            ROIRegions = ROIMgr.findROIPair(color_image, mtx, dist)
 
             # draw ROI regions
             for ROIRegion in ROIRegions:
@@ -81,7 +76,7 @@ if __name__ == '__main__':
             # TODO: arrange these opencv key events based on other key event handler class
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
-            if keyhander.processKeyHandler(pressedKey, ROIRegions):
+            if keyhander.processKeyHandler(pressedKey, args.camIndex, ROIRegions):
                 break
 
     finally:

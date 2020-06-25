@@ -70,6 +70,46 @@ class ROIAruco2DManager:
 
         return self.getROIRegition()
 
+    def findROIPair(self, color_image, mtx, dist):
+        # clear previous list
+        self.clearROIRegion()
+
+        # operations on the frame
+        gray = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)
+
+        # lists of ids and the corners belonging to each id
+        corners, ids = self.arucoDetect.detect(gray)
+
+        if np.all(ids != None):
+            # estimate pose of each marker and return the values
+            # rvet and tvec-different from camera coefficients
+            rvec, tvec = self.arucoDetect.estimatePose(corners)
+
+            for idx in range(len(ids)):
+                for subidx in range(idx+1, len(ids)):
+                    if(ids[idx] == ids[subidx]):
+                        inputObjPts = np.float32([[0.0,0.0,0.0]]).reshape(-1,3)
+                        imgpts, jac = cv2.projectPoints(inputObjPts, rvec[idx], tvec[idx], mtx, dist)
+                        imgpts_sub, jac_sub = cv2.projectPoints(inputObjPts, rvec[subidx], tvec[subidx], mtx, dist)
+
+                        # set the current region to a list
+                        self.setROIRegion(tuple(imgpts[0][0]), tuple(imgpts_sub[0][0]))
+
+            # centerPoint = dict()
+            # for arucoIDRange in self.arucoRangeList:
+            #     if (arucoIDRange[0] in ids) and (arucoIDRange[1] in ids):
+            #         # get a retangle coordinates between two aruco marks
+            #         for arucoMark in arucoIDRange:
+            #             idx = list(ids).index(arucoMark)
+            #             inputObjPts = np.float32([[0.0,0.0,0.0]]).reshape(-1,3)
+            #             imgpts, jac = cv2.projectPoints(inputObjPts, rvec[idx], tvec[idx], mtx, dist)
+            #             centerPoint[arucoMark] = tuple(imgpts[0][0])
+
+            #         # set the current region to a list
+            #         self.setROIRegion(centerPoint[arucoIDRange[0]], centerPoint[arucoIDRange[1]])
+
+        return self.getROIRegition()
+
 
 
 ###############################################################################

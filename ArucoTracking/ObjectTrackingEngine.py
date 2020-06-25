@@ -50,6 +50,7 @@ if __name__ == '__main__':
     # vision robot arm list
     raList = list()
 
+    #########################################################################
     # initialize robot arms
     robotArmKeys = gqlDataClient.robotArms.keys()
     for robotArmKey in robotArmKeys:
@@ -103,18 +104,20 @@ if __name__ == '__main__':
         vtcList.append(vtc)
         idx+=1
 
-    # intialize trackable marks
+    #########################################################################
+    # intialize trackable marks. 
     trackableMarkKeys = gqlDataClient.trackableObjects.keys()
     for trackableMarkKey in trackableMarkKeys:
         trackableMark = gqlDataClient.trackableObjects[trackableMarkKey]
         print('Trackable Marks')
         print(trackableMark.endpoint, ', ', trackableMark.poseOffset)
 
+        # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
         obj = ArucoMarkerObject(int(trackableMark.endpoint), trackableMark.poseOffset)
         for vtc in vtcList:
             vtc.arucoMarkTracker.setTrackingObject(obj)
 
-    # creat key handler
+    # create key handler
     keyhandler = ObjectTrackingKeyHandler()
 
     # prepare lists for mark tracking
@@ -141,7 +144,7 @@ if __name__ == '__main__':
                 cv2.imshow(vtc.name, color_image)
 
             # sleep for the specific duration.
-            time.sleep(0.01)            
+            time.sleep(0.1)            
 
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
