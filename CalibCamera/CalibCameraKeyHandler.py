@@ -32,6 +32,7 @@ class CalibCameraKeyHandler(KeyHandler):
     def processG(self, *args):
         dirFrameImage = args[1]
         calibcam = args[2]
+        camIndex = args[3]
         # get image file names
         images = glob.glob(dirFrameImage + '/*.jpg')
         ret, cammtx, distcoeff = calibcam.calcuateCameraMatrix(images)
@@ -39,7 +40,9 @@ class CalibCameraKeyHandler(KeyHandler):
         if ret == True:
             print('Calibration finished successfully...')
             # save calibration data to the specific xml file
-            calibcam.saveResults("calibCamResult.json", cammtx, distcoeff)
+
+            savedFileName = "CalibCamResult"+str(camIndex)+".json"
+            calibcam.saveResults(savedFileName, cammtx, distcoeff)
         else:
             print('Calibration failed...')                
     

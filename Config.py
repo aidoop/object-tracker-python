@@ -15,6 +15,10 @@ VideoFramePerSec = 30
 ArucoDict = aruco.DICT_5X5_250
 ArucoSize = 0.05
 
+# camera calibration parameters
+ChessWidth = 10
+ChessHeight = 7
+
 # handeye calibration parameters
 UseHandEyeAlgorithmTest = False
 UseHandEyePrint3DCoords = False

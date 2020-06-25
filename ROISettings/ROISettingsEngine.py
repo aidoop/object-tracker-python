@@ -26,8 +26,8 @@ if __name__ == '__main__':
 
     # parse program parameters to get necessary aruments
     argPar = argparse.ArgumentParser(description="HandEye Calibration")
-    argPar.add_argument('-camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'Camera Type(rs: Intel Realsense, uvc: UVC-Supported')
-    argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = 'Camera Index(zero-based)')
+    argPar.add_argument('camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'rs: Intel Realsense, uvc: UVC-Supported')
+    argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = '0, 1, ...')
     args = argPar.parse_args()
 
     # create the camera device object
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     vcap.start()
 
     # get instrinsics
-    mtx, dist = vcap.getIntrinsicsMat(Config.UseRealSenseInternalMatrix)
+    mtx, dist = vcap.getIntrinsicsMat(args.camIndex, Config.UseRealSenseInternalMatrix)
 
     # create aruco manager
     ROIMgr = ROIAruco2DManager(Config.ArucoDict, Config.ArucoSize, mtx, dist)
@@ -55,7 +55,8 @@ if __name__ == '__main__':
     # create key handler for camera calibration1
     keyhander = ROIKeyHandler()    
 
-    #print("press 'c' to capture an image or press 'q' to exit...")
+    print("press 'g' to save the current ROI regions")
+    print("press 'q' to exit...")
     try:
         while(True):
             # Wait for a coherent pair of frames: depth and color

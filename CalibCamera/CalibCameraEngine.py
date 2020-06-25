@@ -37,13 +37,8 @@ if __name__ == '__main__':
 
     # parse program parameters to get necessary aruments
     argPar = argparse.ArgumentParser(description="Camera Calibration")
-    argPar.add_argument('--camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'Camera Type(rs: Intel Realsense, uvc: UVC-Supported')
-    argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = 'Camera Index(zero-based)')
-    argPar.add_argument('frameWidth', type= int, metavar='FrameWidth', help = 'Camera Frame Width')
-    argPar.add_argument('frameHeight', type= int, metavar='FrameHeight', help = 'Camera Frame Height')
-    argPar.add_argument('fps', type= int, metavar='FPS', help = 'Camera Frame Per Seconds')
-    argPar.add_argument('chessWidth', type= int, metavar='ChessBoardWidth', help = 'Chess Board Width')
-    argPar.add_argument('chessHeight', type= int, metavar='ChessBoardHeight', help = 'Chess Board Height')
+    argPar.add_argument('camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'rs: Intel Realsense, uvc: UVC-Supported')
+    argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = '0, 1, ...')
     args = argPar.parse_args()
 
     # create the camera device object
@@ -53,13 +48,13 @@ if __name__ == '__main__':
         rsCamDev = OpencvCapture(args.camIndex)
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, args.frameWidth, args.frameHeight, args.fps)
+    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec)
 
     # Start streaming
     vcap.start()
 
     # create a camera calibration object
-    calibcam = CalibrationCamera(args.chessWidth, args.chessHeight)
+    calibcam = CalibrationCamera(Config.ChessWidth, Config.ChessHeight)
 
     # TODO: check where an image directory is created..
     dirFrameImage = makeFrameImageDirectory()
@@ -68,7 +63,7 @@ if __name__ == '__main__':
     keyhandler = CalibCameraKeyHandler()
 
     print("press 'c' to capture an image")
-    print("press 'g' to calcuate the result using the captured images")
+    print("press 'g' to process camera calibration using the captured images and save the result data")
     print("press 'q' to exit...")
     iteration = 0
     try: 
@@ -82,7 +77,7 @@ if __name__ == '__main__':
 
             # TODO: arrange these opencv key events based on other key event handler class
             # handle key inputs
-            if keyhandler.processKeyHandler(pressedKey, color_image, dirFrameImage, calibcam):
+            if keyhandler.processKeyHandler(pressedKey, color_image, dirFrameImage, calibcam, args.camIndex):
                 break
     finally:
         # Stop streaming

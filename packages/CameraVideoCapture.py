@@ -39,12 +39,13 @@ class VideoCapture:
     def getInternalIntrinsicsMat(self):
         return self.camDev.getInternalIntrinsicsMat()
 
-    def getIntrinsicsMat(self, UseInternal=False):
+    def getIntrinsicsMat(self, camIndex, UseInternal=False):
         # get internal intrinsics & extrinsics in D435
         if(UseInternal == True):    
             mtx, dist = self.getInternalIntrinsicsMat()
         else:
-            calibFile = cv2.FileStorage("calibCamResult.json", cv2.FILE_STORAGE_READ)
+            loadFileName = "CalibCamResult"+str(camIndex)+".json"
+            calibFile = cv2.FileStorage(loadFileName, cv2.FILE_STORAGE_READ)
             cmnode = calibFile.getNode("cameraMatrix")
             mtx = cmnode.mat()
             dcnode = calibFile.getNode("distCoeff")

@@ -35,10 +35,6 @@ if __name__ == '__main__':
     argPar = argparse.ArgumentParser(description="HandEye Calibration")
     argPar.add_argument('--camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'Camera Type(rs: Intel Realsense, uvc: UVC-Supported')
     argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = 'Camera Index(zero-based)')
-    argPar.add_argument('frameWidth', type= int, metavar='FrameWidth', help = 'Camera Frame Width')
-    argPar.add_argument('frameHeight', type= int, metavar='FrameHeight', help = 'Camera Frame Height')
-    argPar.add_argument('fps', type= int, metavar='FPS', help = 'Camera Frame Per Seconds')
-    argPar.add_argument('arucoID', type= int, metavar='ArucoMarkID', help = 'Aruco Mark ID for HandEye Calibration')
     args = argPar.parse_args()
 
     # create an indy7 object
@@ -63,20 +59,20 @@ if __name__ == '__main__':
         rsCamDev = OpencvCapture(args.camIndex)
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, args.frameWidth, args.frameHeight, args.fps)
+    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec)
 
     # Start streaming
     vcap.start()
 
     # get instrinsics
-    mtx, dist = vcap.getIntrinsicsMat(Config.UseRealSenseInternalMatrix)
+    mtx, dist = vcap.getIntrinsicsMat(args.camIndex, Config.UseRealSenseInternalMatrix)
 
     # create key handler
     keyhandler = CalibHandEyeKeyHandler()
 
     # create handeye object
-    handeyeAruco = HandEyeAruco(aruco.DICT_5X5_250, 0.05, mtx, dist)
-    handeyeAruco.setCalibMarkerID(args.arucoID)
+    handeyeAruco = HandEyeAruco(Config.ArucoDict, Config.ArucoSize, mtx, dist)
+    handeyeAruco.setCalibMarkerID(Config.CalibMarkerID)
 
     # start indy7 as a direct-teaching mode as default
     indy7.setDirectTeachingMode(True)
