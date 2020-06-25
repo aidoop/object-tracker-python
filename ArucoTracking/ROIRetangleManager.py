@@ -25,16 +25,17 @@ class ROIRetangleManager(ROIManager):
     def clearROIAll(self):
         self.RectangleROIList.clear()
     
+    # TODO: two region type is not identical.
     def contains(self, newRegion, ROIRegion):
         topA = min(newRegion[0][0], newRegion[1][0], newRegion[2][0], newRegion[3][0])
         bottomA = max(newRegion[0][0], newRegion[1][0], newRegion[2][0], newRegion[3][0])
         leftA = min(newRegion[0][1], newRegion[1][1], newRegion[2][1], newRegion[3][1])
         rightA = max(newRegion[0][1], newRegion[1][1], newRegion[2][1], newRegion[3][1])
 
-        topB = min(ROIRegion[0][0], ROIRegion[1][0])
-        bottomB = max(ROIRegion[0][0], ROIRegion[1][0])
-        leftB = min(ROIRegion[0][1], ROIRegion[1][1])
-        rightB = max(ROIRegion[0][1], ROIRegion[1][1])
+        topB = min(ROIRegion[0], ROIRegion[2])
+        bottomB = max(ROIRegion[0], ROIRegion[2])
+        leftB = min(ROIRegion[1], ROIRegion[3])
+        rightB = max(ROIRegion[1], ROIRegion[3])
 
         # check if any point of A is outside B
         if( bottomA >= bottomB ):

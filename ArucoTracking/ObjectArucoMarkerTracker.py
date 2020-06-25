@@ -48,22 +48,12 @@ class ArucoMarkerTracker(ObjectTracker):
 
         gray = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)
 
-        # # set dictionary size depending on the aruco marker selected
-        # aruco_dict = aruco.Dictionary_get(self.markerSelectDict)
-
-        # # detector parameters can be set here (List of detection parameters[3])
-        # parameters = aruco.DetectorParameters_create()
-        # parameters.adaptiveThreshConstant = 10
-
         # # lists of ids and the corners belonging to each id
-        # corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
-
         corners, ids = self.arucoDetect.detect(gray)
 
         # set detected objects to the result list..
         if np.all(ids != None):
             # estimate pose of each marker and return the values
-            #rvec, tvec ,_ = aruco.estimatePoseSingleMarkers(corners, Config.ArucoSize, mtx, dist)
             rvec, tvec = self.arucoDetect.estimatePose(corners)
 
             for markerObject in self.markerObjectList:
@@ -81,8 +71,12 @@ class ArucoMarkerTracker(ObjectTracker):
                         hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec[idx])
 
                         # calcaluate the modified position based on pivot offset
-                        hmWanted = HMUtil.convertXYZABCtoHMDeg(markerObject.pivotOffset)
-                        hmInput = np.dot(hmCal2Cam, hmWanted)                        
+                        if markerObject.pivotOffset is None:
+                            hmWanted = HMUtil.convertXYZABCtoHMDeg([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+                            hmInput = np.dot(hmCal2Cam, hmWanted)
+                        else:
+                            hmWanted = HMUtil.convertXYZABCtoHMDeg(markerObject.pivotOffset)                            
+                            hmInput = np.dot(hmCal2Cam, hmWanted)
 
                         # get a final position
                         hmResult = np.dot(self.handEyeMat, hmInput)

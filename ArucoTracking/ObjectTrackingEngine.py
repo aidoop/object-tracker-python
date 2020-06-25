@@ -13,7 +13,16 @@ from packages.CameraVideoCapture import VideoCapture
 from ObjectArucoMarkerTracker import ArucoMarkerObject, ArucoMarkerTracker
 from ObjectTrackingKeyHandler import ObjectTrackingKeyHandler
 from ROIRetangleManager import ROIRetangleManager
+from VisionGqlClient import VisonGqlDataClient
 
+class VisionTrackingCamera:
+    name = None
+    robotName = None        # TODO: how does camera make relation with robot???
+    vcap = None
+    mtx = None
+    dist = None
+    ROIMgr = None
+    arucoMarkTracker = None
 
 ###############################################################################
 # Hand-eye calibration process 
@@ -22,95 +31,117 @@ from ROIRetangleManager import ROIRetangleManager
 
 if __name__ == '__main__':
 
-    # parse program parameters to get necessary aruments
-    argPar = argparse.ArgumentParser(description="HandEye Calibration")
-    argPar.add_argument('--camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'Camera Type(rs: Intel Realsense, uvc: UVC-Supported')
-    argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = 'Camera Index(zero-based)')
-    argPar.add_argument('frameWidth', type= int, metavar='FrameWidth', help = 'Camera Frame Width')
-    argPar.add_argument('frameHeight', type= int, metavar='FrameHeight', help = 'Camera Frame Height')
-    argPar.add_argument('fps', type= int, metavar='FPS', help = 'Camera Frame Per Seconds')
-    argPar.add_argument('-l', '--list', action='append', metavar='ArucoMarkIDs', help = 'Aruco Mark Infos (ID, PivotOffset(XYZUVW)) ex) -l 14, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0')
-    argPar.add_argument('duration', type= float, metavar='ProcessDuration', help = 'Process Duration(sec)')
-    args = argPar.parse_args()
-    arucoParamList = args.list
-
-
     # TODO: get object, camera workspace from gql server
+    gqlDataClient = VisonGqlDataClient()
+    if(gqlDataClient.connect('http://192.168.1.91:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
+        print("Can't connect operato vision server.")
+        sys.exit()
 
+    #gqlDataClient.parseVisionWorkspaces()
+    # process all elements here...
+    gqlDataClient.fetchTrackingCameras()
+    gqlDataClient.fetchRobotArms()
+    gqlDataClient.fetchTrackableMarks()
 
+    #####################################
+    # application data list
+    # vistion tracking camera object list
+    vtcList = list()
+    # vision robot arm list
+    raList = list()
 
+    # initialize robot arms
+    robotArmKeys = gqlDataClient.robotArms.keys()
+    for robotArmKey in robotArmKeys:
+        robotArm = gqlDataClient.robotArms[robotArmKey]
+        print(robotArm.gripperOffset)
+        raList.append(robotArm)
 
-    # create the camera device object
-    if(args.camType == 'rs'):
-        rsCamDev = RealsenseCapture(args.camIndex)
-    elif(args.camType == 'uvc'):
-        rsCamDev = OpencvCapture(args.camIndex)
+    #########################################################################
+    # intitialize tracking cameras
+    idx = 0
+    camKeys = gqlDataClient.trackingCameras.keys()
+    for camKey in camKeys:
+        # get gql camera information 
+        trackingCamera = gqlDataClient.trackingCameras[camKey]
 
+        # create camera object 
+        vtc = VisionTrackingCamera()
 
-    # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, args.frameWidth, args.frameHeight, args.fps)
+        # set camera name
+        vtc.name = trackingCamera.name
 
+        # set camera endpoint
+        endpoint = int(trackingCamera.endpoint)
+        
+        # TODO: choose camera dev object based on camera type
+        rsCamDev = RealsenseCapture(endpoint)
 
-    # rsCamDev2 = RealsenseCapture(1)
-    # vcap2 = VideoCapture(rsCamDev2, args.frameWidth, args.frameHeight, args.fps)
+        # create a video capture object and start 
+        vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec)
+        vcap.start()
+        vtc.vcap = vcap
 
+        # set camera matrix and distortion coefficients
+        mtx = trackingCamera.cameraMatrix
+        dist = trackingCamera.distCoeff
+        vtc.mtx = mtx
+        vtc.dist = dist
 
-    # Start streaming
-    vcap.start()
-    # vcap2.start()
+        # create aurco mark tracker object
+        objTracker = ArucoMarkerTracker()
+        objTracker.initialize(Config.ArucoDict, Config.ArucoSize, mtx, dist)
+        vtc.arucoMarkTracker = objTracker
 
-    # get instrinsics
-    mtx, dist = vcap.getIntrinsicsMat(Config.UseRealSenseInternalMatrix)
+        # initialize ROI manager
+        ROIMgr = ROIRetangleManager()
+        for ROIData in trackingCamera.ROIs:
+            ROIInput = [ROIData.tl[0], ROIData.tl[1], ROIData.rb[0], ROIData.rb[1]]
+        ROIMgr.appendROI(ROIInput)
+        vtc.ROIMgr = ROIMgr
 
-    # TODO: need to make 
-    # create objs and an object tracker 
-    objTracker = ArucoMarkerTracker()
-    objTracker.initialize(aruco.DICT_5X5_250, 0.05, mtx, dist)
-    for argParam in arucoParamList:
-        parsedData = argParam.split(',')
-        obj = ArucoMarkerObject(int(parsedData[0]), [float(parsedData[1]), float(parsedData[2]), float(parsedData[3]), float(parsedData[4]), float(parsedData[5]), float(parsedData[6])])
-        objTracker.setTrackingObject(obj)    
+        vtcList.append(vtc)
+        idx+=1
 
-    # TODO: this kinds of file process should be moved together to a specific module.
-    # load ROI Region from a json file
-    ROIMgr = ROIRetangleManager()
-    ROIRegionFile = cv2.FileStorage("ROIRegions.json", cv2.FILE_STORAGE_READ)
-    roiCntNode = ROIRegionFile.getNode("ROICnt")
-    roiCnt = int(roiCntNode.real())
-    for idx in range(roiCnt):
-        ROIRegionNode = ROIRegionFile.getNode("ROI" + str(idx))
-        ROIMgr.appendROI(ROIRegionNode.mat())
-    ROIRegionFile.release()
+    # intialize trackable marks
+    trackableMarkKeys = gqlDataClient.trackableObjects.keys()
+    for trackableMarkKey in trackableMarkKeys:
+        trackableMark = gqlDataClient.trackableObjects[trackableMarkKey]
+        print('Trackable Marks')
+        print(trackableMark.endpoint, ', ', trackableMark.poseOffset)
+
+        obj = ArucoMarkerObject(int(trackableMark.endpoint), trackableMark.poseOffset)
+        for vtc in vtcList:
+            vtc.arucoMarkTracker.setTrackingObject(obj)
 
     # creat key handler
     keyhandler = ObjectTrackingKeyHandler()
 
-    #print("press 'c' to capture an image or press 'q' to exit...")
+    # prepare lists for mark tracking
+    color_images = list()
+
     try:
         while(True):
-            # wait for a coherent pair of frames: depth and color
-            color_image = vcap.getFrame()
-            #color_image2 = vcap2.getFrame()
+            for vtc in vtcList:
+                # get a frame 
+                color_image = vtc.vcap.getFrame()
 
-            # detect markers here..
-            resultObjs = objTracker.findObjects(color_image, mtx, dist)
+                # detect markers here..
+                resultObjs = vtc.arucoMarkTracker.findObjects(color_image, vtc.mtx, vtc.dist)
 
-            # draw ROI Region..
-            for ROIRegion in ROIMgr.getROIList():
-                cv2.rectangle(color_image, tuple(ROIRegion[0]), tuple(ROIRegion[1]), (255,0,0), 3)
+                # check if an object is in ROI 
+                for resultObj in resultObjs:
+                    print(vtc.ROIMgr.isInsideROI(resultObj.corners))
+                    # send object information to UI..
 
-            # iterate the final object list
-            for resultObj in resultObjs:
-                print(resultObj)
-                print(ROIMgr.isInsideROI(resultObj.corners))
-                # TODO: if any marker is inside ROI, send marker data to Node.JS using the result list here...
+                # draw ROI Region..
+                for ROIRegion in vtc.ROIMgr.getROIList():
+                    cv2.rectangle(color_image, (ROIRegion[0], ROIRegion[1]), (ROIRegion[2], ROIRegion[3]), (255,0,0), 3)
 
-            # display the captured image
-            cv2.imshow('Object Tracking Engine',color_image)
-            #cv2.imshow('Object Tracking Engine2',color_image2)
+                cv2.imshow(vtc.name, color_image)
 
             # sleep for the specific duration.
-            time.sleep(args.duration)
+            time.sleep(0.01)            
 
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
@@ -118,7 +149,10 @@ if __name__ == '__main__':
                 break
     finally:
         # Stop streaming
-        vcap.stop()
+        for vtc in vtcList:
+            vtc.vcap.stop()
 
     cv2.destroyAllWindows()
+
+
 
