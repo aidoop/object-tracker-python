@@ -33,8 +33,8 @@ if __name__ == '__main__':
 
     # parse program parameters to get necessary aruments
     argPar = argparse.ArgumentParser(description="HandEye Calibration")
-    argPar.add_argument('--camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'Camera Type(rs: Intel Realsense, uvc: UVC-Supported')
-    argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = 'Camera Index(zero-based)')
+    argPar.add_argument('camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'rs: Intel Realsense, uvc: UVC-Supported')
+    argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = '0, 1, ...')
     args = argPar.parse_args()
 
     # create an indy7 object
