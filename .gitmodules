@@ -1,0 +1,3 @@
+[submodule "visionclient"]
+	path = visionclient
+	url = https://github.com/aidoop/vision-client-python.git
