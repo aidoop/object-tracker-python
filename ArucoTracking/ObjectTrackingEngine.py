@@ -9,6 +9,7 @@ import time
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
 import Config
 from packages.CameraDevRealsense import RealsenseCapture
+from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraVideoCapture import VideoCapture
 from ObjectArucoMarkerTracker import ArucoMarkerObject, ArucoMarkerTracker
 from ObjectTrackingKeyHandler import ObjectTrackingKeyHandler
@@ -33,7 +34,7 @@ if __name__ == '__main__':
 
     # TODO: get object, camera workspace from gql server
     gqlDataClient = VisonGqlDataClient()
-    if(gqlDataClient.connect('http://192.168.1.91:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
+    if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
         print("Can't connect operato vision server.")
         sys.exit()
 
@@ -76,10 +77,15 @@ if __name__ == '__main__':
         endpoint = int(trackingCamera.endpoint)
         
         # TODO: choose camera dev object based on camera type
-        rsCamDev = RealsenseCapture(endpoint)
+        if trackingCamera.type == 'realsense-camera':
+            rsCamDev = RealsenseCapture(endpoint)
+        elif trackingCamera.type == 'camera-connector':
+            rsCamDev = OpencvCapture(endpoint)
 
         # create a video capture object and start 
         vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec)
+        if vcap == None:
+            continue
         vcap.start()
         vtc.vcap = vcap
 

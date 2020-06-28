@@ -26,6 +26,10 @@ class KeyHandler:
         # ascii value to character
         key = chr(keyVal)
 
+        # check if key is ascii 
+        if not (key in string.ascii_letters):
+            return False
+
         # in case that key is one of alphabet, handle upper cases as the same as lower case..
         if key in string.ascii_uppercase:
             key = key.lower()
