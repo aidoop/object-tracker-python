@@ -12,6 +12,7 @@ import Config
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
 from packages.RobotIndy7Dev import RobotIndy7Dev
+from packages.ErrorMsg import ArucoTrackerErrMsg
 from CalibHandEyeKeyHandler import CalibHandEyeKeyHandler
 from HandEyeUtilSet import *
 from HandEye import *
@@ -82,6 +83,18 @@ if __name__ == '__main__':
         while(True):
             # Wait for a coherent pair of frames: depth and color
             color_image = vcap.getFrame()
+
+            # check core variables are available..
+            if ArucoTrackerErrMsg.checkValueIsNone(vtc.mtx, "camera matrix") == False:
+                break
+            if ArucoTrackerErrMsg.checkValueIsNone(vtc.dist, "distortion coeff.") == False:
+                break
+            if ArucoTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
+                break
+            if ArucoTrackerErrMsg.checkValueIsNone(handeye, "hand eye matrix") == False:
+                break
+            if ArucoTrackerErrMsg.checkValueIsNone(indy7, "indy7 object") == False:
+                break            
 
             (flagFindMainAruco, ids, rvec, tvec) =  handeyeAruco.processArucoMarker(color_image, mtx, dist)
 

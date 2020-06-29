@@ -11,6 +11,7 @@ import Config
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraVideoCapture import VideoCapture
+from packages.ErrorMsg import ArucoTrackerErrMsg
 from ObjectArucoMarkerTracker import ArucoMarkerObject, ArucoMarkerTracker
 from ObjectTrackingKeyHandler import ObjectTrackingKeyHandler
 from ROIRetangleManager import ROIRetangleManager
@@ -138,6 +139,16 @@ if __name__ == '__main__':
             for vtc in vtcList:
                 # get a frame 
                 color_image = vtc.vcap.getFrame()
+
+                # check core variables are available..
+                if ArucoTrackerErrMsg.checkValueIsNone(vtc.mtx, "camera matrix") == False:
+                    break
+                if ArucoTrackerErrMsg.checkValueIsNone(vtc.dist, "distortion coeff.") == False:
+                    break
+                if ArucoTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
+                    break
+                if ArucoTrackerErrMsg.checkValueIsNone(vtc.handeye, "hand eye matrix") == False:
+                    break
 
                 # detect markers here..
                 resultObjs = vtc.arucoMarkTracker.findObjects(color_image, vtc.mtx, vtc.dist)

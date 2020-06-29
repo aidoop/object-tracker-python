@@ -13,6 +13,7 @@ import Config
 from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
+from packages.ErrorMsg import ArucoTrackerErrMsg
 from CalibCamera import CalibrationCamera
 from CalibCameraKeyHandler import CalibCameraKeyHandler
 
@@ -70,6 +71,9 @@ if __name__ == '__main__':
         while(True):
             # Wait for a coherent pair of frames: depth and color
             color_image = vcap.getFrame()
+
+            if ArucoTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
+                break
 
             # display the captured image
             cv2.imshow('Capture Images',color_image)

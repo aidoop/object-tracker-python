@@ -15,6 +15,7 @@ import Config
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraVideoCapture import VideoCapture
+from packages.ErrorMsg import ArucoTrackerErrMsg
 from ROIArucoManager import ROIAruco2DManager
 from ROIKeyHandler import ROIKeyHandler
 
@@ -62,6 +63,14 @@ if __name__ == '__main__':
         while(True):
             # Wait for a coherent pair of frames: depth and color
             color_image = vcap.getFrame()
+
+            # check core variables are available..
+            if ArucoTrackerErrMsg.checkValueIsNone(mtx, "camera matrix") == False:
+                break
+            if ArucoTrackerErrMsg.checkValueIsNone(dist, "distortion coeff.") == False:
+                break
+            if ArucoTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
+                break
 
             # find ROI region
             ROIRegions = ROIMgr.findROIPair(color_image, mtx, dist)
