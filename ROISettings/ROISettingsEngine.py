@@ -13,6 +13,7 @@ import argparse
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
 import Config
 from packages.CameraDevRealsense import RealsenseCapture
+from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraVideoCapture import VideoCapture
 from ROIArucoManager import ROIAruco2DManager
 from ROIKeyHandler import ROIKeyHandler
