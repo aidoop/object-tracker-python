@@ -24,6 +24,7 @@ class VisionTrackingCamera:
     dist = None
     ROIMgr = None
     arucoMarkTracker = None
+    handeye = None
 
 ###############################################################################
 # Hand-eye calibration process 
@@ -95,9 +96,12 @@ if __name__ == '__main__':
         vtc.mtx = mtx
         vtc.dist = dist
 
+        # set hand eye matrix
+        vtc.handeye = trackingCamera.handEyeMatrix
+
         # create aurco mark tracker object
         objTracker = ArucoMarkerTracker()
-        objTracker.initialize(Config.ArucoDict, Config.ArucoSize, mtx, dist)
+        objTracker.initialize(Config.ArucoDict, Config.ArucoSize, mtx, dist, vtc.handeye)
         vtc.arucoMarkTracker = objTracker
 
         # initialize ROI manager
@@ -161,7 +165,7 @@ if __name__ == '__main__':
         for vtc in vtcList:
             vtc.vcap.stop()
 
-    cv2.destroyAllWindows()
 
+    cv2.destroyAllWindows()
 
 

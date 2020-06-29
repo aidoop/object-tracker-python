@@ -39,7 +39,7 @@ class TrackingCamera:
         self.cameraMatrix = VisionGqlUtil.setMatrixData(row, col, inputData)
     
     def setHandeyeMatrix(self, row, col, inputData):
-        self.setHandeyeMatrix = VisionGqlUtil.setMatrixData(row, col, inputData)        
+        self.handEyeMatrix = VisionGqlUtil.setMatrixData(row, col, inputData)        
 
     def _setMatrixData(self, row, col, inputData):
         if inputData is None:

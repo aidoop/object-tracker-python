@@ -29,7 +29,7 @@ class ArucoMarkerTracker(ObjectTracker):
         self.camMtx = args[2]
         self.dist = args[3]
         self.markerObjectList.clear()
-        self.handEyeMat = HandEyeCalibration.loadTransformMatrix()
+        self.handEyeMat = args[4] #HandEyeCalibration.loadTransformMatrix()
         self.arucoDetect = ArucoDetect(self.markerSelectDict, self.markerSize, self.camMtx, self.dist)
 
     ## set detectable features like marker id of aruco marker
