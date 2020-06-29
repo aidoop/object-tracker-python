@@ -71,12 +71,17 @@ class ArucoMarkerTracker(ObjectTracker):
                         hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec[idx])
 
                         # calcaluate the modified position based on pivot offset
-                        if markerObject.pivotOffset is None:
-                            hmWanted = HMUtil.convertXYZABCtoHMDeg([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-                            hmInput = np.dot(hmCal2Cam, hmWanted)
-                        else:
-                            hmWanted = HMUtil.convertXYZABCtoHMDeg(markerObject.pivotOffset)                            
-                            hmInput = np.dot(hmCal2Cam, hmWanted)
+                        # if markerObject.pivotOffset is None:
+                        #     hmWanted = HMUtil.convertXYZABCtoHMDeg([0.0, 0.0, 0.00, 0.0, 0.0, 0.0])     # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
+                        #     hmInput = np.dot(hmCal2Cam, hmWanted)
+                        # else:
+                        #     hmWanted = HMUtil.convertXYZABCtoHMDeg(markerObject.pivotOffset)                            
+                        #     hmInput = np.dot(hmCal2Cam, hmWanted)
+                        hmWanted = HMUtil.convertXYZABCtoHMDeg([0.0, 0.0, 0.1, 0.0, 0.0, 0.0])     # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
+                        hmInput = np.dot(hmCal2Cam, hmWanted)
+
+                        ###########################################################################################
+                        # TODO: should find out how to apply tool offset and poi offset here...
 
                         # get a final position
                         hmResult = np.dot(self.handEyeMat, hmInput)
