@@ -85,9 +85,9 @@ if __name__ == '__main__':
             color_image = vcap.getFrame()
 
             # check core variables are available..
-            if ArucoTrackerErrMsg.checkValueIsNone(vtc.mtx, "camera matrix") == False:
+            if ArucoTrackerErrMsg.checkValueIsNone(mtx, "camera matrix") == False:
                 break
-            if ArucoTrackerErrMsg.checkValueIsNone(vtc.dist, "distortion coeff.") == False:
+            if ArucoTrackerErrMsg.checkValueIsNone(dist, "distortion coeff.") == False:
                 break
             if ArucoTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
                 break
@@ -108,6 +108,10 @@ if __name__ == '__main__':
             
             # have a delay to make CPU usage lower...
             sleep(0.2)
+
+    except Exception as ex:
+        print("Error :", ex)
+
     finally:
         # direct teaching mode is disalbe before exit
         if( indy7.getDirectTeachingMode() == True):

@@ -12,6 +12,7 @@ from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraVideoCapture import VideoCapture
 from packages.ErrorMsg import ArucoTrackerErrMsg
+from ObjectUpdateStatus import ObjectUpdateStatus  
 from ObjectArucoMarkerTracker import ArucoMarkerObject, ArucoMarkerTracker
 from ObjectTrackingKeyHandler import ObjectTrackingKeyHandler
 from ROIRetangleManager import ROIRetangleManager
@@ -108,7 +109,7 @@ if __name__ == '__main__':
         # initialize ROI manager
         ROIMgr = ROIRetangleManager()
         for ROIData in trackingCamera.ROIs:
-            ROIInput = [ROIData.tl[0], ROIData.tl[1], ROIData.rb[0], ROIData.rb[1]]
+            ROIInput = [ROIData.tl[0], ROIData.tl[1], ROIData.rb[0], ROIData.rb[1], ROIData.id]
         ROIMgr.appendROI(ROIInput)
         vtc.ROIMgr = ROIMgr
 
@@ -134,13 +135,16 @@ if __name__ == '__main__':
     # prepare lists for mark tracking
     color_images = list()
 
+    # prepare object update status
+    objStatusUpdate  = ObjectUpdateStatus(gqlDataClient.client)
+
     try:
         while(True):
             for vtc in vtcList:
                 # get a frame 
                 color_image = vtc.vcap.getFrame()
 
-                # check core variables are available..
+                # check if core variables are available..
                 if ArucoTrackerErrMsg.checkValueIsNone(vtc.mtx, "camera matrix") == False:
                     break
                 if ArucoTrackerErrMsg.checkValueIsNone(vtc.dist, "distortion coeff.") == False:
@@ -156,7 +160,14 @@ if __name__ == '__main__':
                 # check if an object is in ROI 
                 for resultObj in resultObjs:
                     print(vtc.ROIMgr.isInsideROI(resultObj.corners))
+                    (found, foundRID) = vtc.ROIMgr.isInsideROI(resultObj.corners)
+                    if found is True:
+                        [x, y, z, u, v, w] = resultObj.xyzuvw
+                        objStatusUpdate.addObjStatus(foundRID, x, y, z, u, v, w)
+
                     # send object information to UI..
+                    if objStatusUpdate.containsObjStatus() == True:
+                        objStatusUpdate.sendObjStatus()
 
                 # draw ROI Region..
                 for ROIRegion in vtc.ROIMgr.getROIList():
@@ -165,12 +176,16 @@ if __name__ == '__main__':
                 cv2.imshow(vtc.name, color_image)
 
             # sleep for the specific duration.
-            time.sleep(0.1)            
+            time.sleep(1.0)            
 
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
             if keyhandler.processKeyHandler(pressedKey):
                 break
+
+    except Exception as ex:
+        print("Error :", ex)
+
     finally:
         # Stop streaming
         for vtc in vtcList:

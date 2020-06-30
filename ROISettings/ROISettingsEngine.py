@@ -90,6 +90,9 @@ if __name__ == '__main__':
             if keyhander.processKeyHandler(pressedKey, args.camIndex, ROIRegions):
                 break
 
+    except Exception as ex:
+        print("Error :", ex)
+
     finally:
         # Stop streaming
         vcap.stop()

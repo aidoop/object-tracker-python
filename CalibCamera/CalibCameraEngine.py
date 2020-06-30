@@ -83,6 +83,10 @@ if __name__ == '__main__':
             # handle key inputs
             if keyhandler.processKeyHandler(pressedKey, color_image, dirFrameImage, calibcam, args.camIndex):
                 break
+
+    except Exception as ex:
+        print("Error :", ex)
+
     finally:
         # Stop streaming
         vcap.stop()
