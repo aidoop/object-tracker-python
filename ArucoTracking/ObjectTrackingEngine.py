@@ -16,7 +16,7 @@ from ObjectUpdateStatus import ObjectUpdateStatus
 from ObjectArucoMarkerTracker import ArucoMarkerObject, ArucoMarkerTracker
 from ObjectTrackingKeyHandler import ObjectTrackingKeyHandler
 from ROIRetangleManager import ROIRetangleManager
-from VisionGqlClient import VisonGqlDataClient
+from packages.VisionGqlClient import VisonGqlDataClient
 
 class VisionTrackingCamera:
     name = None

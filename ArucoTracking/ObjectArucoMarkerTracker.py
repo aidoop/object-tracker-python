@@ -69,6 +69,8 @@ class ArucoMarkerTracker(ObjectTracker):
 
                         # make a homogeneous matrix using a rotation matrix and a translation matrix
                         hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec[idx])
+                        xyzuvw_midterm = HMUtil.convertHMtoXYZABCDeg(hmCal2Cam)
+                        print("Esitmated Mark Pose: ", xyzuvw_midterm)
 
                         # calcaluate the modified position based on pivot offset
                         # if markerObject.pivotOffset is None:
@@ -87,9 +89,8 @@ class ArucoMarkerTracker(ObjectTracker):
                         hmResult = np.dot(self.handEyeMat, hmInput)
                         xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
                         markerObject.targetPos = xyzuvw
-                        print("Final XYZUVW: ")
-                        print(xyzuvw)                        
-                        
+                        print("Final XYZUVW: ", xyzuvw)
+                  
                         # append this object to the list to be returned
                         resultList.append(markerObject)
 

@@ -1,6 +1,7 @@
 
 import pyrealsense2 as rs   # for realsense api
 import numpy as np
+import sys
 
 if __package__ == '':
     from CameraDev import CameraDev
@@ -18,7 +19,7 @@ class RealsenseCapture(CameraDev):
             devIter = 0
             for d in ctx.devices:
                 if(devIter == devIndex):
-                    print('Serial Number: ' + d.get_info(rs.camera_info.serial_number))
+                    print('Serial Number: ' + d.get_info(rs.camera_info.serial_number), file=sys.stderr)
                     devFound = True
                 devIter += 1
         else:

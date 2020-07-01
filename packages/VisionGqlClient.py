@@ -1,5 +1,5 @@
 import numpy as np
-from VisionGqlData import VisonWorkspace, RobotArm, TrackingCamera, TrackableObject, VisionGqlUtil
+from packages.VisionGqlData import VisonWorkspace, RobotArm, TrackingCamera, TrackableObject, VisionGqlUtil
 
 from visionclient.operato_vision import Client
 

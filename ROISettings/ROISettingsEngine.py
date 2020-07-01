@@ -36,7 +36,7 @@ if __name__ == '__main__':
     if(args.camType == 'rs'):
         rsCamDev = RealsenseCapture(args.camIndex)
     elif(args.camType == 'uvc'):
-        rsCamDev = OpencvCapture(args.camIndex)    
+        rsCamDev = OpencvCapture(args.camIndex)
 
     # create video capture object using realsense camera device object
     vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec)
