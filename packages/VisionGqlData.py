@@ -1,39 +1,37 @@
 import numpy as np
 
 class ROI:
-    id = None
-    tl = None
-    rb = None
 
-class PoseOffset:
-    x = None
-    y = None
-    z = None
-    u = None
-    v = None
-    w = None
+    def __init__(self):    
+        self.id = None
+        self.tl = None
+        self.rb = None
 
 ## RobotArm
 class RobotArm:
-    id = None
-    name = None
-    type = None
-    endpoint = None
-    gripperOffset = None
-    markerOffset = None
+
+    def __init__(self):
+        self.id = None
+        self.name = None
+        self.type = None
+        self.endpoint = None
+        self.gripperOffset = None
+        self.markerOffset = None
 
 ## Tracking Camera
 class TrackingCamera:
-    name = None
-    type = None
-    endpoint = None
-    active = None
-    config = None
-    baseRobotArm = None
-    distCoeff = None
-    cameraMatrix = None
-    handEyeMatrix = None
-    ROIs = list()
+
+    def __init__(self):
+        self.ROIs = list()
+        self.name = None
+        self.type = None
+        self.endpoint = None
+        self.active = None
+        self.config = None
+        self.baseRobotArm = None
+        self.distCoeff = None
+        self.cameraMatrix = None
+        self.handEyeMatrix = None
 
     def setCameraMatrix(self, row, col, inputData):
         self.cameraMatrix = VisionGqlUtil.setMatrixData(row, col, inputData)
@@ -60,27 +58,31 @@ class TrackingCamera:
 
 ## Trackable Object
 class TrackableObject:
-    name = None
-    totype = None
-    endpoint = None
-    active = None
-    poseOffset = None
+
+    def __init__(self):
+        self.name = None
+        self.totype = None
+        self.endpoint = None
+        self.active = None
+        self.poseOffset = None
 
 ## Workspace 
 class VisonWorkspace:
-    name = None
-    wstype = None
-    endpoint = None
-    active = None
-    params = None
-    robotArms = dict()
-    trackingCameras = dict()
-    trackableObjects = dict()
+
+    def __init__(self):
+        self.name = None
+        self.wstype = None
+        self.endpoint = None
+        self.active = None
+        self.params = None
+        self.robotArms = dict()
+        self.trackingCameras = dict()
+        self.trackableObjects = dict()
 
 
 # Utilities
 class VisionGqlUtil:
-    
+
     @staticmethod
     def setMatrixData(row, col, inputData):
         if inputData is None:

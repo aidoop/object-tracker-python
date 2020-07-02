@@ -8,18 +8,18 @@ class ObjectUpdateStatus:
         self.ObjStatusList.clear()
         self.gqlClient = client
 
-    def addObjStatus(self, id, x, y, z, u, v, w):
+    def addObjStatus(self, id, roi, x, y, z, u, v, w):
         objStatus = {
-            "id": "obj",
+            "id": id,
             "state": {
-                "roi": "A",
+                "roi": roi,
                 "pose": {
-                    "x": 1.0,
-                    "y": 2.0,
-                    "z": 3.4,
-                    "u": 4.4,
-                    "v": 5.9,
-                    "w": 8.6
+                    "x": x,
+                    "y": y,
+                    "z": z,
+                    "u": u,
+                    "v": v,
+                    "w": w
                 }
             }
         }
@@ -28,7 +28,9 @@ class ObjectUpdateStatus:
 
     def sendObjStatus(self):
         # TODO: change workspace name here.......
-        result = client.update_tracking_workspace_status(name='workspace', status=self.ObjStatusList)
+        #self.gqlClient.update_tracking_workspace_status(name='workspace', status=self.ObjStatusList)
+        for ObjStatus in self.ObjStatusList:
+            print('ObjStatus: ', ObjStatus)
 
     def containsObjStatus(self):
         return (len(self.ObjStatusList) > 0)

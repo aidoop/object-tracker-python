@@ -11,7 +11,7 @@ import Config
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraVideoCapture import VideoCapture
-from packages.ErrorMsg import ArucoTrackerErrMsg
+from packages.Util import ArucoTrackerErrMsg
 from ObjectUpdateStatus import ObjectUpdateStatus  
 from ObjectArucoMarkerTracker import ArucoMarkerObject, ArucoMarkerTracker
 from ObjectTrackingKeyHandler import ObjectTrackingKeyHandler
@@ -110,7 +110,7 @@ if __name__ == '__main__':
         ROIMgr = ROIRetangleManager()
         for ROIData in trackingCamera.ROIs:
             ROIInput = [ROIData.tl[0], ROIData.tl[1], ROIData.rb[0], ROIData.rb[1], ROIData.id]
-        ROIMgr.appendROI(ROIInput)
+            ROIMgr.appendROI(ROIInput)
         vtc.ROIMgr = ROIMgr
 
         vtcList.append(vtc)
@@ -162,8 +162,8 @@ if __name__ == '__main__':
                     print(vtc.ROIMgr.isInsideROI(resultObj.corners))
                     (found, foundRID) = vtc.ROIMgr.isInsideROI(resultObj.corners)
                     if found is True:
-                        [x, y, z, u, v, w] = resultObj.xyzuvw
-                        objStatusUpdate.addObjStatus(foundRID, x, y, z, u, v, w)
+                        [x, y, z, u, v, w] = resultObj.targetPos
+                        objStatusUpdate.addObjStatus(resultObj.markerID, foundRID, x, y, z, u, v, w)
 
                     # send object information to UI..
                     if objStatusUpdate.containsObjStatus() == True:

@@ -14,7 +14,7 @@ import Config
 from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
-from packages.ErrorMsg import ArucoTrackerErrMsg
+from packages.Util import ArucoTrackerErrMsg
 from CalibCamera import CalibrationCamera
 from CalibCameraKeyHandler import CalibCameraKeyHandler
 from packages.VisionGqlClient import VisonGqlDataClient
@@ -38,7 +38,7 @@ def makeFrameImageDirectory():
 
 if __name__ == '__main__':
 
-    if sys.argv[1] is None:
+    if len(sys.argv) < 2:
         sys.exit()
 
     cameraName = sys.argv[1]
@@ -112,7 +112,5 @@ if __name__ == '__main__':
     finally:
         # Stop streaming
         vcap.stop()
-        time.sleep(5.0)
-        print('bye~')
-    #cv2.destroyAllWindows()
+        cv2.destroyAllWindows()
 

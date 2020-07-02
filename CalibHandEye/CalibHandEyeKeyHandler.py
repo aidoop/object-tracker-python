@@ -3,8 +3,10 @@ import cv2
 import Config
 from packages.KeyHandler import KeyHandler
 from packages.RobotIndy7Dev import RobotIndy7Dev
+from packages.Util import PrintMsg
 from HandEyeUtilSet import *
 from HandEye import *
+from CalibHandEyeUpdate import CalibHandeyeUpdate
 
 class CalibHandEyeKeyHandler(KeyHandler):
 
@@ -28,13 +30,13 @@ class CalibHandEyeKeyHandler(KeyHandler):
     def processD(self, *args):
         indy = args[8]
         # set direct-teaching mode on
-        print("direct teaching mode: On")
+        PrintMsg.printStdErr("direct teaching mode: On")
         indy.setDirectTeachingMode(True)
 
     def processF(self, *args):
         indy = args[8]
         # set direct-teaching mode off
-        print("direct teaching mode: Off")
+        PrintMsg.printStdErr("direct teaching mode: Off")
         indy.setDirectTeachingMode(False)        
 
     def processC(self, *args):
@@ -43,14 +45,16 @@ class CalibHandEyeKeyHandler(KeyHandler):
         ids = args[2]
         handeye = args[7]
         indy = args[8]
-        print("---------------------------------------------------------------")
+        PrintMsg.printStdErr("---------------------------------------------------------------")
+        if ids is None:
+            return
         for idx in range(0, ids.size):
             if(ids[idx] == Config.CalibMarkerID):
                 # get the current robot position
                 currTaskPose = indy.getCurrentPos()
                 # capture additional matrices here
                 handeye.captureHandEyeInputs(currTaskPose, rvec[idx], tvec[idx])
-                print("Input Data Count: " + str(handeye.cntInputData))
+                PrintMsg.printStdErr("Input Data Count: " + str(handeye.cntInputData))
 
     def processZ(self, *args):
         handeye = args[7]
@@ -58,11 +62,18 @@ class CalibHandEyeKeyHandler(KeyHandler):
 
     def processG(self, *args):
         handeye = args[7]
-        print("---------------------------------------------------------------")
+
+        if handeye.cntInputData < 3:
+            return
+
+        PrintMsg.printStdErr("---------------------------------------------------------------")
         hmTransform = handeye.getHandEyeResultMatrixUsingOpenCV()
-        print("Transform Matrix = ")
-        print(hmTransform)
+        PrintMsg.printStdErr("Transform Matrix = ")
+        PrintMsg.printStdErr(hmTransform)
         HandEyeCalibration.saveTransformMatrix(hmTransform)
+        
+        updateUI = CalibHandeyeUpdate()
+        updateUI.updateData(hmTransform.reshape(1, 16)[0])      # TODO: [0] is available??
 
     def processN(self, *args):
         tvec = args[3]
@@ -70,7 +81,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         ids = args[2]
         handeye = args[7]
         indy = args[8]
-        print("---------------------------------------------------------------")
+        PrintMsg.printStdErr("---------------------------------------------------------------")
         for idx in range(0, ids.size):
             if ids[idx] == Config.TestMarkerID:
                 # change a rotation vector to a rotation matrix
@@ -92,8 +103,8 @@ class CalibHandEyeKeyHandler(KeyHandler):
 
                 # get a final xyzuvw for the last homogenous matrix
                 xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
-                print("Final XYZUVW: ")
-                print(xyzuvw)
+                PrintMsg.printStdErr("Final XYZUVW: ")
+                PrintMsg.printStdErr(xyzuvw)
 
                 ############################################################################################
                 # test move to the destination
@@ -101,8 +112,8 @@ class CalibHandEyeKeyHandler(KeyHandler):
 
                 # indy7 base position to gripper position
                 xyzuvw = [x,y,z,u*(-1),v+180.0,w] 
-                print("Modifed TCP XYZUVW: ")
-                print(xyzuvw)
+                PrintMsg.printStdErr("Modifed TCP XYZUVW: ")
+                PrintMsg.printStdErr(xyzuvw)
                 indy.moveTaskPos(xyzuvw)
     
 

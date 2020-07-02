@@ -5,8 +5,10 @@ import sys
 
 if __package__ == '':
     from CameraDev import CameraDev
+    from Util import PrintMsg
 else:
     from packages.CameraDev import CameraDev
+    from packages.Util import PrintMsg
 
 class RealsenseCapture(CameraDev):
 
@@ -19,7 +21,7 @@ class RealsenseCapture(CameraDev):
             devIter = 0
             for d in ctx.devices:
                 if(devIter == devIndex):
-                    print('Serial Number: ' + d.get_info(rs.camera_info.serial_number), file=sys.stderr)
+                    PrintMsg.printStdErr('Serial Number: ' + d.get_info(rs.camera_info.serial_number))
                     devFound = True
                 devIter += 1
         else:

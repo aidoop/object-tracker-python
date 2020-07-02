@@ -4,6 +4,7 @@ import cv2
 import os
 import datetime
 import glob
+import sys
 
 class CalibrationCamera:
     
@@ -29,7 +30,7 @@ class CalibrationCamera:
         objp[:,:2] = np.mgrid[0:self.chessboardX,0:self.chessboardY].T.reshape(-1,2)
 
         for fname in images:
-            print(fname)
+            print(fname, file=sys.stderr)
             img = cv2.imread(fname)
             gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
@@ -48,7 +49,7 @@ class CalibrationCamera:
         # start camera calibartion
         if (len(self.objpoints) > 0) and (len(self.imgpoints) > 0):
             reperr, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(self.objpoints, self.imgpoints, gray.shape[::-1], None, None)
-            print("Reprojection Error: " + str(reperr))
+            print("Reprojection Error: " + str(reperr), file=sys.stderr)
 
             # TODO: should check this reprojection eror is available...
             calibResult = True if reperr <= self.REPROERR_CRITERION else False

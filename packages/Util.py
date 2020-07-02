@@ -1,5 +1,6 @@
-class ArucoTrackerErrMsg:
+import sys
 
+class ArucoTrackerErrMsg:
     @staticmethod
     def checkValueIsNone(var, varname):
         if var is None:
@@ -7,6 +8,13 @@ class ArucoTrackerErrMsg:
             return False
         return True
        
+
+class PrintMsg:
+    @staticmethod
+    def printStdErr(*args, **kwargs):
+        #return print(*args, **kwargs, file=sys.stderr)
+        pass
+
 
 if __name__ == '__main__':
     var1 = None

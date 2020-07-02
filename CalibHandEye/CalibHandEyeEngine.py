@@ -12,10 +12,12 @@ import Config
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
 from packages.RobotIndy7Dev import RobotIndy7Dev
-from packages.ErrorMsg import ArucoTrackerErrMsg
+from packages.Util import ArucoTrackerErrMsg
 from CalibHandEyeKeyHandler import CalibHandEyeKeyHandler
 from HandEyeUtilSet import *
 from HandEye import *
+
+from packages.VisionGqlClient import VisonGqlDataClient
 
 
 #####################################################################################
@@ -33,19 +35,33 @@ def drawText(img, text, imgpt):
 if __name__ == '__main__':
 
     # parse program parameters to get necessary aruments
-    argPar = argparse.ArgumentParser(description="HandEye Calibration")
-    argPar.add_argument('camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'rs: Intel Realsense, uvc: UVC-Supported')
-    argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = '0, 1, ...')
-    args = argPar.parse_args()
+    # argPar = argparse.ArgumentParser(description="HandEye Calibration")
+    # argPar.add_argument('camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'rs: Intel Realsense, uvc: UVC-Supported')
+    # argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = '0, 1, ...')
+    # args = argPar.parse_args()
+
+    if sys.argv[1] is None:
+        sys.exit()    
+
+    gqlDataClient = VisonGqlDataClient()
+    if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
+        #print("Can't connect operato vision server.")
+        sys.exit()    
+
+    gqlDataClient.fetchTrackingCameras()
+    gqlDataClient.fetchRobotArms()
+
+    cameraObject = gqlDataClient.trackingCameras[sys.argv[1]]
+    robotObject = gqlDataClient.robotArms[cameraObject.baseRobotArm['name']]
 
     # create an indy7 object
     indy7 = RobotIndy7Dev()
-    if(indy7.initalize(Config.INDY_SERVER_IP, Config.INDY_SERVER_NAME) == False):
+    if(indy7.initalize(robotObject.endpoint, Config.INDY_SERVER_NAME) == False):
         print("Can't connect the robot and exit this process..")
         sys.exit()
 
     # create a window to display video frames
-    cv2.namedWindow('HandEye Calibration')
+    cv2.namedWindow(sys.argv[1])
 
     # create a variable for frame indexing
     flagFindMainAruco = False
@@ -53,11 +69,15 @@ if __name__ == '__main__':
     # create a handeye calib. object
     handeye = HandEyeCalibration()
 
-    # create the camera device object
-    if(args.camType == 'rs'):
-        rsCamDev = RealsenseCapture(args.camIndex)
-    elif(args.camType == 'uvc'):
-        rsCamDev = OpencvCapture(args.camIndex)
+    # # create the camera device object
+    # if(args.camType == 'rs'):
+    #     rsCamDev = RealsenseCapture(args.camIndex)
+    # elif(args.camType == 'uvc'):
+    #     rsCamDev = OpencvCapture(args.camIndex)
+    if cameraObject.type == 'realsense-camera':
+        rsCamDev = RealsenseCapture(int(cameraObject.endpoint))
+    elif cameraObject.type == 'camera-connector':
+        rsCamDev = OpencvCapture(int(cameraObject.endpoint))    
 
     # create video capture object using realsense camera device object
     vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec)
@@ -66,9 +86,11 @@ if __name__ == '__main__':
     vcap.start()
 
     # get instrinsics
-    mtx, dist = vcap.getIntrinsicsMat(args.camIndex, Config.UseRealSenseInternalMatrix)
+    #mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), Config.UseRealSenseInternalMatrix)
+    mtx = cameraObject.cameraMatrix
+    dist = cameraObject.distCoeff
 
-    # create key handler
+  # create key handler
     keyhandler = CalibHandEyeKeyHandler()
 
     # create handeye object

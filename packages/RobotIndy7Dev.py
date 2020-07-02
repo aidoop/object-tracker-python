@@ -1,11 +1,14 @@
 if __package__ == '':
     from RobotDev import RobotDev
     import indydcp_client as indycli
+    from Util import PrintMsg
 else:
     from packages.RobotDev import RobotDev
     import packages.indydcp_client as indycli
+    from packages.Util import PrintMsg
 
 from time import sleep
+
 
 ## Neuromeka Indy7
 class RobotIndy7Dev(RobotDev):
@@ -22,18 +25,18 @@ class RobotIndy7Dev(RobotDev):
         
         self.indy.reset_robot()
         status = self.indy.get_robot_status()
-        print("Resetting robot")
-        print("is in resetting? ", status['resetting'])
-        print("is robot ready? ", status['ready'])
+        PrintMsg.printStdErr("Resetting robot")
+        PrintMsg.printStdErr("is in resetting? ", status['resetting'])
+        PrintMsg.printStdErr("is robot ready? ", status['ready'])
         if( status['direct_teaching'] == True):
             self.indy.direct_teaching(False)
         if( status['emergency'] == True):
             self.indy.stop_emergency()
         sleep(5)
         status = self.indy.get_robot_status()
-        print("Reset robot done")
-        print("is in resetting? ", status['resetting'])
-        print("is robot ready? ", status['ready'])
+        PrintMsg.printStdErr("Reset robot done")
+        PrintMsg.printStdErr("is in resetting? ", status['resetting'])
+        PrintMsg.printStdErr("is robot ready? ", status['ready'])
         return True
 
     ## finalize this object

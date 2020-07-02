@@ -28,12 +28,17 @@ class VisonGqlDataClient:
             name = camera['name']
             cameraData = self.client.get_tracking_camera(name=name)
             cameraObject = TrackingCamera()
-
             cameraObject.name = cameraData['name']
             cameraObject.baseRobotArm = cameraData['baseRobotArm']
             cameraObject.type = cameraData['type']
             cameraObject.endpoint = cameraData['endpoint']
-            cameraObject.distCoeff = np.array(cameraData['distortionCoefficient']).reshape(1,5)
+            
+            # no 6-elemets list
+            tempList = cameraData['distortionCoefficient']
+            if len(tempList) > 5:
+                tempList.remove(tempList[5])
+            cameraObject.distCoeff = np.array(tempList)
+            
             cameraObject.setCameraMatrix(cameraData['cameraMatrix']['rows'], cameraData['cameraMatrix']['columns'], cameraData['cameraMatrix']['data'])
             cameraObject.setHandeyeMatrix(cameraData['handEyeMatrix']['rows'], cameraData['handEyeMatrix']['columns'], cameraData['handEyeMatrix']['data'])
             cameraObject.setROIData(cameraData['rois'])

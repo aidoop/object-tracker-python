@@ -518,7 +518,7 @@ class IndyDCPClient:
             return False
         else:
             if True:
-                print("Connect: Server IP ({ser_ip})".format(ser_ip=self.server_ip))
+                print("Connect: Server IP ({ser_ip})".format(ser_ip=self.server_ip), file=sys.stderr)   # aidoop: add file=sys.stderr
                 # self.__lock.release()
             return True
 

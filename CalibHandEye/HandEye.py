@@ -7,6 +7,7 @@ import math
 import Config
 from CalibHandEye.HandEyeUtilSet import *
 from packages.Aruco import ArucoDetect
+from packages.Util import PrintMsg
 
 class HandEyeAruco:
 
@@ -150,11 +151,11 @@ class HandEyeCalibration:
             self.R_cam2gripper, self.t_cam2gripper = cv2.calibrateHandEye(self.R_gripper2base, self.t_gripper2base, self.R_target2cam, self.t_target2cam, None, None, mth)
             cv2.calibrateHandEye(self.R_gripper2base, self.t_gripper2base, self.R_target2cam, self.t_target2cam, None, None, mth)
             # output results
-            print("--------------------------------------")
-            print("Method %d" % mth)
-            print(self.R_cam2gripper)
-            print(self.t_cam2gripper)
-            print("--------------------------------------")
+            PrintMsg.printStdErr("--------------------------------------")
+            PrintMsg.printStdErr("Method %d" % mth)
+            PrintMsg.printStdErr(self.R_cam2gripper)
+            PrintMsg.printStdErr(self.t_cam2gripper)
+            PrintMsg.printStdErr("--------------------------------------")
 
     def captureHandEyeInputs(self, robotXYZABC, camRVec, camTVec):
         # prepare Gripper2Base inputs
@@ -187,13 +188,13 @@ class HandEyeCalibration:
         for mth in methodHE:
             self.R_cam2gripper, self.t_cam2gripper = cv2.calibrateHandEye(self.R_gripper2base, self.t_gripper2base, self.R_target2cam, self.t_target2cam, None, None, mth)
             # output results
-            print("--------------------------------------")
-            print("Method %d" % mth)
-            print(self.R_cam2gripper)
-            print(self.t_cam2gripper)
-            print("--------------------------------------")
-            print("Distance: %f" % math.sqrt(math.pow(self.t_cam2gripper[0], 2.0)+math.pow(self.t_cam2gripper[1], 2.0)+math.pow(self.t_cam2gripper[2], 2.0)))
-            print("--------------------------------------")
+            PrintMsg.printStdErr("--------------------------------------")
+            PrintMsg.printStdErr("Method %d" % mth)
+            PrintMsg.printStdErr(self.R_cam2gripper)
+            PrintMsg.printStdErr(self.t_cam2gripper)
+            PrintMsg.printStdErr("--------------------------------------")
+            PrintMsg.printStdErr("Distance: %f" % math.sqrt(math.pow(self.t_cam2gripper[0], 2.0)+math.pow(self.t_cam2gripper[1], 2.0)+math.pow(self.t_cam2gripper[2], 2.0)))
+            PrintMsg.printStdErr("--------------------------------------")
 
             # select HORAUD algorithm on temporary
             if(mth == cv2.CALIB_HAND_EYE_HORAUD):
@@ -214,8 +215,8 @@ class HandEyeCalibration:
         if(self.AlgorithmTest == True):
             fsHandEyeTest.release()          
 
-        print("Result Transform: ")
-        print(hmResultTransform)
+        PrintMsg.printStdErr("Result Transform: ")
+        PrintMsg.printStdErr(hmResultTransform)
         return hmResultTransform
 
     # save a transform matrix to xml data as a file
@@ -280,18 +281,18 @@ if __name__ == '__main__':
     result = handeye.calculateTransformMatrixUsing3Points(np.array(((-0.10259, 0.07283, 0.40900),(0.14604, 0.00431, 0.42700), (-0.00145, 0.10705, 0.31100))), 
     np.array(((-0.18101, -0.52507, 0.01393),(0.06137, -0.68306, 0.01546), (-0.18807, -0.66342, 0.01510)))
     )
-    print(result)
-    print(result.shape)
+    PrintMsg.printStdErr(result)
+    PrintMsg.printStdErr(result.shape)
 
     camC = np.array( ((cam3DTestPoints[0]), (cam3DTestPoints[1]), (cam3DTestPoints[2])) )
-    print(camC.shape)
+    PrintMsg.printStdErr(camC.shape)
     robotC = np.array( ((robot3DTestPoints[0]), (robot3DTestPoints[1]), (robot3DTestPoints[2])) )
     result = handeye.calculateTransformMatrixUsing3Points(camC, robotC)
-    print(result)
+    PrintMsg.printStdErr(result)
 
     result = handeye.calculateTransformMatrix(cam3DTestPoints, robot3DTestPoints)
-    print(result)
+    PrintMsg.printStdErr(result)
 
-    print(np.dot(np.array([-0.10259, 0.07283, 0.40900, 1]).reshape(1,4), result[1]))
+    PrintMsg.printStdErr(np.dot(np.array([-0.10259, 0.07283, 0.40900, 1]).reshape(1,4), result[1]))
 
 

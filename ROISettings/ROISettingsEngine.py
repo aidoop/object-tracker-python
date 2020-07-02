@@ -15,9 +15,14 @@ import Config
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraVideoCapture import VideoCapture
-from packages.ErrorMsg import ArucoTrackerErrMsg
+from packages.Util import ArucoTrackerErrMsg, PrintMsg
 from ROIArucoManager import ROIAruco2DManager
 from ROIKeyHandler import ROIKeyHandler
+
+from ROIUpdateRegions import ROIUpdateRegions
+import json
+
+from packages.VisionGqlClient import VisonGqlDataClient
 
 ###############################################################################
 # Hand-eye calibration process 
@@ -26,17 +31,32 @@ from ROIKeyHandler import ROIKeyHandler
 
 if __name__ == '__main__':
 
-    # parse program parameters to get necessary aruments
-    argPar = argparse.ArgumentParser(description="HandEye Calibration")
-    argPar.add_argument('camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'rs: Intel Realsense, uvc: UVC-Supported')
-    argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = '0, 1, ...')
-    args = argPar.parse_args()
+    # # parse program parameters to get necessary aruments
+    # argPar = argparse.ArgumentParser(description="HandEye Calibration")
+    # argPar.add_argument('camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'rs: Intel Realsense, uvc: UVC-Supported')
+    # argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = '0, 1, ...')
+    # args = argPar.parse_args()
 
-    # create the camera device object
-    if(args.camType == 'rs'):
-        rsCamDev = RealsenseCapture(args.camIndex)
-    elif(args.camType == 'uvc'):
-        rsCamDev = OpencvCapture(args.camIndex)
+    # # create the camera device object
+    # if(args.camType == 'rs'):
+    #     rsCamDev = RealsenseCapture(args.camIndex)
+    # elif(args.camType == 'uvc'):
+    #     rsCamDev = OpencvCapture(args.camIndex)git
+
+    gqlDataClient = VisonGqlDataClient()
+    if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
+        #print("Can't connect operato vision server.")
+        sys.exit()
+
+    #gqlDataClient.parseVisionWorkspaces()
+    # process all elements here...
+    gqlDataClient.fetchTrackingCameras()
+    cameraObject = gqlDataClient.trackingCameras[sys.argv[1]]
+
+    if cameraObject.type == 'realsense-camera':
+        rsCamDev = RealsenseCapture(int(cameraObject.endpoint))
+    elif cameraObject.type == 'camera-connector':
+        rsCamDev = OpencvCapture(int(cameraObject.endpoint))    
 
     # create video capture object using realsense camera device object
     vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec)
@@ -45,7 +65,7 @@ if __name__ == '__main__':
     vcap.start()
 
     # get instrinsics
-    mtx, dist = vcap.getIntrinsicsMat(args.camIndex, Config.UseRealSenseInternalMatrix)
+    mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), Config.UseRealSenseInternalMatrix)
 
     # create aruco manager
     ROIMgr = ROIAruco2DManager(Config.ArucoDict, Config.ArucoSize, mtx, dist)
@@ -57,8 +77,8 @@ if __name__ == '__main__':
     # create key handler for camera calibration1
     keyhander = ROIKeyHandler()    
 
-    print("press 'g' to save the current ROI regions")
-    print("press 'q' to exit...")
+    PrintMsg.printStdErr("press 'g' to save the current ROI regions")
+    PrintMsg.printStdErr("press 'q' to exit...")
     try:
         while(True):
             # Wait for a coherent pair of frames: depth and color
@@ -73,7 +93,7 @@ if __name__ == '__main__':
                 break
 
             # find ROI region
-            ROIRegions = ROIMgr.findROIPair(color_image, mtx, dist)
+            (ROIRegions, ROIRegionIds) = ROIMgr.findROIPair(color_image, mtx, dist)
 
             # draw ROI regions
             for ROIRegion in ROIRegions:
@@ -87,7 +107,7 @@ if __name__ == '__main__':
             # TODO: arrange these opencv key events based on other key event handler class
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
-            if keyhander.processKeyHandler(pressedKey, args.camIndex, ROIRegions):
+            if keyhander.processKeyHandler(pressedKey, int(cameraObject.endpoint), ROIRegions, ROIRegionIds):
                 break
 
     except Exception as ex:

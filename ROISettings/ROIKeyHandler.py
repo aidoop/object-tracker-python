@@ -5,6 +5,7 @@ import numpy as np
 
 from packages.KeyHandler import KeyHandler
 from ROIUpdateRegions import ROIUpdateRegions
+from packages.Util import PrintMsg
 
 class ROIKeyHandler(KeyHandler):
 
@@ -19,6 +20,7 @@ class ROIKeyHandler(KeyHandler):
     def processG(self, *args):
         camIndex = args[0]
         ROIRegions = args[1]
+        ROIRegionIds = args[2]
 
         savedFileName = "ROIRegions" + str(camIndex) + ".json" 
         ROIRegionFile = cv2.FileStorage(savedFileName, cv2.FILE_STORAGE_WRITE)
@@ -28,11 +30,12 @@ class ROIKeyHandler(KeyHandler):
         rur = ROIUpdateRegions()
 
         for idx in range(regionCnt):
-            ROIRegionFile.write("ROI" + str(idx), np.array(ROIRegions[idx]))
-            rur.addROIRegion("ROI" + str(idx), int(round(ROIRegions[idx][0][0])), int(round(ROIRegions[idx][0][1])), int(round(ROIRegions[idx][1][0])), int(round(ROIRegions[idx][1][1])))
+            ROIRegionFile.write("RegionID", str(ROIRegionIds[idx]))
+            ROIRegionFile.write("Region", np.array(ROIRegions[idx]))
+            rur.addROIRegion(str(ROIRegionIds[idx]), int(round(ROIRegions[idx][0][0])), int(round(ROIRegions[idx][0][1])), int(round(ROIRegions[idx][1][0])), int(round(ROIRegions[idx][1][1])))
 
         ROIRegionFile.release()
-        print("ROI Regions saved.")
+        PrintMsg.printStdErr("ROI Regions saved.")
 
         rur.printROIRegions()
 

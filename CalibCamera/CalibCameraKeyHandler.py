@@ -38,36 +38,35 @@ class CalibCameraKeyHandler(KeyHandler):
 
     def processG(self, *args):
 
-        cameraParameter = {
-            "distortionCoefficient": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
-            "cameraMatrix": {
-                "rows": 3,
-                "columns": 3,
-                "data": [0.0, 1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7,
-                        8.8]
-            }
-        }
-        print(json.dumps(cameraParameter))            
+        # cameraParameter = {
+        #     "distortionCoefficient": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
+        #     "cameraMatrix": {
+        #         "rows": 3,
+        #         "columns": 3,
+        #         "data": [0.0, 1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7,
+        #                 8.8]
+        #     }
+        # }
+        # print(json.dumps(cameraParameter))
 
-        # dirFrameImage = args[1]
-        # calibcam = args[2]
-        # camIndex = args[3]
-        # # get image file names
-        # images = glob.glob(dirFrameImage + '/*.jpg')
-        # ret, cammtx, distcoeff = calibcam.calcuateCameraMatrix(images)
-        # if ret == True:
-        #     print('Calibration finished successfully...', file=sys.stderr)
-        #     # save calibration data to the specific xml file
-        #     savedFileName = "CalibCamResult"+str(camIndex)+".json"
-        #     calibcam.saveResults(savedFileName, cammtx, distcoeff)
+        dirFrameImage = args[1]
+        calibcam = args[2]
+        camIndex = args[3]
+        # get image file names
+        images = glob.glob(dirFrameImage + '/*.jpg')
+        ret, cammtx, distcoeff = calibcam.calcuateCameraMatrix(images)
+        if ret == True:
+            print('Calibration finished successfully...', file=sys.stderr)
+            # save calibration data to the specific xml file
+            savedFileName = "CalibCamResult"+str(camIndex)+".json"
+            calibcam.saveResults(savedFileName, cammtx, distcoeff)
 
-        #     update the result data
-        #     updateUI = CalibCameraUpdate()
-        #     updateUI.updateData(distcoeff[0], cammtx.reshape(1,9)[0])
+            # update the result data
+            updateUI = CalibCameraUpdate()
+            updateUI.updateData(distcoeff[0], cammtx.reshape(1,9)[0])
 
-        # else:
-        #     print('Calibration failed...', file=sys.stderr)
-        #     pass
+        else:
+            print('Calibration failed...', file=sys.stderr)
 
 
 

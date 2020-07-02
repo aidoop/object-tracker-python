@@ -17,6 +17,7 @@ class ROIAruco2DManager:
 
         # ROI Region List
         self.ROIRegions = []
+        self.ROIRegionIds = []
 
         # create an aruco detect object
         self.arucoDetect = ArucoDetect(markerSelectDict, markerSize, mtx, dist)
@@ -29,15 +30,24 @@ class ROIAruco2DManager:
 
     def setROIRegion(self, pixelCoord1, pixelCoord2):
         self.ROIRegions.append((pixelCoord1, pixelCoord2))
+
+    def setROIRegion(self, pixelCoord1, pixelCoord2, id):
+        self.ROIRegions.append((pixelCoord1, pixelCoord2))
+        self.ROIRegionIds.append(id)
     
     def getROIRegition(self):
         return self.ROIRegions
 
+    def getROIRegionIDs(self):
+        return self.ROIRegionIds        
+
     def clearROIRegion(self):
         self.ROIRegions.clear()
+        self.ROIRegionIds.clear()
 
     def printRangeData(self):
         for rdata in self.arucoRangeList:
+            print('ID: ', self.ROIRegionIds[idx])
             print('Start: ' + str(rdata[0]) + ', End: ' + str(rdata[1]))
 
     def findROI(self, color_image, mtx, dist):
@@ -93,7 +103,7 @@ class ROIAruco2DManager:
                         imgpts_sub, jac_sub = cv2.projectPoints(inputObjPts, rvec[subidx], tvec[subidx], mtx, dist)
 
                         # set the current region to a list
-                        self.setROIRegion(tuple(imgpts[0][0]), tuple(imgpts_sub[0][0]))
+                        self.setROIRegion(tuple(imgpts[0][0]), tuple(imgpts_sub[0][0]), ids[idx][0])
 
             # centerPoint = dict()
             # for arucoIDRange in self.arucoRangeList:
@@ -108,7 +118,7 @@ class ROIAruco2DManager:
             #         # set the current region to a list
             #         self.setROIRegion(centerPoint[arucoIDRange[0]], centerPoint[arucoIDRange[1]])
 
-        return self.getROIRegition()
+        return (self.getROIRegition(), self.getROIRegionIDs())
 
 
 
