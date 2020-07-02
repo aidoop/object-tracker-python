@@ -2,6 +2,7 @@
 import pyrealsense2 as rs   # for realsense api
 import numpy as np
 import sys
+import time
 
 if __package__ == '':
     from CameraDev import CameraDev
@@ -12,32 +13,33 @@ else:
 
 class RealsenseCapture(CameraDev):
 
-    def __new__(cls, devIndex):
+    # def __new__(cls, devIndex):
 
-        devFound = False
+    #     devFound = False
 
-        ctx = rs.context()
-        if devIndex < (len(ctx.devices)):
-            devIter = 0
-            for d in ctx.devices:
-                if(devIter == devIndex):
-                    PrintMsg.printStdErr('Serial Number: ' + d.get_info(rs.camera_info.serial_number))
-                    devFound = True
-                devIter += 1
-        else:
-            pass
+    #     ctx = rs.context()
+    #     if devIndex < (len(ctx.devices)):
+    #         devIter = 0
+    #         for d in ctx.devices:
+    #             if(devIter == devIndex):
+    #                 PrintMsg.printStdErr('Serial Number: ' + d.get_info(rs.camera_info.serial_number))
+    #                 devFound = True
+    #             devIter += 1
+    #     else:
+    #         pass
 
-        if(devFound == True):
-            camdev = object.__new__(cls)
-        else:
-            camdev = None
+    #     if(devFound == True):
+    #         camdev = object.__new__(cls)
+    #     else:
+    #         camdev = None
 
-        return camdev
+    #     return camdev
 
     def __init__(self, devIndex):
 
         # manage multiple devices
         ctx = rs.context()
+        time.sleep(0.1)
         if devIndex < (len(ctx.devices)):
             devIter = 0
             for d in ctx.devices:
