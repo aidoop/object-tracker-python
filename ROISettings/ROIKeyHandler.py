@@ -22,6 +22,10 @@ class ROIKeyHandler(KeyHandler):
         ROIRegions = args[1]
         ROIRegionIds = args[2]
 
+        regionCnt = len(ROIRegions)
+        if regionCnt == 0:
+            return
+
         savedFileName = "ROIRegions" + str(camIndex) + ".json" 
         ROIRegionFile = cv2.FileStorage(savedFileName, cv2.FILE_STORAGE_WRITE)
         regionCnt = len(ROIRegions)

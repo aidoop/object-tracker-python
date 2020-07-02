@@ -12,8 +12,8 @@ class ArucoTrackerErrMsg:
 class PrintMsg:
     @staticmethod
     def printStdErr(*args, **kwargs):
-        #return print(*args, **kwargs, file=sys.stderr)
-        pass
+        return print(*args, **kwargs, file=sys.stderr)
+        #pass
 
 
 if __name__ == '__main__':

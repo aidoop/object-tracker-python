@@ -40,28 +40,14 @@ if __name__ == '__main__':
     # argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = '0, 1, ...')
     # args = argPar.parse_args()
 
-    if len(sys.argv) < 2:
-        sys.exit()    
-
-    gqlDataClient = VisonGqlDataClient()
-    if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
-        #print("Can't connect operato vision server.")
-        sys.exit()    
-
-    gqlDataClient.fetchTrackingCameras()
-    gqlDataClient.fetchRobotArms()
-
-    cameraObject = gqlDataClient.trackingCameras[sys.argv[1]]
-    robotObject = gqlDataClient.robotArms[cameraObject.baseRobotArm['name']]
-
     # create an indy7 object
     indy7 = RobotIndy7Dev()
-    if(indy7.initalize(robotObject.endpoint, Config.INDY_SERVER_NAME) == False):
+    if(indy7.initalize(Config.INDY_SERVER_IP, Config.INDY_SERVER_NAME) == False):
         print("Can't connect the robot and exit this process..")
         sys.exit()
 
     # create a window to display video frames
-    cv2.namedWindow(sys.argv[1])
+    cv2.namedWindow('HandEye Calibration Test')
 
     # create a variable for frame indexing
     flagFindMainAruco = False
@@ -69,15 +55,13 @@ if __name__ == '__main__':
     # create a handeye calib. object
     handeye = HandEyeCalibration()
 
-    # # create the camera device object
-    # if(args.camType == 'rs'):
-    #     rsCamDev = RealsenseCapture(args.camIndex)
-    # elif(args.camType == 'uvc'):
-    #     rsCamDev = OpencvCapture(args.camIndex)
-    if cameraObject.type == 'realsense-camera':
-        rsCamDev = RealsenseCapture(int(cameraObject.endpoint))
-    elif cameraObject.type == 'camera-connector':
-        rsCamDev = OpencvCapture(int(cameraObject.endpoint))    
+
+    # camera index
+    rsCamIndex = 0
+
+    # create the camera device object
+    rsCamDev = RealsenseCapture(rsCamIndex)
+    #rsCamDev = OpencvCapture(args.camIndex)
 
     # create video capture object using realsense camera device object
     vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec)
@@ -86,9 +70,7 @@ if __name__ == '__main__':
     vcap.start()
 
     # get instrinsics
-    #mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), Config.UseRealSenseInternalMatrix)
-    mtx = cameraObject.cameraMatrix
-    dist = cameraObject.distCoeff
+    mtx, dist = vcap.getIntrinsicsMat(rsCamIndex, Config.UseRealSenseInternalMatrix)
 
   # create key handler
     keyhandler = CalibHandEyeKeyHandler()
@@ -121,7 +103,7 @@ if __name__ == '__main__':
             (flagFindMainAruco, ids, rvec, tvec) =  handeyeAruco.processArucoMarker(color_image, mtx, dist)
 
             # display the captured image
-            cv2.imshow(sys.argv[1], color_image)
+            cv2.imshow('HandEye Calibration Test', color_image)
             
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
@@ -140,8 +122,10 @@ if __name__ == '__main__':
             indy7.setDirectTeachingMode(False)
         # Stop streaming
         vcap.stop()
+        
+        # arrange all to finitsh this application here
+        cv2.destroyAllWindows()
+        indy7.finalize()
     
-    # arrange all to finitsh this application here
-    cv2.destroyAllWindows()
-    indy7.finalize()
+
         
