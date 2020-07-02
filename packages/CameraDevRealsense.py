@@ -101,13 +101,20 @@ class RealsenseCapture(CameraDev):
 
     # get 3D position w.r.t an image pixel based on camera-based coordination
     def get3DPosition(self, imageX, imageY):
-        raise NotImplementedError        
+        aligned_depth_frame = self.__aligned_frames.get_depth_frame()
+        depth = aligned_depth_frame.get_distance(imageX, imageY)
+        
+        depth_profile = self.__pipecfg.get_stream(rs.stream.depth)
+        self.depth_intrin = depth_profile.as_video_stream_profile().intrinsics        
+        
+        depth_point = rs.rs2_deproject_pixel_to_point(self.depth_intrin, [imageX, imageY], depth)
+        return depth_point
 
     def getInternalIntrinsicsMat(self):
         # get internal intrinsics & extrinsics in D435
         profile = self.__pipecfg.get_stream(rs.stream.color)
-        color_intrin = profile.as_video_stream_profile().intrinsics
-        mtx, dist = self.convertIntrinsicsMat(color_intrin)
+        self.color_intrin = profile.as_video_stream_profile().intrinsics
+        mtx, dist = self.convertIntrinsicsMat(self.color_intrin)
         return (mtx, dist)
 
     # covert realsense intrisic data to camera matrix

@@ -158,6 +158,7 @@ if __name__ == '__main__':
                 resultObjs = vtc.arucoMarkTracker.findObjects(color_image, vtc.mtx, vtc.dist)
 
                 # check if an object is in ROI 
+                objStatusUpdate.clearObjStatus()
                 for resultObj in resultObjs:
                     print(vtc.ROIMgr.isInsideROI(resultObj.corners))
                     (found, foundRID) = vtc.ROIMgr.isInsideROI(resultObj.corners)

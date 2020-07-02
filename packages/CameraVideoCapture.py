@@ -52,6 +52,9 @@ class VideoCapture:
             dist = dcnode.mat()
         return(mtx, dist)
 
+    def get3DPosition(self, imageX, imageY):
+        return self.camDev.get3DPosition(imageX, imageY)
+
 ###############################################################################
 # test sample codes
 ###############################################################################

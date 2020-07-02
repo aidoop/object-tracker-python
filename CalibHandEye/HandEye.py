@@ -25,7 +25,7 @@ class HandEyeAruco:
     def setCalibMarkerID(self, markerID):
         self.calibMarkerID = markerID
 
-    def processArucoMarker(self, color_image, mtx, dist):
+    def processArucoMarker(self, color_image, mtx, dist, vcap):
 
         # operations on the frame
         gray = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)
@@ -51,10 +51,11 @@ class HandEyeAruco:
                         #cv2.circle(color_image,centerPoint,1,(0,0,255), -1)
 
                         # print 3D position using realsense SDK
-                        # if(Config.UseHandEyePrint3DCoords == True):
-                        #     depth = aligned_depth_frame.get_distance(centerPoint[0], centerPoint[1])
-                        #     depth_point = rs.rs2_deproject_pixel_to_point(depth_intrin, [centerPoint[0], centerPoint[1]], depth)
-                        #     print(str(depth_point) + str(' ') + str(tvec[0]))
+                        if(Config.UseHandEyePrint3DCoords == True):
+                            # depth = aligned_depth_frame.get_distance(centerPoint[0], centerPoint[1])
+                            # depth_point = rs.rs2_deproject_pixel_to_point(depth_intrin, [centerPoint[0], centerPoint[1]], depth)
+                            depth_point = vcap.get3DPosition(centerPoint[0], centerPoint[1])
+                            print(str(depth_point) + str(' ') + str(tvec[idx]))
 
                         # find the main aruco marker 
                         self.flagFindMainAruco = True

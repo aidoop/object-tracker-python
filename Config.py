@@ -23,6 +23,6 @@ ChessHeight = 7
 UseHandEyeAlgorithmTest = False
 UseHandEyePrint3DCoords = False
 UseNewCameraMatrix = False
-HandEyeTargetZ = 0.10
+HandEyeTargetZ = 0.30
 CalibMarkerID = 2
 TestMarkerID = 14

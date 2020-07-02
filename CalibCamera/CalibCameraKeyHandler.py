@@ -4,9 +4,11 @@ import cv2
 import os
 import glob
 import sys
+import json
 
 from CalibCameraUpdate import CalibCameraUpdate
-import json
+from packages.Util import PrintMsg
+
 
 
 
@@ -28,7 +30,7 @@ class CalibCameraKeyHandler(KeyHandler):
         color_image = args[0]
         dirFrameImage = args[1]
         cv2.imwrite(os.path.join(dirFrameImage, str(self.interation) + '.jpg'), color_image)
-        #print('Image caputured - ' + os.path.join(dirFrameImage, str(self.interation) + '.jpg'), file=sys.stderr)
+        PrintMsg.printStdErr('Image caputured - ' + os.path.join(dirFrameImage, str(self.interation) + '.jpg'))
         self.interation += 1
 
     def processZ(self, *args):

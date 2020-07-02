@@ -65,7 +65,9 @@ if __name__ == '__main__':
     vcap.start()
 
     # get instrinsics
-    mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), Config.UseRealSenseInternalMatrix)
+    #mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), Config.UseRealSenseInternalMatrix)
+    mtx = cameraObject.cameraMatrix
+    dist = cameraObject.distCoeff    
 
     # create aruco manager
     ROIMgr = ROIAruco2DManager(Config.ArucoDict, Config.ArucoSize, mtx, dist)
