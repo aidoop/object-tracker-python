@@ -1,5 +1,3 @@
-
-from packages.KeyHandler import KeyHandler
 import cv2
 import os
 import glob
@@ -7,11 +5,10 @@ import sys
 import json
 
 from CalibCameraUpdate import CalibCameraUpdate
+
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
 from packages.Util import PrintMsg
-
-
-
-
+from packages.KeyHandler import KeyHandler
 
 class CalibCameraKeyHandler(KeyHandler):
 

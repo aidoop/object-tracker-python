@@ -1,6 +1,10 @@
 import numpy as np
-from packages.VisionGqlData import VisonWorkspace, RobotArm, TrackingCamera, TrackableObject, VisionGqlUtil
 
+# add src root directory to python path
+import os, sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
+from packages.VisionGqlData import VisonWorkspace, RobotArm, TrackingCamera, TrackableObject, VisionGqlUtil
 from visionclient.operato_vision import Client
 
 class VisonGqlDataClient:

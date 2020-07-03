@@ -1,5 +1,10 @@
 import cv2
 
+# add src root directory to python path
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
+
 import Config
 from packages.KeyHandler import KeyHandler
 from packages.RobotIndy7Dev import RobotIndy7Dev

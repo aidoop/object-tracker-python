@@ -3,9 +3,9 @@ import cv2
 from time import sleep
 import os
 import argparse
+import sys 
 
 # add src root directory to python path
-import sys 
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
 
 import Config

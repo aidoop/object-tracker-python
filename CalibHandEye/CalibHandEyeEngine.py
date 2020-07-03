@@ -3,11 +3,10 @@ import cv2
 from time import sleep
 import os
 import argparse
+import sys 
 
 # add src root directory to python path
-import sys 
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
-
 import Config
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
@@ -33,7 +32,6 @@ def drawText(img, text, imgpt):
 ###############################################################################
 
 if __name__ == '__main__':
-
     # parse program parameters to get necessary aruments
     # argPar = argparse.ArgumentParser(description="HandEye Calibration")
     # argPar.add_argument('camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'rs: Intel Realsense, uvc: UVC-Supported')

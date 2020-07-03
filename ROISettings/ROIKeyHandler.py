@@ -3,6 +3,10 @@ import os
 import glob
 import numpy as np
 
+# add src root directory to python path
+import os, sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
 from packages.KeyHandler import KeyHandler
 from ROIUpdateRegions import ROIUpdateRegions
 from packages.Util import PrintMsg

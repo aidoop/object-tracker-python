@@ -2,10 +2,12 @@
 import sys
 import cv2
 
-if __package__ == '':
-    from CameraDevRealsense import RealsenseCapture
-else:
-    from packages.CameraDevRealsense import RealsenseCapture
+
+# add src root directory to python path
+import os, sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
+from packages.CameraDevRealsense import RealsenseCapture
 
 
 class VideoCapture:
@@ -73,7 +75,7 @@ if __name__ == '__main__':
         sys.exit()
 
     # create video capture object using realsense camera object
-    vcap = VideoCapture(rsCamDev, 1280, 720, 30)
+    vcap = VideoCapture(rsCamDev, 1280, 720, 30, 'camera01')
 
     vcap.start()
 

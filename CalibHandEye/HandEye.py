@@ -3,6 +3,11 @@ import numpy as np
 import cv2
 import cv2.aruco as aruco
 import math
+import sys
+import os
+
+# add src root directory to python path
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
 
 import Config
 from CalibHandEye.HandEyeUtilSet import *
@@ -246,23 +251,23 @@ if __name__ == '__main__':
     cam3DTestPoints = []
     robot3DTestPoints = []
 
-    handEyeInput = cv2.FileStorage("./handEyeSample.yml", cv2.FILE_STORAGE_READ)
-    fileNode = handEyeInput.root()  
+    # handEyeInput = cv2.FileStorage("./handEyeSample.yml", cv2.FILE_STORAGE_READ)
+    # fileNode = handEyeInput.root()  
 
     handeye = HandEyeCalibration()
 
-    for key in fileNode.keys():
-        ymlnode = handEyeInput.getNode(key)
-        ymlmtx = ymlnode.mat()
+    # for key in fileNode.keys():
+    #     ymlnode = handEyeInput.getNode(key)
+    #     ymlmtx = ymlnode.mat()
 
-        if key.find("target2cam") >= 0:
-            YMLHMTarget2Cams.append(ymlmtx)
+    #     if key.find("target2cam") >= 0:
+    #         YMLHMTarget2Cams.append(ymlmtx)
 
-        if key.find("gripper2base") >= 0:
-            ymlmtx = HMUtil.inverseHM(ymlmtx)
-            YMLHMBase2TCPs.append(ymlmtx)
+    #     if key.find("gripper2base") >= 0:
+    #         ymlmtx = HMUtil.inverseHM(ymlmtx)
+    #         YMLHMBase2TCPs.append(ymlmtx)
 
-    handeye.calibrateHandEyeTest(YMLHMBase2TCPs, YMLHMTarget2Cams)
+    # handeye.calibrateHandEyeTest(YMLHMBase2TCPs, YMLHMTarget2Cams)
 
     # # calculateHM Test
     cam3DTestPoints.append([-0.10259, 0.07283, 0.40900])

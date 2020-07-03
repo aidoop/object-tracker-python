@@ -2,10 +2,12 @@
 import sys
 import cv2
 
-if __package__ == '':
-    from CameraDev import CameraDev
-else:
-    from packages.CameraDev import CameraDev
+
+# add src root directory to python path
+import os, sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
+from packages.CameraDev import CameraDev
 
 class OpencvCapture(CameraDev):
 

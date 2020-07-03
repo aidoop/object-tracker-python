@@ -2,10 +2,14 @@ import os
 import numpy as np
 from typing import NamedTuple
 
-import Config
 import cv2
 import cv2.aruco as aruco
 
+# add src root directory to python path
+import os, sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
+import Config
 from packages.Aruco import ArucoDetect
 
 # TODO: should be derived in abstract class??
@@ -127,9 +131,4 @@ class ROIAruco2DManager:
 ###############################################################################
 
 if __name__ == '__main__':
-    managerROI = ROIAruco2DManager()
-
-    managerROI.setMarkIdPair((9,10))
-    managerROI.setMarkIdPair((11,12))
-    managerROI.printRangeData()
-    
+    pass

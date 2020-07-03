@@ -4,12 +4,12 @@ import numpy as np
 import sys
 import time
 
-if __package__ == '':
-    from CameraDev import CameraDev
-    from Util import PrintMsg
-else:
-    from packages.CameraDev import CameraDev
-    from packages.Util import PrintMsg
+# add src root directory to python path
+import os, sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
+from packages.CameraDev import CameraDev
+from packages.Util import PrintMsg
 
 class RealsenseCapture(CameraDev):
 
