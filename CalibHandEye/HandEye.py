@@ -51,7 +51,7 @@ class HandEyeAruco:
                         #cv2.circle(color_image,centerPoint,1,(0,0,255), -1)
 
                         # print 3D position using realsense SDK
-                        if(Config.UseHandEyePrint3DCoords == True):
+                        if(Config.UseHandEyePrecisionTest == True):
                             # depth = aligned_depth_frame.get_distance(centerPoint[0], centerPoint[1])
                             # depth_point = rs.rs2_deproject_pixel_to_point(depth_intrin, [centerPoint[0], centerPoint[1]], depth)
                             depth_point = vcap.get3DPosition(centerPoint[0], centerPoint[1])

@@ -100,7 +100,7 @@ if __name__ == '__main__':
             if ArucoTrackerErrMsg.checkValueIsNone(indy7, "indy7 object") == False:
                 break            
 
-            (flagFindMainAruco, ids, rvec, tvec) =  handeyeAruco.processArucoMarker(color_image, mtx, dist)
+            (flagFindMainAruco, ids, rvec, tvec) =  handeyeAruco.processArucoMarker(color_image, mtx, dist, vcap)
 
             # display the captured image
             cv2.imshow('HandEye Calibration Test', color_image)

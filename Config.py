@@ -20,8 +20,7 @@ ChessWidth = 10
 ChessHeight = 7
 
 # handeye calibration parameters
-UseHandEyeAlgorithmTest = False
-UseHandEyePrint3DCoords = False
+UseHandEyePrecisionTest = False
 UseNewCameraMatrix = False
 HandEyeTargetZ = 0.30
 CalibMarkerID = 2
