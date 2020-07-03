@@ -157,12 +157,33 @@ if __name__ == '__main__':
                 # detect markers here..
                 resultObjs = vtc.arucoMarkTracker.findObjects(color_image, vtc)
 
+                tobjIDList = vtc.arucoMarkTracker.getTrackingObjIDList().copy()
                 for resultObj in resultObjs:
-                    #print(vtc.ROIMgr.isInsideROI(resultObj.corners))
                     (found, foundRIDs) = vtc.ROIMgr.isInsideROI(resultObj.corners)
+                    [x, y, z, u, v, w] = resultObj.targetPos
                     if found is True:
-                        [x, y, z, u, v, w] = resultObj.targetPos
                         objStatusUpdate.addObjStatus(resultObj.markerID, foundRIDs, x, y, z, u, v, w)
+                    else:
+                        objStatusUpdate.addObjStatus(resultObj.markerID, [None], x, y, z, u, v, w)
+                    tobjIDList.remove(resultObj.markerID)
+                
+                for tobjID in tobjIDList:
+                    objStatusUpdate.addObjStatus(tobjID, [None], None, None, None, None, None, None)
+
+
+                # send empty data for undetected objects
+                # for tobjID in tobjIDList:
+                #     foundTobj = False
+                #     for resultObj in resultObjs:
+                #         if resultObj.markerID == tobjID:
+                #             foundTobj = True
+
+
+                    
+
+                # if resultObj.markerID not in tobjIDList:
+                #     objStatusUpdate.addObjStatus(resultObj.markerID, [None], [None], [None], [None], [None], [None], [None])
+                                          
 
                 # draw ROI Region..
                 for ROIRegion in vtc.ROIMgr.getROIList():
@@ -173,10 +194,11 @@ if __name__ == '__main__':
                 # send object information to UI..
                 if objStatusUpdate.containsObjStatus() == True:
                     objStatusUpdate.sendObjStatus()
+                
                 # check if an object is in ROI 
                 objStatusUpdate.clearObjStatus()
 
-            # sleep for the specific duration.
+            # sleep for the specified duration.
             time.sleep(1.0)            
 
             # handle key inputs

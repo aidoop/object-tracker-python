@@ -32,7 +32,7 @@ class RobotIndy7Dev(RobotDev):
             self.indy.direct_teaching(False)
         if( status['emergency'] == True):
             self.indy.stop_emergency()
-        sleep(5)
+        sleep(1)
         status = self.indy.get_robot_status()
         PrintMsg.printStdErr("Reset robot done")
         PrintMsg.printStdErr("is in resetting? ", status['resetting'])

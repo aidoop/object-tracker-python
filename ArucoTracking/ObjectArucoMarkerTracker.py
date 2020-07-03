@@ -21,6 +21,7 @@ class ArucoMarkerObject:
 class ArucoMarkerTracker(ObjectTracker):
     def __init__(self):
         self.markerObjectList = []
+        self.markerObjIDList = []
 
     # initialize parameters for any camera operation
     def initialize(self, *args):
@@ -29,13 +30,28 @@ class ArucoMarkerTracker(ObjectTracker):
         self.camMtx = args[2]
         self.dist = args[3]
         self.markerObjectList.clear()
+        self.markerObjIDList.clear()
         self.handEyeMat = args[4] #HandEyeCalibration.loadTransformMatrix()
         self.arucoDetect = ArucoDetect(self.markerSelectDict, self.markerSize, self.camMtx, self.dist)
 
     ## set detectable features like marker id of aruco marker
     def setTrackingObject(self, object):
         assert(isinstance(object, ArucoMarkerObject))
-        self.markerObjectList.append(object)
+
+        found = False
+        for mo in self.markerObjectList:
+            if object.markerID == mo.markerID:
+                found = True
+           
+        if found is False:
+            self.markerObjIDList.append(object.markerID)
+            self.markerObjectList.append(object)
+
+    def getTrackingObjectList(self):
+        return self.markerObjectList
+
+    def getTrackingObjIDList(self):
+        return self.markerObjIDList
 
     ## set detectable features and return the 2D or 3D positons in case that objects are detected..
     def findObjects(self, *args):

@@ -8,6 +8,7 @@ import sys
 # add src root directory to python path
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
 import Config
+from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
 from packages.RobotIndy7Dev import RobotIndy7Dev
