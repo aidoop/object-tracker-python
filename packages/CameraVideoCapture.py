@@ -10,7 +10,7 @@ else:
 
 class VideoCapture:
 
-    def __new__(cls, camDev, width, height, fps):
+    def __new__(cls, camDev, width, height, fps, name):
         if camDev == None:
             print("Camera Device is not opened...")
             videoCap = None
@@ -19,7 +19,7 @@ class VideoCapture:
         
         return videoCap
     
-    def __init__(self, camDev, width, height, fps):
+    def __init__(self, camDev, width, height, fps, name):
 
         # set camera device object
         self.camDev = camDev
@@ -27,11 +27,17 @@ class VideoCapture:
         # initialize camera device object
         self.camDev.initialize(width, height, fps)
 
+        # set camera name
+        self.name = name
+
     def start(self):
         return self.camDev.startCapture()
 
     def stop(self):
         return self.camDev.stopCapture()
+
+    def getName(self):
+        return self.name
 
     def getFrame(self):
         return self.camDev.getFrame()

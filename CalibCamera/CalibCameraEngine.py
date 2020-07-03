@@ -38,11 +38,6 @@ def makeFrameImageDirectory():
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 2:
-        sys.exit()
-
-    cameraName = sys.argv[1]
-
     # parse program parameters to get necessary aruments
     # argPar = argparse.ArgumentParser(description="Camera Calibration")
     # argPar.add_argument('camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'rs: Intel Realsense, uvc: UVC-Supported')
@@ -54,6 +49,12 @@ if __name__ == '__main__':
     #     rsCamDev = RealsenseCapture(args.camIndex)
     # elif(args.camType == 'uvc'):
     #     rsCamDev = OpencvCapture(args.camIndex)
+
+    if len(sys.argv) < 2:
+        print("Invalid paramters..")
+        sys.exit()
+
+    cameraName = sys.argv[1]    
 
     gqlDataClient = VisonGqlDataClient()
     if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
@@ -71,7 +72,7 @@ if __name__ == '__main__':
         rsCamDev = OpencvCapture(int(cameraObject.endpoint))
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec)
+    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, cameraName)
 
     # Start streaming
     vcap.start()

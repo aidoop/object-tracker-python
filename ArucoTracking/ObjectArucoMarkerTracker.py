@@ -40,8 +40,9 @@ class ArucoMarkerTracker(ObjectTracker):
     ## set detectable features and return the 2D or 3D positons in case that objects are detected..
     def findObjects(self, *args):
         color_image = args[0]
-        mtx = args[1]
-        dist = args[2]
+        vtc = args[1]
+        mtx = vtc.mtx
+        dist = vtc.dist
 
         # prepare list to give over the result objects
         resultList = list()
@@ -60,7 +61,7 @@ class ArucoMarkerTracker(ObjectTracker):
                 for idx in range(len(ids)):
                     if ids[idx] == markerObject.markerID:
                         # set additional properties to this found object..
-                        print("Found Target ID: " + str(markerObject.markerID))
+                        print(vtc.name, ") Found Target ID: " + str(markerObject.markerID))
                         markerObject.corners = corners[idx].reshape(4,2)    # reshape: (1,4,2) --> (4,2)
 
                         # change a rotation vector to a rotation matrix

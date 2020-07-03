@@ -9,23 +9,23 @@ class ObjectUpdateStatus:
         self.ObjStatusList.clear()
         self.gqlClient = client
 
-    def addObjStatus(self, id, roi, x, y, z, u, v, w):
-        objStatus = {
-            "id": str(id),
-            "state": {
-                "roi": roi,
-                "pose": {
-                    "x": x,
-                    "y": y,
-                    "z": z,
-                    "u": u,
-                    "v": v,
-                    "w": w
+    def addObjStatus(self, id, rois, x, y, z, u, v, w):
+        for roi in rois:
+            objStatus = {
+                "id": str(id),
+                "state": {
+                    "roi": roi,
+                    "pose": {
+                        "x": x,
+                        "y": y,
+                        "z": z,
+                        "u": u,
+                        "v": v,
+                        "w": w
+                    }
                 }
             }
-        }
-
-        self.ObjStatusList.append(objStatus)
+            self.ObjStatusList.append(objStatus)
 
     def sendObjStatus(self):
         status = {

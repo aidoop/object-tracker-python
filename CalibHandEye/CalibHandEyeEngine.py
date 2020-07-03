@@ -41,8 +41,11 @@ if __name__ == '__main__':
     # args = argPar.parse_args()
 
     if len(sys.argv) < 2:
-        sys.exit()    
+        print("Invalid paramters..")
+        sys.exit()
 
+    cameraName = sys.argv[1]    
+    
     gqlDataClient = VisonGqlDataClient()
     if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
         #print("Can't connect operato vision server.")
@@ -51,7 +54,7 @@ if __name__ == '__main__':
     gqlDataClient.fetchTrackingCameras()
     gqlDataClient.fetchRobotArms()
 
-    cameraObject = gqlDataClient.trackingCameras[sys.argv[1]]
+    cameraObject = gqlDataClient.trackingCameras[cameraName]
     robotObject = gqlDataClient.robotArms[cameraObject.baseRobotArm['name']]
 
     # create an indy7 object
@@ -61,7 +64,7 @@ if __name__ == '__main__':
         sys.exit()
 
     # create a window to display video frames
-    cv2.namedWindow(sys.argv[1])
+    cv2.namedWindow(cameraName)
 
     # create a variable for frame indexing
     flagFindMainAruco = False
@@ -80,7 +83,7 @@ if __name__ == '__main__':
         rsCamDev = OpencvCapture(int(cameraObject.endpoint))    
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec)
+    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, cameraName)
 
     # Start streaming
     vcap.start()
@@ -121,7 +124,7 @@ if __name__ == '__main__':
             (flagFindMainAruco, ids, rvec, tvec) =  handeyeAruco.processArucoMarker(color_image, mtx, dist, vcap)
 
             # display the captured image
-            cv2.imshow(sys.argv[1], color_image)
+            cv2.imshow(cameraName, color_image)
             
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)

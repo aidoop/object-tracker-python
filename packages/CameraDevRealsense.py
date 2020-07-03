@@ -39,7 +39,7 @@ class RealsenseCapture(CameraDev):
 
         # manage multiple devices
         ctx = rs.context()
-        time.sleep(0.1)
+        time.sleep(0.1) # to fix the internal uvc camera bug on linux
         if devIndex < (len(ctx.devices)):
             devIter = 0
             for d in ctx.devices:

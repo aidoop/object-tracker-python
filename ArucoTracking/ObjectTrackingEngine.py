@@ -84,9 +84,9 @@ if __name__ == '__main__':
             rsCamDev = RealsenseCapture(endpoint)
         elif trackingCamera.type == 'camera-connector':
             rsCamDev = OpencvCapture(endpoint)
-
+q
         # create a video capture object and start 
-        vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec)
+        vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, vtc.name)
         if vcap == None:
             continue
         vcap.start()
@@ -155,26 +155,26 @@ if __name__ == '__main__':
                     break
 
                 # detect markers here..
-                resultObjs = vtc.arucoMarkTracker.findObjects(color_image, vtc.mtx, vtc.dist)
+                resultObjs = vtc.arucoMarkTracker.findObjects(color_image, vtc)
 
-                # check if an object is in ROI 
-                objStatusUpdate.clearObjStatus()
                 for resultObj in resultObjs:
-                    print(vtc.ROIMgr.isInsideROI(resultObj.corners))
-                    (found, foundRID) = vtc.ROIMgr.isInsideROI(resultObj.corners)
+                    #print(vtc.ROIMgr.isInsideROI(resultObj.corners))
+                    (found, foundRIDs) = vtc.ROIMgr.isInsideROI(resultObj.corners)
                     if found is True:
                         [x, y, z, u, v, w] = resultObj.targetPos
-                        objStatusUpdate.addObjStatus(resultObj.markerID, foundRID, x, y, z, u, v, w)
-
-                    # send object information to UI..
-                    if objStatusUpdate.containsObjStatus() == True:
-                        objStatusUpdate.sendObjStatus()
+                        objStatusUpdate.addObjStatus(resultObj.markerID, foundRIDs, x, y, z, u, v, w)
 
                 # draw ROI Region..
                 for ROIRegion in vtc.ROIMgr.getROIList():
                     cv2.rectangle(color_image, (ROIRegion[0], ROIRegion[1]), (ROIRegion[2], ROIRegion[3]), (255,0,0), 3)
 
                 cv2.imshow(vtc.name, color_image)
+
+                # send object information to UI..
+                if objStatusUpdate.containsObjStatus() == True:
+                    objStatusUpdate.sendObjStatus()
+                # check if an object is in ROI 
+                objStatusUpdate.clearObjStatus()
 
             # sleep for the specific duration.
             time.sleep(1.0)            

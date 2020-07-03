@@ -41,7 +41,13 @@ if __name__ == '__main__':
     # if(args.camType == 'rs'):
     #     rsCamDev = RealsenseCapture(args.camIndex)
     # elif(args.camType == 'uvc'):
-    #     rsCamDev = OpencvCapture(args.camIndex)git
+    #     rsCamDev = OpencvCapture(args.camIndex)
+
+    if len(sys.argv) < 2:
+        print("Invalid paramters..")
+        sys.exit()
+
+    cameraName = sys.argv[1]    
 
     gqlDataClient = VisonGqlDataClient()
     if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
@@ -51,7 +57,7 @@ if __name__ == '__main__':
     #gqlDataClient.parseVisionWorkspaces()
     # process all elements here...
     gqlDataClient.fetchTrackingCameras()
-    cameraObject = gqlDataClient.trackingCameras[sys.argv[1]]
+    cameraObject = gqlDataClient.trackingCameras[cameraName]
 
     if cameraObject.type == 'realsense-camera':
         rsCamDev = RealsenseCapture(int(cameraObject.endpoint))
@@ -59,7 +65,7 @@ if __name__ == '__main__':
         rsCamDev = OpencvCapture(int(cameraObject.endpoint))    
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec)
+    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, cameraName)
 
     # Start streaming
     vcap.start()

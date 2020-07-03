@@ -16,13 +16,13 @@ class ROIRetangleManager(ROIManager):
 
     def isInsideROI(self, newRegion):
         isInside = False
-        foundRID = None
+        foundRIDs = list()
         for idx in range(len(self.RectangleROIList)):
-            isInside = self.contains(newRegion, self.RectangleROIList[idx])
-            if(isInside == True):
-                foundRID = self.RectangleROIList[idx][4]
-                break
-        return (isInside, foundRID)
+            isInsideEach = self.contains(newRegion, self.RectangleROIList[idx])
+            if(isInsideEach == True):
+                foundRIDs.append(self.RectangleROIList[idx][4])
+                isInside = True     # if object is in any roi region, 'isInside' should be True as a return value.
+        return (isInside, foundRIDs)
 
     def clearROIAll(self):
         self.RectangleROIList.clear()
