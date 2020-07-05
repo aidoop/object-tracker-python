@@ -15,7 +15,6 @@ import Config
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraVideoCapture import VideoCapture
-import json
 from packages.Aruco import ArucoDetect
 
 import math
@@ -32,8 +31,8 @@ if __name__ == '__main__':
     # Configure depth and color streams
     pipeline = rs.pipeline()
     config = rs.config()
-    config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
-    config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+    config.enable_stream(rs.stream.depth, 848, 480, rs.format.z16, 6)
+    config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 15)
 
     # Start streaming
     pipe_profile = pipeline.start(config)
@@ -84,8 +83,6 @@ if __name__ == '__main__':
             # rvet and tvec-different from camera coefficients
             rvec, tvec = arucoDetect.estimatePose(corners)
             #print(tvec)
-
-            
 
             if len(tvec) >= 2:
                 centerPoints = list()
