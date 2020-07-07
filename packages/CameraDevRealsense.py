@@ -36,6 +36,8 @@ class RealsenseCapture(CameraDev):
 
     def __init__(self, devIndex):
 
+        self.foundDevice = False
+
         # manage multiple devices
         ctx = rs.context()
         time.sleep(0.1) # to fix the internal uvc camera bug on linux
@@ -44,8 +46,12 @@ class RealsenseCapture(CameraDev):
             for d in ctx.devices:
                 if(devIter == devIndex):
                     matchedSerialNumber = d.get_info(rs.camera_info.serial_number)
+                    self.foundDevice = True
                     break
-                devIter += 1        
+                devIter += 1
+        else:
+            self.foundDevice = False
+            return
 
         # configure depth and color streams
         self.__pipeline = rs.pipeline()
@@ -63,6 +69,9 @@ class RealsenseCapture(CameraDev):
         # camera internal intrinsics
         self.depth_intrin = None
         self.color_intrin = None
+
+    def avaialbleDevice(self):
+        return self.foundDevice    
     
     def initialize(self, width, height, fps):
         # set frame width, frame height and frame per secods

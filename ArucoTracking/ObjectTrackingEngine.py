@@ -55,14 +55,6 @@ if __name__ == '__main__':
     raList = list()
 
     #########################################################################
-    # initialize robot arms
-    robotArmKeys = gqlDataClient.robotArms.keys()
-    for robotArmKey in robotArmKeys:
-        robotArm = gqlDataClient.robotArms[robotArmKey]
-        print(robotArm.gripperOffset)
-        raList.append(robotArm)
-
-    #########################################################################
     # intitialize tracking cameras
     idx = 0
     camKeys = gqlDataClient.trackingCameras.keys()
@@ -76,6 +68,9 @@ if __name__ == '__main__':
         # set camera name
         vtc.name = trackingCamera.name
 
+        # set robot name
+        vtc.robotName = trackingCamera.baseRobotArm['name']
+
         # set camera endpoint
         endpoint = int(trackingCamera.endpoint)
         
@@ -84,6 +79,9 @@ if __name__ == '__main__':
             rsCamDev = RealsenseCapture(endpoint)
         elif trackingCamera.type == 'camera-connector':
             rsCamDev = OpencvCapture(endpoint)
+
+        if rsCamDev.foundDevice == False:
+            continue
 
         # create a video capture object and start 
         vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, vtc.name)
@@ -117,6 +115,13 @@ if __name__ == '__main__':
         idx+=1
 
     #########################################################################
+    # initialize robot arms
+    robotArmKeys = gqlDataClient.robotArms.keys()
+    for robotArmKey in robotArmKeys:
+        robotArm = gqlDataClient.robotArms[robotArmKey]
+        raList.append(robotArm)
+
+    #########################################################################
     # intialize trackable marks. 
     trackableMarkKeys = gqlDataClient.trackableObjects.keys()
     for trackableMarkKey in trackableMarkKeys:
@@ -138,8 +143,13 @@ if __name__ == '__main__':
     # prepare object update status
     objStatusUpdate  = ObjectUpdateStatus(gqlDataClient.client)
 
+
     try:
         while(True):
+
+            # get markable object 
+            tobjIDList = vtc.arucoMarkTracker.getTrackingObjIDList().copy()
+
             for vtc in vtcList:
                 # get a frame 
                 color_image = vtc.vcap.getFrame()
@@ -154,21 +164,39 @@ if __name__ == '__main__':
                 if ArucoTrackerErrMsg.checkValueIsNone(vtc.handeye, "hand eye matrix") == False:
                     break
 
-                # detect markers here..
-                resultObjs = vtc.arucoMarkTracker.findObjects(color_image, vtc)
+                # find a robot arm related with the current camera.
+                for ra in raList:
+                    if ra.name == vtc.robotName:
+                        # detect markers here..
+                        resultObjs = vtc.arucoMarkTracker.findObjects(color_image, vtc, ra.gripperOffset)
 
-                tobjIDList = vtc.arucoMarkTracker.getTrackingObjIDList().copy()
-                for resultObj in resultObjs:
-                    (found, foundRIDs) = vtc.ROIMgr.isInsideROI(resultObj.corners)
-                    [x, y, z, u, v, w] = resultObj.targetPos
-                    if found is True:
-                        objStatusUpdate.addObjStatus(resultObj.markerID, foundRIDs, x, y, z, u, v, w)
-                    else:
-                        objStatusUpdate.addObjStatus(resultObj.markerID, [None], x, y, z, u, v, w)
-                    tobjIDList.remove(resultObj.markerID)
+                        for resultObj in resultObjs:
+                            (found, foundRIDs) = vtc.ROIMgr.isInsideROI(resultObj.corners)
+                            [x, y, z, u, v, w] = resultObj.targetPos
+                            if found is True:
+                                objStatusUpdate.addObjStatus(resultObj.markerID, foundRIDs, x, y, z, u, v, w)
+                            else:
+                                objStatusUpdate.addObjStatus(resultObj.markerID, [None], x, y, z, u, v, w)
+                            tobjIDList.remove(resultObj.markerID)
+                        
+                        # for tobjID in tobjIDList:
+                        #     objStatusUpdate.addObjStatus(tobjID, [None], None, None, None, None, None, None)                        
+
+                # # detect markers here..
+                # resultObjs = vtc.arucoMarkTracker.findObjects(color_image, vtc)
+
+                # tobjIDList = vtc.arucoMarkTracker.getTrackingObjIDList().copy()
+                # for resultObj in resultObjs:
+                #     (found, foundRIDs) = vtc.ROIMgr.isInsideROI(resultObj.corners)
+                #     [x, y, z, u, v, w] = resultObj.targetPos
+                #     if found is True:
+                #         objStatusUpdate.addObjStatus(resultObj.markerID, foundRIDs, x, y, z, u, v, w)
+                #     else:
+                #         objStatusUpdate.addObjStatus(resultObj.markerID, [None], x, y, z, u, v, w)
+                #     tobjIDList.remove(resultObj.markerID)
                 
-                for tobjID in tobjIDList:
-                    objStatusUpdate.addObjStatus(tobjID, [None], None, None, None, None, None, None)
+                # for tobjID in tobjIDList:
+                #     objStatusUpdate.addObjStatus(tobjID, [None], None, None, None, None, None, None)
 
 
                 # send empty data for undetected objects
@@ -178,12 +206,8 @@ if __name__ == '__main__':
                 #         if resultObj.markerID == tobjID:
                 #             foundTobj = True
 
-
-                    
-
                 # if resultObj.markerID not in tobjIDList:
                 #     objStatusUpdate.addObjStatus(resultObj.markerID, [None], [None], [None], [None], [None], [None], [None])
-                                          
 
                 # draw ROI Region..
                 for ROIRegion in vtc.ROIMgr.getROIList():
@@ -191,15 +215,15 @@ if __name__ == '__main__':
 
                 cv2.imshow(vtc.name, color_image)
 
-                # send object information to UI..
-                if objStatusUpdate.containsObjStatus() == True:
-                    objStatusUpdate.sendObjStatus()
-                
-                # check if an object is in ROI 
-                objStatusUpdate.clearObjStatus()
+            # send object information to UI..
+            #if objStatusUpdate.containsObjStatus() == True:
+            objStatusUpdate.sendObjStatus(tobjIDList)
+            
+            # check if an object is in ROI 
+            objStatusUpdate.clearObjStatus()
 
             # sleep for the specified duration.
-            time.sleep(1.0)            
+            time.sleep(0.1)
 
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)

@@ -146,4 +146,6 @@ if __name__ == '__main__':
     # arrange all to finitsh this application here
     cv2.destroyAllWindows()
     indy7.finalize()
+
+    
         

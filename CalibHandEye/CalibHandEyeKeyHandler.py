@@ -100,7 +100,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 hmmtx = HandEyeCalibration.loadTransformMatrix()
 
                 # calcaluate the specific position based on hmInput
-                hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.0, 0.0, Config.HandEyeTargetZ]).T)
+                hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.08, 0.0, Config.HandEyeTargetZ]).T)
                 hmInput = np.dot(hmCal2Cam, hmWanted)
 
                 # get the last homogeneous matrix

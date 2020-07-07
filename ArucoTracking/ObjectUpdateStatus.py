@@ -27,43 +27,28 @@ class ObjectUpdateStatus:
             }
             self.ObjStatusList.append(objStatus)
 
-    def sendObjStatus(self):
+    def sendObjStatus(self, undetectedObjectIDList):
+
+        # process undetected marks
+        for markerID in undetectedObjectIDList:
+            self.addObjStatus(markerID, [None], None, None, None, None, None, None)
+
+        # prcess duplicated marks
+        checkIDList = list()
+        for objStatus in self.ObjStatusList:
+            objID = objStatus['id']
+            
+            if objID in checkIDList:
+                self.ObjStatusList.remove(objStatus)
+            else:
+                checkIDList.append(objID)
+
         status = {
         "objectStatus": self.ObjStatusList
         }
-        self.gqlClient.update_tracking_workspace_status(name='workspace', status=status)
-        print('\n', status, '\n')
-        # status = {
-        #     "objectStatus": [{
-        #         "id": "obj",
-        #         "state": {
-        #             "roi": choice(["A", "B"]),
-        #             "pose": {
-        #                 "x": 1.0 + random() * 1.2,
-        #                 "y": 2.2 + random() * 1.2,
-        #                 "z": 3.4 + random() * 1.2,
-        #                 "u": 4.4 + random() * 1.2,
-        #                 "v": 7.9 + random() * 1.2,
-        #                 "w": 9.6 + random() * 1.2
-        #             }
-        #         }
-        #     }, {
-        #         "id": "obj2",
-        #         "state": {
-        #             "roi": choice(["A", "B"]),
-        #             "pose": {
-        #                 "x": 1.0 + random() * 1.2,
-        #                 "y": 19.0 + random() * 1.2,
-        #                 "z": 4.4 + random() * 1.2,
-        #                 "u": 9.4 + random() * 1.2,
-        #                 "v": 21.9 + random() * 1.2,
-        #                 "w": 13.6 + random() * 1.2
-        #             }
-        #         }
-        #     }]
-        # }
-        # result = self.gqlClient.update_tracking_workspace_status(name='workspace', status=status)        
 
+        self.gqlClient.update_tracking_workspace_status(name='workspace', status=status)
+        #print('\n', status, '\n')
 
     def containsObjStatus(self):
         return (len(self.ObjStatusList) > 0)

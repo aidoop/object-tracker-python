@@ -54,7 +54,7 @@ class HandEyeAruco:
                         imgpts, jac = cv2.projectPoints(inputObjPts, rvec[idx], tvec[idx], mtx, dist)
                         centerPoint = tuple(imgpts[0][0])
                         #cv2.circle(color_image,centerPoint,1,(0,0,255), -1)
-                        #print(str(rvec[idx]) + str(' ') + str(tvec[idx]))
+                        print(str(rvec[idx]) + str(' ') + str(tvec[idx]))
 
                         # print 3D position using realsense SDK
                         if(Config.UseHandEyePrecisionTest == True):
