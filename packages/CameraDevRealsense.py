@@ -34,29 +34,33 @@ class RealsenseCapture(CameraDev):
 
     #     return camdev
 
-    def __init__(self, devIndex):
+    def __init__(self, matchedSerialNumber):    #devIndex):
 
         self.foundDevice = False
 
         # manage multiple devices
-        ctx = rs.context()
-        time.sleep(0.1) # to fix the internal uvc camera bug on linux
-        if devIndex < (len(ctx.devices)):
-            devIter = 0
-            for d in ctx.devices:
-                if(devIter == devIndex):
-                    matchedSerialNumber = d.get_info(rs.camera_info.serial_number)
-                    self.foundDevice = True
-                    break
-                devIter += 1
-        else:
-            self.foundDevice = False
-            return
+        # ctx = rs.context()
+        # time.sleep(0.1) # to fix the internal uvc camera bug on linux
+        # rsDevices = ctx.devices
+        # time.sleep(0.1) # to fix the internal uvc camera bug on linux
+        # if devIndex < (len(rsDevices)):
+        #     devIter = 0
+        #     for d in rsDevices:
+        #         if(devIter == devIndex):
+        #             matchedSerialNumber = d.get_info(rs.camera_info.serial_number)
+        #             self.foundDevice = True
+        #             break
+        #         devIter += 1
+        # else:
+        #     self.foundDevice = False
+        #     return
 
         # configure depth and color streams
         self.__pipeline = rs.pipeline()
         self.__config = rs.config()
         self.__config.enable_device(matchedSerialNumber)
+
+        self.foundDevice = self.__config.can_resolve(self.__pipeline)
 
         # create an align object based on color frames
         self.__align = rs.align(rs.stream.color)
@@ -141,7 +145,7 @@ class RealsenseCapture(CameraDev):
 ###############################################################################
 if __name__ == '__main__':
 
-    rsCamDev = RealsenseCapture(0)
+    rsCamDev = RealsenseCapture('001622071306')
 
     rsCamDev.initialize(640, 480, 30)
 

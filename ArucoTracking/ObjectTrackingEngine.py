@@ -72,11 +72,11 @@ if __name__ == '__main__':
         vtc.robotName = trackingCamera.baseRobotArm['name']
 
         # set camera endpoint
-        endpoint = int(trackingCamera.endpoint)
+        #endpoint = int(trackingCamera.endpoint)
         
         # TODO: choose camera dev object based on camera type
         if trackingCamera.type == 'realsense-camera':
-            rsCamDev = RealsenseCapture(endpoint)
+            rsCamDev = RealsenseCapture(trackingCamera.endpoint)
         elif trackingCamera.type == 'camera-connector':
             rsCamDev = OpencvCapture(endpoint)
 

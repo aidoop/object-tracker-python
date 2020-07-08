@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
 
     # camera index
-    rsCamIndex = 0
+    rsCamIndex = '001622071306'
 
     # create the camera device object
     rsCamDev = RealsenseCapture(rsCamIndex)

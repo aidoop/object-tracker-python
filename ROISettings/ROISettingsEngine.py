@@ -60,7 +60,7 @@ if __name__ == '__main__':
     cameraObject = gqlDataClient.trackingCameras[cameraName]
 
     if cameraObject.type == 'realsense-camera':
-        rsCamDev = RealsenseCapture(int(cameraObject.endpoint))
+        rsCamDev = RealsenseCapture(cameraObject.endpoint)
     elif cameraObject.type == 'camera-connector':
         rsCamDev = OpencvCapture(int(cameraObject.endpoint))    
 

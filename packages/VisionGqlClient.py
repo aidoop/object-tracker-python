@@ -79,6 +79,7 @@ class VisonGqlDataClient:
             markObject.poseOffset = VisionGqlUtil.setPoseData(markData['poiOffset'])
 
             self.trackableObjects[name] = markObject
+
     # in case of only 1 workspace
     def fetchVisionWorkspace(self, client):
         workspaces = self.client.get_vision_workspaces()['items']

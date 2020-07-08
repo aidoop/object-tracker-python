@@ -82,7 +82,7 @@ if __name__ == '__main__':
     # elif(args.camType == 'uvc'):
     #     rsCamDev = OpencvCapture(args.camIndex)
     if cameraObject.type == 'realsense-camera':
-        rsCamDev = RealsenseCapture(int(cameraObject.endpoint))
+        rsCamDev = RealsenseCapture(cameraObject.endpoint)
     elif cameraObject.type == 'camera-connector':
         rsCamDev = OpencvCapture(int(cameraObject.endpoint))    
 
