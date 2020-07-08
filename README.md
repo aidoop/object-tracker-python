@@ -23,7 +23,7 @@
 - References
   - how to get serial number of a realsense camera
   ```
-  jinwon@jinwon-G5:~/Documents/github/CoboMarkerTracking/CalibHandEye$ rs-sensor-control
+  jinwon@jinwon-G5:~/Documents$ rs-sensor-control
 
   ======================================================
 
