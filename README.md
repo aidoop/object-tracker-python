@@ -19,3 +19,16 @@
   make -j4
   sudo make install #Optional if you want the library to be installed in your system
   ```
+
+- References
+  - how to get serial number of a realsense camera
+  ```
+  jinwon@jinwon-G5:~/Documents/github/CoboMarkerTracking/CalibHandEye$ rs-sensor-control
+
+  ======================================================
+
+  Found the following devices:
+
+    0 : Intel RealSense D435 #001622071306
+    1 : Intel RealSense D435 #001622072547
+  ```
