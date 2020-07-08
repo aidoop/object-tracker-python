@@ -75,10 +75,6 @@ class VisonWorkspace:
         self.endpoint = None
         self.active = None
         self.params = None
-        self.robotArms = dict()
-        self.trackingCameras = dict()
-        self.trackableObjects = dict()
-
 
 # Utilities
 class VisionGqlUtil:

@@ -41,11 +41,8 @@ if __name__ == '__main__':
         print("Can't connect operato vision server.")
         sys.exit()
 
-    #gqlDataClient.parseVisionWorkspaces()
-    # process all elements here...
-    gqlDataClient.fetchTrackingCameras()
-    gqlDataClient.fetchRobotArms()
-    gqlDataClient.fetchTrackableMarks()
+    # get gql data for a workspace
+    gqlDataClient.fetchVisionWorkspace()
 
     #####################################
     # application data list
@@ -137,9 +134,6 @@ if __name__ == '__main__':
     # create key handler
     keyhandler = ObjectTrackingKeyHandler()
 
-    # prepare lists for mark tracking
-    color_images = list()
-
     # prepare object update status
     objStatusUpdate  = ObjectUpdateStatus(gqlDataClient.client)
 
@@ -178,36 +172,6 @@ if __name__ == '__main__':
                             else:
                                 objStatusUpdate.addObjStatus(resultObj.markerID, [None], x, y, z, u, v, w)
                             tobjIDList.remove(resultObj.markerID)
-                        
-                        # for tobjID in tobjIDList:
-                        #     objStatusUpdate.addObjStatus(tobjID, [None], None, None, None, None, None, None)                        
-
-                # # detect markers here..
-                # resultObjs = vtc.arucoMarkTracker.findObjects(color_image, vtc)
-
-                # tobjIDList = vtc.arucoMarkTracker.getTrackingObjIDList().copy()
-                # for resultObj in resultObjs:
-                #     (found, foundRIDs) = vtc.ROIMgr.isInsideROI(resultObj.corners)
-                #     [x, y, z, u, v, w] = resultObj.targetPos
-                #     if found is True:
-                #         objStatusUpdate.addObjStatus(resultObj.markerID, foundRIDs, x, y, z, u, v, w)
-                #     else:
-                #         objStatusUpdate.addObjStatus(resultObj.markerID, [None], x, y, z, u, v, w)
-                #     tobjIDList.remove(resultObj.markerID)
-                
-                # for tobjID in tobjIDList:
-                #     objStatusUpdate.addObjStatus(tobjID, [None], None, None, None, None, None, None)
-
-
-                # send empty data for undetected objects
-                # for tobjID in tobjIDList:
-                #     foundTobj = False
-                #     for resultObj in resultObjs:
-                #         if resultObj.markerID == tobjID:
-                #             foundTobj = True
-
-                # if resultObj.markerID not in tobjIDList:
-                #     objStatusUpdate.addObjStatus(resultObj.markerID, [None], [None], [None], [None], [None], [None], [None])
 
                 # draw ROI Region..
                 for ROIRegion in vtc.ROIMgr.getROIList():
@@ -215,11 +179,9 @@ if __name__ == '__main__':
 
                 cv2.imshow(vtc.name, color_image)
 
-            # send object information to UI..
+            # send object information to UI and clear all
             #if objStatusUpdate.containsObjStatus() == True:
             objStatusUpdate.sendObjStatus(tobjIDList)
-            
-            # check if an object is in ROI 
             objStatusUpdate.clearObjStatus()
 
             # sleep for the specified duration.

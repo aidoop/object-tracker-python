@@ -60,6 +60,7 @@ class RealsenseCapture(CameraDev):
         self.__config = rs.config()
         self.__config.enable_device(matchedSerialNumber)
 
+        # check if the current device is availalbe 
         self.foundDevice = self.__config.can_resolve(self.__pipeline)
 
         # create an align object based on color frames

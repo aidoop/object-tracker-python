@@ -37,18 +37,6 @@ def makeFrameImageDirectory():
 
 if __name__ == '__main__':
 
-    # parse program parameters to get necessary aruments
-    # argPar = argparse.ArgumentParser(description="Camera Calibration")
-    # argPar.add_argument('camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'rs: Intel Realsense, uvc: UVC-Supported')
-    # argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = '0, 1, ...')
-    # args = argPar.parse_args()
-
-    # create the camera device object
-    # if(args.camType == 'rs'):
-    #     rsCamDev = RealsenseCapture(args.camIndex)
-    # elif(args.camType == 'uvc'):
-    #     rsCamDev = OpencvCapture(args.camIndex)
-
     if len(sys.argv) < 2:
         print("Invalid paramters..")
         sys.exit()
