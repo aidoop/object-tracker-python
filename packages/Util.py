@@ -1,4 +1,5 @@
 import sys
+import cv2
 
 class ArucoTrackerErrMsg:
     @staticmethod
@@ -16,9 +17,20 @@ class PrintMsg:
         #pass
 
 
-if __name__ == '__main__':
-    var1 = None
-    # check core variables are available..
-    print(ArucoTrackerErrMsg.checkValueIsNone(var1, 'test variable1') == False)
+# Info Text
+class DisplayInfoText:
+
+    def __init__(self, font, startPos):
+        self.font = font
+        self.startPos = startPos
+        self.text = ''
+
+    def draw(self, image):
+        if self.text == '':
+            return
+        cv2.putText(image, self.text, self.startPos, self.font, 1, (0,255,0),1,cv2.LINE_AA)
+
+    def setText(self, text):
+        self.text = text
         
 

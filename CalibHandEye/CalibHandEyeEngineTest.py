@@ -11,7 +11,7 @@ import Config
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
 from packages.RobotIndy7Dev import RobotIndy7Dev
-from packages.Util import ArucoTrackerErrMsg
+from packages.Util import ArucoTrackerErrMsg, DisplayInfoText
 from CalibHandEyeKeyHandler import CalibHandEyeKeyHandler
 from HandEyeUtilSet import *
 from HandEyeTest import *
@@ -81,6 +81,9 @@ if __name__ == '__main__':
     # start indy7 as a direct-teaching mode as default
     indy7.setDirectTeachingMode(True)
 
+    # create info text 
+    infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
+
     # get frames and process a key event
     try:
         while(True):
@@ -101,12 +104,14 @@ if __name__ == '__main__':
 
             (flagFindMainAruco, ids, rvec, tvec) =  handeyeAruco.processArucoMarker(color_image, mtx, dist, vcap)
 
+            infoText.draw(color_image)
+
             # display the captured image
             cv2.imshow('HandEye Calibration Test', color_image)
             
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
-            if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, indy7):
+            if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, indy7, infoText):
                 break
             
             # have a delay to make CPU usage lower...

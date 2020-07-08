@@ -25,6 +25,7 @@ class ROIKeyHandler(KeyHandler):
         camIndex = args[0]
         ROIRegions = args[1]
         ROIRegionIds = args[2]
+        infoText = args[3]
 
         regionCnt = len(ROIRegions)
         if regionCnt == 0:
@@ -45,7 +46,11 @@ class ROIKeyHandler(KeyHandler):
         ROIRegionFile.release()
         PrintMsg.printStdErr("ROI Regions saved.")
 
+        # text out to stdout
         rur.printROIRegions()
+
+        # update info. text display
+        infoText.setText("ROI Regions saved successfully.")
 
 
 

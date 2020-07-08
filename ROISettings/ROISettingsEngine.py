@@ -15,7 +15,7 @@ import Config
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraVideoCapture import VideoCapture
-from packages.Util import ArucoTrackerErrMsg, PrintMsg
+from packages.Util import ArucoTrackerErrMsg, PrintMsg, DisplayInfoText
 from ROIArucoManager import ROIAruco2DManager
 from ROIKeyHandler import ROIKeyHandler
 
@@ -85,8 +85,10 @@ if __name__ == '__main__':
     # create key handler for camera calibration1
     keyhander = ROIKeyHandler()    
 
-    PrintMsg.printStdErr("press 'g' to save the current ROI regions")
-    PrintMsg.printStdErr("press 'q' to exit...")
+    # create info text 
+    infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))    
+
+    
     try:
         while(True):
             # Wait for a coherent pair of frames: depth and color
@@ -107,15 +109,18 @@ if __name__ == '__main__':
             for ROIRegion in ROIRegions:
                 cv2.rectangle(color_image, ROIRegion[0], ROIRegion[1], (255,0,0), 3)
 
+            # create info text 
+            infoText.draw(color_image)                
+
             # display the captured image
             cv2.imshow('ROI Selection',color_image)
 
-            time.sleep(0.1)
+            time.sleep(0.2)
 
             # TODO: arrange these opencv key events based on other key event handler class
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
-            if keyhander.processKeyHandler(pressedKey, int(cameraObject.endpoint), ROIRegions, ROIRegionIds):
+            if keyhander.processKeyHandler(pressedKey, int(cameraObject.endpoint), ROIRegions, ROIRegionIds, infoText):
                 break
 
     except Exception as ex:

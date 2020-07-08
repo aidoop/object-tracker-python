@@ -26,9 +26,14 @@ class CalibCameraKeyHandler(KeyHandler):
     def processC(self, *args):
         color_image = args[0]
         dirFrameImage = args[1]
+        infoText = args[4]
+
         cv2.imwrite(os.path.join(dirFrameImage, str(self.interation) + '.jpg'), color_image)
         PrintMsg.printStdErr('Image caputured - ' + os.path.join(dirFrameImage, str(self.interation) + '.jpg'))
         self.interation += 1
+
+        strInfoText = 'Image Captured(' + str(self.interation) + ') - ' + os.path.join(dirFrameImage, str(self.interation) + '.jpg')
+        infoText.setText(strInfoText)
 
     def processZ(self, *args):
         calibcam = args[2]
@@ -51,11 +56,17 @@ class CalibCameraKeyHandler(KeyHandler):
         dirFrameImage = args[1]
         calibcam = args[2]
         camIndex = args[3]
+        infoText = args[4]
+
         # get image file names
         images = glob.glob(dirFrameImage + '/*.jpg')
         ret, cammtx, distcoeff = calibcam.calcuateCameraMatrix(images)
+
+        strInfoText = ''
+
         if ret == True:
-            print('Calibration finished successfully...', file=sys.stderr)
+            strInfoText = 'Calibration completed successfully...'
+            
             # save calibration data to the specific xml file
             savedFileName = "CalibCamResult"+str(camIndex)+".json"
             calibcam.saveResults(savedFileName, cammtx, distcoeff)
@@ -65,7 +76,11 @@ class CalibCameraKeyHandler(KeyHandler):
             updateUI.updateData(distcoeff[0], cammtx.reshape(1,9)[0])
 
         else:
-            print('Calibration failed...', file=sys.stderr)
+            strInfoText = 'Calibration failed.'
+        
+        PrintMsg.printStdErr(strInfoText)
+        infoText.setText(strInfoText)
+
 
 
 

@@ -13,7 +13,7 @@ import Config
 from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
-from packages.Util import ArucoTrackerErrMsg
+from packages.Util import ArucoTrackerErrMsg, DisplayInfoText
 from CalibCamera import CalibrationCamera
 from CalibCameraKeyHandler import CalibCameraKeyHandler
 from packages.VisionGqlClient import VisonGqlDataClient
@@ -85,9 +85,9 @@ if __name__ == '__main__':
     # create key handler for camera calibration1
     keyhandler = CalibCameraKeyHandler()
 
-    # print("press 'c' to capture an image")
-    # print("press 'g' to process camera calibration using the captured images and save the result data")
-    # print("press 'q' to exit...")
+    # create info text 
+    infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))    
+
     iteration = 0
     try: 
         while(True):
@@ -97,13 +97,16 @@ if __name__ == '__main__':
             if ArucoTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
                 break
 
+            # create info text 
+            infoText.draw(color_image)
+
             # display the captured image
             cv2.imshow(cameraName,color_image)
-            pressedKey = (cv2.waitKey(1) & 0xFF)
 
             # TODO: arrange these opencv key events based on other key event handler class
             # handle key inputs
-            if keyhandler.processKeyHandler(pressedKey, color_image, dirFrameImage, calibcam, int(cameraObject.endpoint)):
+            pressedKey = (cv2.waitKey(1) & 0xFF)
+            if keyhandler.processKeyHandler(pressedKey, color_image, dirFrameImage, calibcam, int(cameraObject.endpoint), infoText):
                 break
 
     except Exception as ex:

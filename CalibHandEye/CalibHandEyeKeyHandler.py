@@ -45,11 +45,14 @@ class CalibHandEyeKeyHandler(KeyHandler):
         indy.setDirectTeachingMode(False)        
 
     def processC(self, *args):
+        colorImage = args[1]
         tvec = args[3]
         rvec = args[4]
         ids = args[2]
         handeye = args[7]
         indy = args[8]
+        infoText = args[9]
+
         PrintMsg.printStdErr("---------------------------------------------------------------")
         if ids is None:
             return
@@ -60,6 +63,8 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 # capture additional matrices here
                 handeye.captureHandEyeInputs(currTaskPose, rvec[idx], tvec[idx])
                 PrintMsg.printStdErr("Input Data Count: " + str(handeye.cntInputData))
+                strText = "Input Data Count: " + str(handeye.cntInputData)
+                infoText.setText(strText)
 
     def processZ(self, *args):
         handeye = args[7]
@@ -67,6 +72,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
 
     def processG(self, *args):
         handeye = args[7]
+        infoText = args[9]
 
         if handeye.cntInputData < 3:
             return
@@ -80,12 +86,16 @@ class CalibHandEyeKeyHandler(KeyHandler):
         updateUI = CalibHandeyeUpdate()
         updateUI.updateData(hmTransform.reshape(1, 16)[0])      # TODO: [0] is available??
 
+        infoText.setText('Succeeded to extract a handeye matrix.')
+
     def processN(self, *args):
         tvec = args[3]
         rvec = args[4]
         ids = args[2]
         handeye = args[7]
         indy = args[8]
+        infoText = args[9]
+
         PrintMsg.printStdErr("---------------------------------------------------------------")
         for idx in range(0, ids.size):
             if ids[idx] == Config.TestMarkerID:
