@@ -32,7 +32,6 @@ class VisionTrackingCamera:
 # Hand-eye calibration process 
 #   -                                                                
 ###############################################################################
-
 if __name__ == '__main__':
 
     # TODO: get object, camera workspace from gql server
@@ -42,7 +41,12 @@ if __name__ == '__main__':
         sys.exit()
 
     # get gql data for a workspace
-    gqlDataClient.fetchVisionWorkspace()
+    if Config.ObjTrackingDebugMode == False:
+        gqlDataClient.fetchVisionWorkspace()
+    else:
+        gqlDataClient.fetchTrackingCamerasAll()
+        gqlDataClient.fetchRobotArmsAll()
+        gqlDataClient.fetchTrackableMarksAll()
 
     #####################################
     # application data list

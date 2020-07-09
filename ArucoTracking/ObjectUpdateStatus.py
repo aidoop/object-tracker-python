@@ -1,3 +1,4 @@
+import Config
 import json
 from random import choice, random
 
@@ -47,8 +48,10 @@ class ObjectUpdateStatus:
         "objectStatus": self.ObjStatusList
         }
 
-        self.gqlClient.update_tracking_workspace_status(name='workspace', status=status)
-        #print('\n', status, '\n')
+        if Config.ObjTrackingDebugMode == False:
+            self.gqlClient.update_tracking_workspace_status(name='workspace', status=status)
+        else:
+            print('\n', status, '\n')
 
     def containsObjStatus(self):
         return (len(self.ObjStatusList) > 0)

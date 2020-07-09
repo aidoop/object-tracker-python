@@ -45,7 +45,11 @@ class VisonGqlDataClient:
             cameraObject.setHandeyeMatrix(cameraData['handEyeMatrix']['rows'], cameraData['handEyeMatrix']['columns'], cameraData['handEyeMatrix']['data'])
             cameraObject.setROIData(cameraData['rois'])
 
-            self.trackingCameras[name] = cameraObject            
+            self.trackingCameras[name] = cameraObject
+
+    def fetchTrackingCamerasAll(self):
+        cameras = self.client.get_tracking_cameras()['items']
+        self.fetchTrackingCameras(cameras)
 
     def fetchRobotArms(self, robotarms):
         for robotarm in robotarms:
@@ -59,7 +63,11 @@ class VisonGqlDataClient:
             robotarmObject.gripperOffset = VisionGqlUtil.setPoseData(robotarmData['toolOffset'])
             robotarmObject.markerOffset = VisionGqlUtil.setPoseData(robotarmData['markerOffset'])
 
-            self.robotArms[name] = robotarmObject            
+            self.robotArms[name] = robotarmObject
+
+    def fetchRobotArmsAll(self):
+        robot_arms = self.client.get_robot_arms()['items']
+        self.fetchRobotArms(robot_arms)
 
     def fetchTrackableMarks(self, marks):
         for mark in marks:
@@ -72,7 +80,11 @@ class VisonGqlDataClient:
             markObject.endpoint = markData['endpoint']
             markObject.poseOffset = VisionGqlUtil.setPoseData(markData['poiOffset'])
 
-            self.trackableObjects[name] = markObject            
+            self.trackableObjects[name] = markObject          
+
+    def fetchTrackableMarksAll(self):
+        marks = self.client.get_trackable_objects()['items']
+        self.fetchTrackableMarks(marks)            
 
     # in case of only 1 workspace
     def fetchVisionWorkspace(self):

@@ -25,3 +25,6 @@ UseNewCameraMatrix = False
 HandEyeTargetZ = 0.30
 CalibMarkerID = 2
 TestMarkerID = 14
+
+# Object Tracking parameters
+ObjTrackingDebugMode = False

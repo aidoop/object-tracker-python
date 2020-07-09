@@ -50,8 +50,8 @@ if __name__ == '__main__':
         #print("Can't connect operato vision server.")
         sys.exit()    
 
-    gqlDataClient.fetchTrackingCameras()
-    gqlDataClient.fetchRobotArms()
+    gqlDataClient.fetchTrackingCamerasAll()
+    gqlDataClient.fetchRobotArmsAll()
 
     cameraObject = gqlDataClient.trackingCameras[cameraName]
 

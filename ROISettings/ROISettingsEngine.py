@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     #gqlDataClient.parseVisionWorkspaces()
     # process all elements here...
-    gqlDataClient.fetchTrackingCameras()
+    gqlDataClient.fetchTrackingCamerasAll()
     cameraObject = gqlDataClient.trackingCameras[cameraName]
 
     if cameraObject.type == 'realsense-camera':

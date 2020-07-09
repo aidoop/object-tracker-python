@@ -45,12 +45,11 @@ if __name__ == '__main__':
 
     gqlDataClient = VisonGqlDataClient()
     if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
-        #print("Can't connect operato vision server.")
         sys.exit()
 
     #gqlDataClient.parseVisionWorkspaces()
     # process all elements here...
-    gqlDataClient.fetchTrackingCameras()
+    gqlDataClient.fetchTrackingCamerasAll()
     cameraObject = gqlDataClient.trackingCameras[sys.argv[1]]
 
     if cameraObject.type == 'realsense-camera':
@@ -94,7 +93,7 @@ if __name__ == '__main__':
             # TODO: arrange these opencv key events based on other key event handler class
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
-            if keyhandler.processKeyHandler(pressedKey, color_image, dirFrameImage, calibcam, int(cameraObject.endpoint), infoText):
+            if keyhandler.processKeyHandler(pressedKey, color_image, dirFrameImage, calibcam, cameraObject.endpoint, infoText):
                 break
 
     except Exception as ex:
