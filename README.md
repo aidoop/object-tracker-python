@@ -20,6 +20,37 @@
   sudo make install #Optional if you want the library to be installed in your system
   ```
 
+- vision-base setting
+  - to run with vision-base web application, you should change paths in 'vision-base/config.developmnet.ts' and 'vision-base/config.production.ts' as below.
+  The files should be copied to the root folder of 'vision-base' from 'vision-base/config' and then modified with the real path of 'CoboMarkerTrakcing'
+  ```
+  module.exports = {
+    vision: {
+      streamingPort: 3001,
+      camera: {
+        cameraCalibrator: {
+          program: ['/home/jinwon/Documents/venv/objtrack/bin/python3', '/home/jinwon/Documents/github/CoboMarkerTracking/CalibCamera/CalibCameraEngine.py']
+        },
+        handEyeCalibrator: {
+          program: ['/home/jinwon/Documents/venv/objtrack/bin/python3', '/home/jinwon/Documents/github/CoboMarkerTracking/CalibHandEye/CalibHandEyeEngine.py']
+        },
+        ROIDetector: {
+          program: ['/home/jinwon/Documents/venv/objtrack/bin/python3', '/home/jinwon/Documents/github/CoboMarkerTracking/ROISettings/ROISettingsEngine.py']
+        }
+      },
+      robotArm: {
+        markerOffsetCalibrator: {
+          program: ['/home/jinwon/Documents/venv/objtrack/bin/python3', '/home/jinwon/Documents/github/CoboMarkerTracking/ArucoTracking/ObjectTrackingEngine.py']
+        }
+      },
+      objectTracker: {
+        program: ['/home/jinwon/Documents/venv/objtrack/bin/python3', '/home/jinwon/Documents/github/CoboMarkerTracking/ArucoTracking/ObjectTrackingEngine.py']
+      }
+    }
+  }
+  ```
+
+
 - References
   - how to get serial number of a realsense camera
   ```
