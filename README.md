@@ -1,7 +1,7 @@
 # CoboMarkerTracking
 
 - Prerequisites
-  - Python: > 3.6
+  - Python: > 3.x
   - Requried Python Modules
     - pip install numpy
     - pip install opencv-python
@@ -20,7 +20,7 @@
   sudo make install #Optional if you want the library to be installed in your system
   ```
 
-- vision-base setting
+- vision-base (https://github.com/things-factory/vision-base.git)
   - to run with vision-base web application, you should change paths in 'vision-base/config.developmnet.ts' and 'vision-base/config.production.ts' as below.
   The files should be copied to the root folder of 'vision-base' from 'vision-base/config' and then modified with the real path of 'CoboMarkerTrakcing'
   ```
