@@ -1,6 +1,11 @@
-import Config
+
+import sys, os
 import json
 from random import choice, random
+
+# add src root directory to python path
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
+import Config
 
 class ObjectUpdateStatus:
     ObjStatusList = list()

@@ -2,7 +2,10 @@ import cv2
 import cv2.aruco as aruco
 
 import numpy as np
+import sys, os
 
+# add src root directory to python path
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
 import Config
 from ObjectTracker import ObjectTracker
 from CalibHandEye.HandEye import HandEyeCalibration
