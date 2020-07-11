@@ -1,0 +1,10 @@
+#
+###  CoboMarkerTrakcing 
+#
+
+numpy
+opencv-python
+opencv-contrib-python
+pyrealsense2
+requests
+gql
