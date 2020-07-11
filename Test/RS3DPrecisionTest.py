@@ -40,8 +40,9 @@ if __name__ == '__main__':
     depth_sensor = pipe_profile.get_device().first_depth_sensor()
     depth_scale = depth_sensor.get_depth_scale()        
 
-    # get instrinsics
-    rsCamDev = RealsenseCapture(0)
+    # to test using calibrated parameters, not internal...
+    rsCamIndex = '001622072547'
+    rsCamDev = RealsenseCapture(rsCamIndex)
     vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, 'camera01')
     mtx, dist = vcap.getIntrinsicsMat(0, False)
 
@@ -125,7 +126,7 @@ if __name__ == '__main__':
 
     finally:
         # Stop streaming
-        vcap.stop()
+        pipeline.stop()
+        cv2.destroyAllWindows()
 
-    cv2.destroyAllWindows()
 

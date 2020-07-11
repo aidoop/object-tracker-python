@@ -5,6 +5,7 @@ import os, sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
 from packages.VisionGqlData import VisonWorkspace, RobotArm, TrackingCamera, TrackableObject, VisionGqlUtil
+from packages.Util import ObjectTypeCheck
 from visionclient.operato_vision import Client
 
 class VisonGqlDataClient:
@@ -37,13 +38,20 @@ class VisonGqlDataClient:
             
             # no 6-elemets list
             tempList = cameraData['distortionCoefficient']
-            if len(tempList) > 5:
-                tempList.remove(tempList[5])
+            if tempList is not None:    # check if gql data is not set yet..
+                if len(tempList) > 5:
+                    tempList.remove(tempList[5])
             cameraObject.distCoeff = np.array(tempList)
             
-            cameraObject.setCameraMatrix(cameraData['cameraMatrix']['rows'], cameraData['cameraMatrix']['columns'], cameraData['cameraMatrix']['data'])
-            cameraObject.setHandeyeMatrix(cameraData['handEyeMatrix']['rows'], cameraData['handEyeMatrix']['columns'], cameraData['handEyeMatrix']['data'])
-            cameraObject.setROIData(cameraData['rois'])
+            # check if gql data is not set yet..
+            if ObjectTypeCheck.checkValueIsAvail(cameraData['cameraMatrix']):
+                cameraObject.setCameraMatrix(cameraData['cameraMatrix']['rows'], cameraData['cameraMatrix']['columns'], cameraData['cameraMatrix']['data'])
+
+            if ObjectTypeCheck.checkValueIsAvail(cameraData['handEyeMatrix']):
+                cameraObject.setHandeyeMatrix(cameraData['handEyeMatrix']['rows'], cameraData['handEyeMatrix']['columns'], cameraData['handEyeMatrix']['data'])
+            
+            if ObjectTypeCheck.checkValueIsAvail(cameraData['rois']):
+                cameraObject.setROIData(cameraData['rois'])
 
             self.trackingCameras[name] = cameraObject
 

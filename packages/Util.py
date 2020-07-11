@@ -1,6 +1,20 @@
 import sys
 import cv2
 
+
+class ObjectTypeCheck:
+    @staticmethod
+    def checkValueIsAvail(var):
+        if var is None:
+            return False
+        return True
+
+    def getValue(value):
+        if value is not None:
+            target = value
+        else:
+            target = None
+
 class ArucoTrackerErrMsg:
     @staticmethod
     def checkValueIsNone(var, varname):
@@ -9,7 +23,6 @@ class ArucoTrackerErrMsg:
             return False
         return True
        
-
 class PrintMsg:
     @staticmethod
     def printStdErr(*args, **kwargs):

@@ -13,7 +13,7 @@ import Config
 from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
-from packages.Util import ArucoTrackerErrMsg, DisplayInfoText
+from packages.Util import ArucoTrackerErrMsg, DisplayInfoText, PrintMsg
 from CalibCamera import CalibrationCamera
 from CalibCameraKeyHandler import CalibCameraKeyHandler
 from packages.VisionGqlClient import VisonGqlDataClient
@@ -38,42 +38,48 @@ def makeFrameImageDirectory():
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
-        print("Invalid paramters..")
+        PrintMsg.printStdErr("Invalid paramters..")
         sys.exit()
 
-    cameraName = sys.argv[1]    
-
-    gqlDataClient = VisonGqlDataClient()
-    if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
+    cameraName = sys.argv[1]
+    if cameraName is '':
+        PrintMsg.printStdErr("Input camera name is not available.")
         sys.exit()
 
-    #gqlDataClient.parseVisionWorkspaces()
-    # process all elements here...
-    gqlDataClient.fetchTrackingCamerasAll()
-    cameraObject = gqlDataClient.trackingCameras[sys.argv[1]]
+    try:
+        gqlDataClient = VisonGqlDataClient()
+        if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
+            sys.exit()
 
-    if cameraObject.type == 'realsense-camera':
-        rsCamDev = RealsenseCapture(cameraObject.endpoint)
-    elif cameraObject.type == 'camera-connector':
-        rsCamDev = OpencvCapture(int(cameraObject.endpoint))
+        # get camera data from operato
+        gqlDataClient.fetchTrackingCamerasAll()
+        cameraObject = gqlDataClient.trackingCameras[sys.argv[1]]
 
-    # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, cameraName)
+        if cameraObject.type == 'realsense-camera':
+            rsCamDev = RealsenseCapture(cameraObject.endpoint)
+        elif cameraObject.type == 'camera-connector':
+            rsCamDev = OpencvCapture(int(cameraObject.endpoint))
 
-    # Start streaming
-    vcap.start()
+        # create video capture object using realsense camera device object
+        vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, cameraName)
 
-    # create a camera calibration object
-    calibcam = CalibrationCamera(Config.ChessWidth, Config.ChessHeight)
+        # Start streaming
+        vcap.start()
 
-    # TODO: check where an image directory is created..
-    dirFrameImage = makeFrameImageDirectory()
+        # create a camera calibration object
+        calibcam = CalibrationCamera(Config.ChessWidth, Config.ChessHeight)
 
-    # create key handler for camera calibration1
-    keyhandler = CalibCameraKeyHandler()
+        # TODO: check where an image directory is created..
+        dirFrameImage = makeFrameImageDirectory()
 
-    # create info text 
-    infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))    
+        # create key handler for camera calibration1
+        keyhandler = CalibCameraKeyHandler()
+
+        # create info text 
+        infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
+    except Exception as ex:
+        print("Error :", ex)
+        sys.exit(0)
 
     iteration = 0
     try: 

@@ -26,8 +26,10 @@ import math
 ###############################################################################
 
 if __name__ == '__main__':
-
-    rsCamDev = RealsenseCapture(0)
+    
+    # camera index
+    rsCamIndex = '001622072547'
+    rsCamDev = RealsenseCapture(rsCamIndex)
     vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, 'camera01')
 
     # Start streaming
@@ -56,6 +58,7 @@ if __name__ == '__main__':
             if len(tvec) < 2:
                 continue
 
+            # calculate the distance between two any aruco markers.
             tdiff = abs(tvec[0] - tvec[1])
             tdist = math.sqrt(math.pow(tdiff[0][0], 2.0)+math.pow(tdiff[0][1], 2.0)+math.pow(tdiff[0][2], 2.0))
             print(tdist)
