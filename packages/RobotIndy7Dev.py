@@ -60,3 +60,6 @@ class RobotIndy7Dev(RobotDev):
         robotStatus = self.indy.get_robot_status()
         return robotStatus['direct_teaching']
 
+    ## reset 
+    def resetRobot(self):
+        self.indy.reset_robot()

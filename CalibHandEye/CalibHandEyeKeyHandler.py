@@ -20,6 +20,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         super().setKeyHandler('q', self.processQ)
         super().setKeyHandler('d', self.processD)
         super().setKeyHandler('f', self.processF)
+        super().setKeyHandler('r', self.processR)        
         super().setKeyHandler('c', self.processC)
         super().setKeyHandler('z', self.processZ)
         super().setKeyHandler('g', self.processG)
@@ -42,7 +43,12 @@ class CalibHandEyeKeyHandler(KeyHandler):
         indy = args[8]
         # set direct-teaching mode off
         PrintMsg.printStdErr("direct teaching mode: Off")
-        indy.setDirectTeachingMode(False)        
+        indy.setDirectTeachingMode(False)  
+
+    def processR(self, *args):
+        indy = args[8]
+        indy.resetRobot()
+        PrintMsg.printStdErr("resetting the robot")
 
     def processC(self, *args):
         colorImage = args[1]

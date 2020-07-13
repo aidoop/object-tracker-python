@@ -94,8 +94,12 @@ if __name__ == '__main__':
 
     # get instrinsics
     #mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), Config.UseRealSenseInternalMatrix)
-    mtx = cameraObject.cameraMatrix
-    dist = cameraObject.distCoeff
+    # get internal intrinsics & extrinsics in D435
+    if(Config.UseRealSenseInternalMatrix == True):
+        mtx, dist = vcap.getInternalIntrinsicsMat()
+    else:    
+        mtx = cameraObject.cameraMatrix
+        dist = cameraObject.distCoeff
 
   # create key handler
     keyhandler = CalibHandEyeKeyHandler()

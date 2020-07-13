@@ -36,3 +36,8 @@ class RobotDev(metaclass=ABCMeta):
     @abstractmethod
     def getDirectTeachingMode(self):
         pass
+
+    ## reset 
+    @abstractmethod
+    def resetRobot(self):
+        pass
