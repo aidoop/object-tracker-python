@@ -9,12 +9,6 @@ class ObjectTypeCheck:
             return False
         return True
 
-    def getValue(value):
-        if value is not None:
-            target = value
-        else:
-            target = None
-
 class ArucoTrackerErrMsg:
     @staticmethod
     def checkValueIsNone(var, varname):

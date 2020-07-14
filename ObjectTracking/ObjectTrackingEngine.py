@@ -11,7 +11,7 @@ import Config
 from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraVideoCapture import VideoCapture
-from packages.Util import ArucoTrackerErrMsg
+from packages.Util import ArucoTrackerErrMsg, ObjectTypeCheck
 from ObjectUpdateStatus import ObjectUpdateStatus  
 from ObjectArucoMarkerTracker import ArucoMarkerObject, ArucoMarkerTracker
 from ObjectTrackingKeyHandler import ObjectTrackingKeyHandler
@@ -70,6 +70,8 @@ if __name__ == '__main__':
         vtc.name = trackingCamera.name
 
         # set robot name
+        if ObjectTypeCheck.checkValueIsAvail(trackingCamera.baseRobotArm) == False:
+            continue
         vtc.robotName = trackingCamera.baseRobotArm['name']
 
         # set camera endpoint
