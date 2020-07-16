@@ -102,7 +102,7 @@ class ArucoMarkerTracker(ObjectTracker):
                         #     hmInput = np.dot(hmCal2Cam, hmWanted)
                         
                         # udpate a pivot offset
-                        offsetPoint = gripperOffset + markerObject.pivotOffset
+                        offsetPoint = markerObject.pivotOffset
                         
                         hmWanted = HMUtil.convertXYZABCtoHMDeg(offsetPoint)     # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
                         hmInput = np.dot(hmCal2Cam, hmWanted)
@@ -116,8 +116,10 @@ class ArucoMarkerTracker(ObjectTracker):
 
                         # TODO:.............................................
                         # TODO: should change this routine....
-                        [x,y,z,u,v,w] = xyzuvw
-                        xyzuvw = [x,y,z,u*(-1),v+180.0,w]   # indy7 base position to gripper position
+
+                        # this conversion is gone to Operato..
+                        # [x,y,z,u,v,w] = xyzuvw
+                        # xyzuvw = [x,y,z,u*(-1),v+180.0,w]   # indy7 base position to gripper position
 
                         # set final target position..
                         markerObject.targetPos = xyzuvw                        

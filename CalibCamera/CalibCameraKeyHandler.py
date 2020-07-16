@@ -60,12 +60,12 @@ class CalibCameraKeyHandler(KeyHandler):
 
         # get image file names
         images = glob.glob(dirFrameImage + '/*.jpg')
-        ret, cammtx, distcoeff = calibcam.calcuateCameraMatrix(images)
+        ret, cammtx, distcoeff, reproerr = calibcam.calcuateCameraMatrix(images)
 
         strInfoText = ''
 
         if ret == True:
-            strInfoText = 'Calibration completed successfully...'
+            strInfoText = 'Calibration completed successfully... - ' + str(reproerr)
             
             # save calibration data to the specific xml file
             savedFileName = "CalibCamResult"+str(camIndex)+".json"
@@ -76,7 +76,7 @@ class CalibCameraKeyHandler(KeyHandler):
             updateUI.updateData(distcoeff[0], cammtx.reshape(1,9)[0])
 
         else:
-            strInfoText = 'Calibration failed.'
+            strInfoText = 'Calibration failed. - ' + str(reproerr)
         
         PrintMsg.printStdErr(strInfoText)
         infoText.setText(strInfoText)

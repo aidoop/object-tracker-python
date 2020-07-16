@@ -18,37 +18,37 @@ class CalibHandEyeKeyHandler(KeyHandler):
     def __init__(self):
         super().__init__()
         super().setKeyHandler('q', self.processQ)
-        super().setKeyHandler('d', self.processD)
-        super().setKeyHandler('f', self.processF)
-        super().setKeyHandler('r', self.processR)        
+        # super().setKeyHandler('d', self.processD)
+        # super().setKeyHandler('f', self.processF)
+        # super().setKeyHandler('r', self.processR)        
         super().setKeyHandler('c', self.processC)
         super().setKeyHandler('z', self.processZ)
         super().setKeyHandler('g', self.processG)
 
         # option: task move test..
-        super().setKeyHandler('n', self.processN)
+        # super().setKeyHandler('n', self.processN)
 
         self.interation = 0
 
     def processQ(self, *args):
         super().enableExitFlag()
 
-    def processD(self, *args):
-        indy = args[8]
-        # set direct-teaching mode on
-        PrintMsg.printStdErr("direct teaching mode: On")
-        indy.setDirectTeachingMode(True)
+    # def processD(self, *args):
+    #     indy = args[8]
+    #     # set direct-teaching mode on
+    #     PrintMsg.printStdErr("direct teaching mode: On")
+    #     indy.setDirectTeachingMode(True)
 
-    def processF(self, *args):
-        indy = args[8]
-        # set direct-teaching mode off
-        PrintMsg.printStdErr("direct teaching mode: Off")
-        indy.setDirectTeachingMode(False)  
+    # def processF(self, *args):
+    #     indy = args[8]
+    #     # set direct-teaching mode off
+    #     PrintMsg.printStdErr("direct teaching mode: Off")
+    #     indy.setDirectTeachingMode(False)  
 
-    def processR(self, *args):
-        indy = args[8]
-        indy.resetRobot()
-        PrintMsg.printStdErr("resetting the robot")
+    # def processR(self, *args):
+    #     indy = args[8]
+    #     indy.resetRobot()
+    #     PrintMsg.printStdErr("resetting the robot")
 
     def processC(self, *args):
         colorImage = args[1]
@@ -56,8 +56,9 @@ class CalibHandEyeKeyHandler(KeyHandler):
         rvec = args[4]
         ids = args[2]
         handeye = args[7]
-        indy = args[8]
-        infoText = args[9]
+        infoText = args[8]
+        gqlDataClient = args[9]
+        robotName = args[10]
 
         PrintMsg.printStdErr("---------------------------------------------------------------")
         if ids is None:
@@ -65,9 +66,14 @@ class CalibHandEyeKeyHandler(KeyHandler):
         for idx in range(0, ids.size):
             if(ids[idx] == Config.CalibMarkerID):
                 # get the current robot position
-                currTaskPose = indy.getCurrentPos()
+                # currTaskPose = indy.getCurrentPos()
+                currTaskPose = gqlDataClient.getRobotPose(robotName)
+
+                # convert dict. to list
+                currTPList = [currTaskPose['x'], currTaskPose['y'], currTaskPose['z'], currTaskPose['u'], currTaskPose['v'], currTaskPose['w']]
+
                 # capture additional matrices here
-                handeye.captureHandEyeInputs(currTaskPose, rvec[idx], tvec[idx])
+                handeye.captureHandEyeInputs(currTPList, rvec[idx], tvec[idx])
                 PrintMsg.printStdErr("Input Data Count: " + str(handeye.cntInputData))
                 strText = "Input Data Count: " + str(handeye.cntInputData)
                 infoText.setText(strText)
@@ -78,7 +84,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
 
     def processG(self, *args):
         handeye = args[7]
-        infoText = args[9]
+        infoText = args[8]
 
         if handeye.cntInputData < 3:
             return
@@ -94,48 +100,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
 
         infoText.setText('Succeeded to extract a handeye matrix.')
 
-    def processN(self, *args):
-        tvec = args[3]
-        rvec = args[4]
-        ids = args[2]
-        handeye = args[7]
-        indy = args[8]
-        infoText = args[9]
 
-        PrintMsg.printStdErr("---------------------------------------------------------------")
-        for idx in range(0, ids.size):
-            if ids[idx] == Config.TestMarkerID:
-                # change a rotation vector to a rotation matrix
-                rotMatrix = np.zeros(shape=(3,3))
-                cv2.Rodrigues(rvec[idx], rotMatrix)
 
-                # make a homogeneous matrix using a rotation matrix and a translation matrix a
-                hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec[idx])
 
-                # get a transformation matrix which was created by calibration process
-                hmmtx = HandEyeCalibration.loadTransformMatrix()
 
-                # calcaluate the specific position based on hmInput
-                hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.08, 0.0, Config.HandEyeTargetZ]).T)
-                hmInput = np.dot(hmCal2Cam, hmWanted)
-
-                # get the last homogeneous matrix
-                hmResult = np.dot(hmmtx, hmInput)
-
-                # get a final xyzuvw for the last homogenous matrix
-                xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
-                PrintMsg.printStdErr("Final XYZUVW: ")
-                PrintMsg.printStdErr(xyzuvw)
-
-                ############################################################################################
-                # test move to the destination
-                [x,y,z,u,v,w] = xyzuvw
-
-                # indy7 base position to gripper position
-                xyzuvw = [x,y,z,u*(-1),v+180.0,w] 
-                PrintMsg.printStdErr("Modifed TCP XYZUVW: ")
-                PrintMsg.printStdErr(xyzuvw)
-                indy.moveTaskPos(xyzuvw)
-    
-
-    

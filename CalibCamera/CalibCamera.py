@@ -58,7 +58,7 @@ class CalibrationCamera:
             dist = None
 
         # return reprojection error
-        return (calibResult, mtx, dist)
+        return (calibResult, mtx, dist, reperr)
 
     def saveResults(self, fname, mtx, dist):
         #name, ext = os.path.splitext(fname)

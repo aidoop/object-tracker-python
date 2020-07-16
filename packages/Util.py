@@ -23,7 +23,6 @@ class PrintMsg:
         return print(*args, **kwargs, file=sys.stderr)
         #pass
 
-
 # Info Text
 class DisplayInfoText:
 

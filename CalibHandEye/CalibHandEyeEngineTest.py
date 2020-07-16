@@ -12,7 +12,7 @@ from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
 from packages.RobotIndy7Dev import RobotIndy7Dev
 from packages.Util import ArucoTrackerErrMsg, DisplayInfoText
-from CalibHandEyeKeyHandler import CalibHandEyeKeyHandler
+from CalibHandEyeKeyHandlerTest import CalibHandEyeKeyHandler
 from HandEyeUtilSet import *
 from HandEyeTest import *
 

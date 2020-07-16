@@ -121,6 +121,10 @@ class VisonGqlDataClient:
         trackable_objects = vision_workspace['trackableObjects']
         self.fetchTrackableMarks(trackable_objects)
 
+    def getRobotPose(self, name):
+        return self.client.get_robot_arm_pose(name=name)
+
+
 
         
         

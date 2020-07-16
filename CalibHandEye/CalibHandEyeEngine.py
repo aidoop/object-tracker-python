@@ -55,17 +55,19 @@ if __name__ == '__main__':
 
     cameraObject = gqlDataClient.trackingCameras[cameraName]
 
+    robotName = ''
     if cameraObject.baseRobotArm is not None:
-        robotObject = gqlDataClient.robotArms[cameraObject.baseRobotArm['name']]
+        robotName = cameraObject.baseRobotArm['name']
+        robotObject = gqlDataClient.robotArms[robotName]
         robotIP = robotObject.endpoint
     else:
         robotIP = Config.INDY_SERVER_IP
 
     # create an indy7 object
-    indy7 = RobotIndy7Dev()
-    if(indy7.initalize(robotIP, Config.INDY_SERVER_NAME) == False):
-        print("Can't connect the robot and exit this process..")
-        sys.exit()    
+    # indy7 = RobotIndy7Dev()
+    # if(indy7.initalize(robotIP, Config.INDY_SERVER_NAME) == False):
+    #     print("Can't connect the robot and exit this process..")
+    #     sys.exit()    
 
     # create a window to display video frames
     cv2.namedWindow(cameraName)
@@ -109,7 +111,7 @@ if __name__ == '__main__':
     handeyeAruco.setCalibMarkerID(Config.CalibMarkerID)
 
     # start indy7 as a direct-teaching mode as default
-    indy7.setDirectTeachingMode(True)
+    # indy7.setDirectTeachingMode(True)
 
     # create info text 
     infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))    
@@ -129,8 +131,8 @@ if __name__ == '__main__':
                 break
             if ArucoTrackerErrMsg.checkValueIsNone(handeye, "hand eye matrix") == False:
                 break
-            if ArucoTrackerErrMsg.checkValueIsNone(indy7, "indy7 object") == False:
-                break            
+            # if ArucoTrackerErrMsg.checkValueIsNone(indy7, "indy7 object") == False:
+            #     break            
 
             (flagFindMainAruco, ids, rvec, tvec) =  handeyeAruco.processArucoMarker(color_image, mtx, dist, vcap)
 
@@ -142,7 +144,7 @@ if __name__ == '__main__':
             
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
-            if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, indy7, infoText):
+            if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, infoText, gqlDataClient, robotName):
                 break
             
             # have a delay to make CPU usage lower...
@@ -153,14 +155,14 @@ if __name__ == '__main__':
 
     finally:
         # direct teaching mode is disalbe before exit
-        if( indy7.getDirectTeachingMode() == True):
-            indy7.setDirectTeachingMode(False)
+        # if( 1.getDirectTeachingMode() == True):
+        #     indy7.setDirectTeachingMode(False)
         # Stop streaming
         vcap.stop()
     
     # arrange all to finitsh this application here
     cv2.destroyAllWindows()
-    indy7.finalize()
+    # indy7.finalize()
 
     
         
