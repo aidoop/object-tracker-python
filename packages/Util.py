@@ -38,5 +38,4 @@ class DisplayInfoText:
 
     def setText(self, text):
         self.text = text
-        
 
