@@ -9,6 +9,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))) )
 import Config
 from packages.CameraDevRealsense import RealsenseCapture
+from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraVideoCapture import VideoCapture
 from packages.RobotIndy7Dev import RobotIndy7Dev
 from packages.Util import ArucoTrackerErrMsg, DisplayInfoText
@@ -55,20 +56,20 @@ if __name__ == '__main__':
     handeye = HandEyeCalibration()
 
     # camera index
-    rsCamIndex = '001622072547'
+    rsCamIndex = '4'
 
     # create the camera device object
-    rsCamDev = RealsenseCapture(rsCamIndex)
-    #rsCamDev = OpencvCapture(args.camIndex)
+    #rsCamDev = RealsenseCapture(rsCamIndex)
+    rsCamDev = OpencvCapture(int(rsCamIndex))
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, 'camera01')     # fix camera name
+    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, 'camera03')     # fix camera name
 
     # Start streaming
     vcap.start()
 
     # get instrinsics
-    mtx, dist = vcap.getIntrinsicsMat(rsCamIndex, Config.UseRealSenseInternalMatrix)
+    mtx, dist = vcap.getIntrinsicsMat(int(rsCamIndex), Config.UseRealSenseInternalMatrix)
 
   # create key handler
     keyhandler = CalibHandEyeKeyHandler()

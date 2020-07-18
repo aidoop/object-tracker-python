@@ -11,7 +11,7 @@ dcnode = calibFile.getNode("distCoeff")
 dist = dcnode.mat()
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(6)
 
 while (True):
     ret, frame = cap.read()
@@ -47,17 +47,17 @@ while (True):
         #     aruco.drawAxis(color_image, mtx, dist, rvec[i], tvec[i], 0.1)
 
         # draw a square around the markers
-        aruco.drawDetectedMarkers(color_image, corners)
+        aruco.drawDetectedMarkers(frame, corners)
 
         # code to show ids of the marker found
         for i in range(0, ids.size):
-            cv2.putText(color_image, str(ids[i]), tuple(corners[i][0][0]), font, 1, (0,255,0), 1, cv2.LINE_AA)
+            cv2.putText(frame, str(ids[i]), tuple(corners[i][0][0]), font, 1, (0,255,0), 1, cv2.LINE_AA)
 
         
 
     else:
         # code to show 'No Ids' when no markers are found
-        cv2.putText(color_image, "No Ids", (0,64), font, 1, (0,255,0),2,cv2.LINE_AA)
+        cv2.putText(frame, "No Ids", (0,64), font, 1, (0,255,0),2,cv2.LINE_AA)
 
     # display the resulting frame
     cv2.imshow('frame',frame)

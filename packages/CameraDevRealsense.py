@@ -85,7 +85,7 @@ class RealsenseCapture(CameraDev):
         self._framePerSec = fps
 
         # enable color and depth streams 
-        self.__config.enable_stream(rs.stream.depth, self._frameWidth, self._frameHeight, rs.format.z16, self._framePerSec)
+        #self.__config.enable_stream(rs.stream.depth, self._frameWidth, self._frameHeight, rs.format.z16, self._framePerSec)
         self.__config.enable_stream(rs.stream.color, self._frameWidth, self._frameHeight, rs.format.bgr8, self._framePerSec)
 
     def startCapture(self):
@@ -101,13 +101,17 @@ class RealsenseCapture(CameraDev):
         self.__frames = self.__pipeline.wait_for_frames()
 
         # align the depth frame to color frame
-        self.__aligned_frames = self.__align.process(self.__frames)
+        #self.__aligned_frames = self.__align.process(self.__frames)
 
         # Get aligned frames
-        aligned_depth_frame = self.__aligned_frames.get_depth_frame() # aligned_depth_frame is a 640x480 depth image
-        color_frame = self.__aligned_frames.get_color_frame()
-        if not aligned_depth_frame or not color_frame:
-            return None
+        #aligned_depth_frame = self.__aligned_frames.get_depth_frame() # aligned_depth_frame is a 640x480 depth image
+        #color_frame = self.__aligned_frames.get_color_frame()
+        #if not aligned_depth_frame or not color_frame:
+            # return None
+
+        color_frame = self.__frames.get_color_frame()
+        if not color_frame:
+           return None            
 
         # convert images to numpy arrays
         color_image = np.asanyarray(color_frame.get_data())
@@ -116,14 +120,15 @@ class RealsenseCapture(CameraDev):
 
     # get 3D position w.r.t an image pixel based on camera-based coordination
     def get3DPosition(self, imageX, imageY):
-        aligned_depth_frame = self.__aligned_frames.get_depth_frame()
-        depth = aligned_depth_frame.get_distance(imageX, imageY)
+        # aligned_depth_frame = self.__aligned_frames.get_depth_frame()
+        # depth = aligned_depth_frame.get_distance(imageX, imageY)
         
-        depth_profile = self.__pipecfg.get_stream(rs.stream.depth)
-        self.depth_intrin = depth_profile.as_video_stream_profile().intrinsics        
+        # depth_profile = self.__pipecfg.get_stream(rs.stream.depth)
+        # self.depth_intrin = depth_profile.as_video_stream_profile().intrinsics        
         
-        depth_point = rs.rs2_deproject_pixel_to_point(self.depth_intrin, [imageX, imageY], depth)
-        return depth_point
+        # depth_point = rs.rs2_deproject_pixel_to_point(self.depth_intrin, [imageX, imageY], depth)
+        # return depth_point
+        pass
 
     def getInternalIntrinsicsMat(self):
         # get internal intrinsics & extrinsics in D435

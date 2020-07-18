@@ -7,8 +7,8 @@ INDY_SERVER_NAME = "NRMK-Indy7"
 
 # realsense camera parameters
 UseRealSenseInternalMatrix = False
-VideoFrameWidth = 1280
-VideoFrameHeight = 720
+VideoFrameWidth = 1920
+VideoFrameHeight = 1080
 VideoFramePerSec = 30
 
 # aruco parameters

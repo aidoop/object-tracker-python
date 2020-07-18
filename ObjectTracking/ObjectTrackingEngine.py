@@ -81,10 +81,7 @@ if __name__ == '__main__':
         if trackingCamera.type == 'realsense-camera':
             rsCamDev = RealsenseCapture(trackingCamera.endpoint)
         elif trackingCamera.type == 'camera-connector':
-            rsCamDev = OpencvCapture(endpoint)
-
-        if rsCamDev.foundDevice == False:
-            continue
+            rsCamDev = OpencvCapture(int(trackingCamera.endpoint))
 
         # create a video capture object and start 
         vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, vtc.name)
