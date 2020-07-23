@@ -94,7 +94,7 @@ class HandEyeCalibration:
         self.t_cam2gripper = []
 
         # enable/disable algorthm test
-        self.AlgorithmTest = False
+        self.AlgorithmTest = True
 
         # input data count
         self.cntInputData = 0
@@ -190,7 +190,7 @@ class HandEyeCalibration:
         methodHE = [cv2.CALIB_HAND_EYE_TSAI, cv2.CALIB_HAND_EYE_PARK, cv2.CALIB_HAND_EYE_HORAUD, cv2.CALIB_HAND_EYE_ANDREFF, cv2.CALIB_HAND_EYE_DANIILIDIS]
 
         if(self.AlgorithmTest == True):
-            fsHandEyeTest = cv2.FileStorage("HandEyeTestData.xml", cv2.FILE_STORAGE_WRITE)
+            fsHandEyeTest = cv2.FileStorage("HandEyeResultsLog.xml", cv2.FILE_STORAGE_WRITE)
             
         for mth in methodHE:
             self.R_cam2gripper, self.t_cam2gripper = cv2.calibrateHandEye(self.R_gripper2base, self.t_gripper2base, self.R_target2cam, self.t_target2cam, None, None, mth)
@@ -202,6 +202,9 @@ class HandEyeCalibration:
             PrintMsg.printStdErr("--------------------------------------")
             PrintMsg.printStdErr("Distance: %f" % math.sqrt(math.pow(self.t_cam2gripper[0], 2.0)+math.pow(self.t_cam2gripper[1], 2.0)+math.pow(self.t_cam2gripper[2], 2.0)))
             PrintMsg.printStdErr("--------------------------------------")
+
+            if(self.AlgorithmTest == True):
+                fsHandEyeTest.write("Method"+str(mth), math.sqrt(math.pow(self.t_cam2gripper[0], 2.0)+math.pow(self.t_cam2gripper[1], 2.0)+math.pow(self.t_cam2gripper[2], 2.0)))            
 
             # select HORAUD algorithm on temporary
             if(mth == cv2.CALIB_HAND_EYE_HORAUD):

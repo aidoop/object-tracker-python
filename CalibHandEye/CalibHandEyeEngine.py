@@ -116,6 +116,10 @@ if __name__ == '__main__':
     # create info text 
     infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))    
 
+    # setup an opencv window
+    cv2.namedWindow(cameraName, cv2.WINDOW_NORMAL)
+    cv2.setWindowProperty(cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+
     # get frames and process a key event
     try:
         while(True):
@@ -148,7 +152,7 @@ if __name__ == '__main__':
                 break
             
             # have a delay to make CPU usage lower...
-            sleep(0.2)
+            #qsleep(0.2)
 
     except Exception as ex:
         print("Error :", ex)

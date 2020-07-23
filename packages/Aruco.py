@@ -47,10 +47,10 @@ class ArucoDetect:
         self.arucoParameters.errorCorrectionRate = 0.6
 
         # Corner Refinement
-        self.arucoParameters.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX  #CORNER_REFINE_NONE(defalut)/CORNER_REFINE_SUBPIX/CORNER_REFINE_CONTOUR
-        self.arucoParameters.cornerRefinementWinSize = 3            # default: 5
-        self.arucoParameters.cornerRefinementMaxIterations = 30     # default: 30
-        self.arucoParameters.cornerRefinementMinAccuracy = 0.1     # default: 0.1
+        self.arucoParameters.cornerRefinementMethod = aruco.CORNER_REFINE_CONTOUR  #CORNER_REFINE_NONE(defalut)/CORNER_REFINE_SUBPIX/CORNER_REFINE_CONTOUR
+        self.arucoParameters.cornerRefinementWinSize = 4            # default: 5
+        self.arucoParameters.cornerRefinementMaxIterations = 100     # default: 30
+        self.arucoParameters.cornerRefinementMinAccuracy = 0.001    # default: 0.1
 
 
     def detect(self, grayFrameImage):

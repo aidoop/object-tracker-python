@@ -28,15 +28,16 @@ import math
 if __name__ == '__main__':
     
     # camera index
-    rsCamIndex = '001622072547'
-    rsCamDev = RealsenseCapture(rsCamIndex)
+    rsCamIndex = '4'
+    #rsCamDev = RealsenseCapture(rsCamIndex)
+    rsCamDev = OpencvCapture(int(rsCamIndex))
     vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, 'camera01')
 
     # Start streaming
     vcap.start()
 
     # get instrinsics
-    mtx, dist = vcap.getIntrinsicsMat(0, Config.UseRealSenseInternalMatrix)
+    mtx, dist = vcap.getIntrinsicsMat(int(rsCamIndex), Config.UseRealSenseInternalMatrix)
 
     # create an aruco detect object
     arucoDetect = ArucoDetect(Config.ArucoDict, Config.ArucoSize, mtx, dist)

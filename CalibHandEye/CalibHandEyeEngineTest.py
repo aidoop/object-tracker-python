@@ -46,9 +46,6 @@ if __name__ == '__main__':
         print("Can't connect the robot and exit this process..")
         sys.exit()
 
-    # create a window to display video frames
-    cv2.namedWindow('HandEye Calibration Test')
-
     # create a variable for frame indexing
     flagFindMainAruco = False
 
@@ -84,6 +81,10 @@ if __name__ == '__main__':
     # create info text 
     infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
 
+    # setup an opencv window
+    # cv2.namedWindow('HandEye', cv2.WINDOW_NORMAL)
+    # cv2.setWindowProperty('HandEye', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+
     # get frames and process a key event
     try:
         while(True):
@@ -107,7 +108,7 @@ if __name__ == '__main__':
             infoText.draw(color_image)
 
             # display the captured image
-            cv2.imshow('HandEye Calibration Test', color_image)
+            cv2.imshow('HandEye', color_image)
             
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
@@ -115,7 +116,7 @@ if __name__ == '__main__':
                 break
             
             # have a delay to make CPU usage lower...
-            sleep(0.2)
+            #sleep(0.1)
 
     except Exception as ex:
         print("Error :", ex)
