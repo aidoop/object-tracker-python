@@ -12,7 +12,7 @@ class ObjectTrackingKeyHandler(KeyHandler):
 
     def __init__(self):
         super().__init__()
-        super().setKeyHandler('q', self.processQ)     # should be exited by operato-ecs
+        #super().setKeyHandler('q', self.processQ)     # should be exited by operato-ecs
 
     def processQ(self, *args):
         super().enableExitFlag()

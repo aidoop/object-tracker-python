@@ -112,8 +112,8 @@ if __name__ == '__main__':
         vtc.ROIMgr = ROIMgr
 
         # setup an opencv window 
-        #cv2.namedWindow(vtc.name, cv2.WINDOW_NORMAL)
-        #cv2.setWindowProperty(vtc.name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.namedWindow(vtc.name, cv2.WINDOW_NORMAL)
+        cv2.setWindowProperty(vtc.name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
         vtcList.append(vtc)
         idx+=1

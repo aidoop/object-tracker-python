@@ -129,6 +129,9 @@ class ArucoMarkerTracker(ObjectTracker):
                         # append this object to the list to be returned
                         resultList.append(markerObject)
 
+                        # draw a cooordinate axis(x, y, z)
+                        aruco.drawAxis(color_image, mtx, dist, rvec[idx], tvec[idx], 0.02)
+
             # draw a square around the markers
             aruco.drawDetectedMarkers(color_image, corners)
 
