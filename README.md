@@ -1,4 +1,4 @@
-# CoboMarkerTracking
+# object-tracker-python
 
 - Prerequisites
   - Python: > 3.x
