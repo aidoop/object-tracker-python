@@ -25,6 +25,10 @@ class CalibHandEyeKeyHandler(KeyHandler):
         super().setKeyHandler('z', self.processZ)
         super().setKeyHandler('g', self.processG)
 
+        # new api test
+        super().setKeyHandler('l', self.processL)
+
+
         # option: task move test..
         super().setKeyHandler('n', self.processN)
 
@@ -151,6 +155,101 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 # PrintMsg.printStdErr("Recalculated XYZUVW: ")
                 # PrintMsg.printStdErr(xyzuvw2)     
                 # #indy.moveTaskPos(xyzuvw2)
+
+
+    def processL(self, *args):
+        tvec = args[3]
+        rvec = args[4]
+        ids = args[2]
+        handeye = args[7]
+        indy = args[8]
+        infoText = args[9]
+
+        PrintMsg.printStdErr("---------------------------------------------------------------")
+        for idx in range(0, ids.size):
+            if ids[idx] == Config.TestMarkerID:
+                # change a rotation vector to a rotation matrix
+                rotMatrix = np.zeros(shape=(3,3))
+                cv2.Rodrigues(rvec[idx], rotMatrix)
+
+                # make a homogeneous matrix using a rotation matrix and a translation matrix a
+                hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec[idx])
+
+                # get a transformation matrix which was created by calibration process
+                hmmtx = HandEyeCalibration.loadTransformMatrix()
+
+                # calcaluate the specific position based on hmInput
+                hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([-0.01, 0.005, Config.HandEyeTargetZ]).T)
+                #hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.08, 0.0, 0.0]).T)
+                #hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.0, 0.0, 0.0]).T)
+                #hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.0, 0.0, 0.0]).T)
+
+                hmInput = np.dot(hmCal2Cam, hmWanted)
+
+                # get the last homogeneous matrix
+                hmResult = np.dot(hmmtx, hmInput)
+
+                # get a final xyzuvw for the last homogenous matrix
+                xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
+                PrintMsg.printStdErr("Final XYZUVW: ")
+                PrintMsg.printStdErr(xyzuvw)
+
+                ############################################################################################
+                # test move to the destination
+                [x,y,z,u,v,w] = xyzuvw
+
+                # indy7 base position to gripper position
+                xyzuvw = [x,y,z,u*(-1),v+180.0,w] 
+                PrintMsg.printStdErr("Modifed TCP XYZUVW: ")
+                PrintMsg.printStdErr(xyzuvw)
+
+                curjpos = indy.getCurrentJointPos()
+                nextMoveAvail = indy.checkNextMove(xyzuvw, curjpos)
+                
+                print("------------------------------\n")
+                print("Curr: ", indy.getCurrentPos())
+
+                [xx, yy, zz, uu, vv, ww] = xyzuvw
+                if(ww < 0):
+                    ww = 180.0 + ww 
+                
+                xyzuvw = [xx, yy, zz, uu, vv, ww]
+
+                print("Next: ", xyzuvw)
+                print(nextMoveAvail)
+                
+                indy.moveTaskPos(xyzuvw)
+
+                # if(nextMoveAvail != [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]):
+                #     indy.moveTaskPos(xyzuvw)
+                # else:
+                #     [xc, yc, zc, uc, vc, wc] = indy.getCurrentPos()
+                #     [xx,yy,zz,uu,vv,ww] = xyzuvw
+
+                #     if( (ww - wc) >= 0 ):
+                #         ww = (ww-wc) - 360
+                #     else:
+                #         ww = (ww-wc) + 360
+
+
+                #     xyzuvw = [xx,yy,zz,uu,vv,ww]
+                #     print("target: ", xyzuvw)
+                #     indy.moveTaskPos(xyzuvw)
+                        
+
+                    
+                    
+                    #print("Can't move next postion" + "\n")
+
+                # # get a HM from TCP to Base
+                # hmRecal = HMUtil.convertXYZABCtoHMDeg(xyzuvw)
+                # # 
+                # hmWanted2 = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.0, 0.0, -0.3]).T)
+                # hmResult2 = np.dot(hmRecal, hmWanted2)
+                # xyzuvw2 = HMUtil.convertHMtoXYZABCDeg(hmResult2)
+                # PrintMsg.printStdErr("Recalculated XYZUVW: ")
+                # PrintMsg.printStdErr(xyzuvw2)     
+                # #indy.moveTaskPos(xyzuvw2)                
 
 
 

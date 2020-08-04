@@ -51,6 +51,13 @@ class RobotIndy7Dev(RobotDev):
     def getCurrentPos(self):
         return self.indy.get_task_pos()
 
+    def checkNextMove(self, next_task_pos, curr_joint_pos):
+        return self.indy.get_inv_kin(next_task_pos, curr_joint_pos)
+
+    ## get the current joint position
+    def getCurrentJointPos(self):
+        return self.indy.get_joint_pos()
+
     ## set direct-teaching mode
     def setDirectTeachingMode(self, flag):
         self.indy.direct_teaching(flag)

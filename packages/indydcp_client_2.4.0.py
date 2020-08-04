@@ -3,13 +3,6 @@ Created on 2019. 6. 17.
 
 @author: YJHeo
 '''
-
-'''
-Edited on 2020. 7. 2.
-
-@author: gwkim
-'''
-
 debugging = False
 
 import socket
@@ -251,13 +244,12 @@ CMD_GET_JOINT_VELOCITY                      = 321
 CMD_GET_TASK_POSITION                       = 322
 CMD_GET_TASK_VELOCITY                       = 323
 CMD_GET_TORQUE                              = 324
-CMD_GET_INV_KIN                             = 325
 
 CMD_GET_LAST_EMG_INFO                       = 380
 
 CMD_GET_SMART_DI                            = 400
 CMD_GET_SMART_DIS                           = 401
-CMD_SET_SMART_DO                            = 402   
+CMD_SET_SMART_DO                            = 402
 CMD_SET_SMART_DOS                           = 403
 CMD_GET_SMART_AI                            = 404
 CMD_SET_SMART_AO                            = 405
@@ -277,7 +269,6 @@ CMD_READ_DIRECT_VARIABLES                   = 461
 CMD_WRITE_DIRECT_VARIABLE                   = 462
 CMD_WRITE_DIRECT_VARIABLES                  = 463
 
-CMD_SET_SYNC_MODE				            = 700
 
 CMD_FOR_EXTENDED				            = 800
 CMD_FOR_STREAMING				            = 801
@@ -398,8 +389,8 @@ def dump_buf(msg, buf, length) :
     if debugging:
         print (msg)
         for i in range (0, length):
-            # print(i, end=' - ')
-            print(buf[i])
+            print (i, end=' - ')
+            print (buf[i])
 
 ###############################################################################
 # Decorators                                                                  #
@@ -414,34 +405,77 @@ def socket_connect(func):
         return func_out
     return decorated
 
-# gwkim
-
-def tcp_command(cmd, response_type=None):
+def tcp_command(cmd):
     def decorate(func):
-        def decorated(*args):
-            global JOINT_DOF
-            _req_data = func(*args)
-            if _req_data is None:
-                error_code, _res_data, _ = args[0]._handle_command(cmd)
-            else:
-                error_code, _res_data, _ = args[0]._handle_command(cmd, _req_data[0], _req_data[1])
-            
+        def decorated(self):
+            self._handle_command(cmd)
+            return func(self)
+        return decorated
+    return decorate
+
+
+def tcp_command_rec(cmd, data_type):
+    def decorate(func):
+        def decorated(self):
+            error_code, _res_data, _res_data_size = self._handle_command(cmd)
             if error_code:
                 return error_code
-            
-            if response_type == 'jointArr':
-                if JOINT_DOF == 6:
-                    return np.array(_res_data.double6dArr).tolist()
-                else:
-                    return np.array(_res_data.double7dArr).tolist()
-            elif response_type is not None:
-                return np.array(eval('_res_data.' + response_type)).tolist()
+            r = func(self)
+            if r is None:
+                return np.array(eval('_res_data.' + data_type)).tolist()
             else:
-                return None
+                return np.array(eval('_res_data.' + r)).tolist()
 
         return decorated
     return decorate
 
+
+def tcp_command_req(cmd, data_type, data_size):
+    def decorate(func):
+        def decorated(*args):
+            _req_data = Data()
+            _req_data_size = data_size
+
+            if hasattr(args[1], '__len__'):
+                for j in range(0, args[1].__len__()):
+                    tmp_val = args[1][j]
+                    exec('_req_data.' + data_type + '[j] = tmp_val')
+            else:
+                tmp_val = args[1]
+                exec('_req_data.' + data_type + ' = tmp_val')
+
+            args[0]._handle_command(cmd, _req_data, _req_data_size)
+            return func(*args)
+        return decorated
+    return decorate
+
+
+def tcp_command_req_rec(cmd, data_type_req, data_size, data_type_rec):
+    def decorate(func):
+        def decorated(*args):
+            _req_data = Data()
+            _req_data_size = data_size
+
+            if hasattr(args[1], '__len__'):
+                for j in range(0, args[1].__len__()):
+                    tmp_val = args[1][j]
+                    exec('_req_data.' + data_type_req + '[j] = tmp_val')
+            else:
+                tmp_val = args[1]
+                exec('_req_data.' + data_type_req + ' = tmp_val')
+
+            error_code, _res_data, _res_data_size = args[0]._handle_command(cmd, _req_data, _req_data_size)
+            if error_code:
+                return error_code
+            r = func(*args)
+
+            if r is None:
+                return np.array(eval('_res_data.' + data_type_rec)).tolist()
+            else:
+                return np.array(eval('_res_data.' + r)).tolist()
+
+        return decorated
+    return decorate
 
 
 ###############################################################################
@@ -484,7 +518,7 @@ class IndyDCPClient:
             return False
         else:
             if True:
-                print("Connect: Server IP ({ser_ip})".format(ser_ip=self.server_ip))
+                print("Connect: Server IP ({ser_ip})".format(ser_ip=self.server_ip), file=sys.stderr)   # aidoop: add file=sys.stderr
                 # self.__lock.release()
             return True
 
@@ -718,13 +752,16 @@ class IndyDCPClient:
         else:
             return ret, res_data, res_data_size
 
-# gwkim
+
     ############################################################################
     ## Robot command function (Check all)                                     #
     ############################################################################
-    @tcp_command(CMD_CHECK)
     def check(self):
-        pass        
+        # Get robot status
+        self._handle_command(CMD_CHECK)
+        error_code, _res_data, _res_data_size = self._handle_command(CMD_CHECK)
+        if not error_code:
+            pass
 
     # Get robot status
     def get_robot_status(self):
@@ -742,7 +779,7 @@ class IndyDCPClient:
                'direct_teaching': self.robot_status.is_direct_teaching_mode}
         return res
 
-    @tcp_command(CMD_IS_CONTY_CONNECTED, 'boolVal')
+    @tcp_command_rec(CMD_IS_CONTY_CONNECTED, 'boolVal')
     def is_conty_connected(self):
         pass
 
@@ -763,22 +800,15 @@ class IndyDCPClient:
         pass
 
     # Joint/Servo command
-    @tcp_command(CMD_SET_SERVO)
+    @tcp_command_req(CMD_SET_SERVO, 'bool6dArr', JOINT_DOF * 1)
     def set_servo(self, arr):
-        data = Data()
-        data_size = JOINT_DOF
-        for i in range(JOINT_DOF):
-            data.bool6dArr[i] = arr[i]
-        return (data, data_size)
+        pass
 
-    @tcp_command(CMD_SET_BRAKE)
+    @tcp_command_req(CMD_SET_BRAKE, 'bool6dArr', JOINT_DOF * 1)
     def set_brake(self, arr):
-        data = Data()
-        data_size = JOINT_DOF
-        for i in range(JOINT_DOF):
-            data.bool6dArr[i] = arr[i]
-        return (data, data_size)
+        pass
 
+    # Direct teaching
     def direct_teaching(self, mode):
         if mode:
             self._handle_command(CMD_CHANGE_DIRECT_TEACHING)
@@ -786,212 +816,172 @@ class IndyDCPClient:
             self._handle_command(CMD_FINISH_DIRECT_TEACHING)
 
     # Set global robot variables
-    @tcp_command(CMD_SET_DEFAULT_TCP)
+    @tcp_command_req(CMD_SET_DEFAULT_TCP, 'double6dArr', 6 * 8)
     def set_default_tcp(self, tcp):
-        data = Data()
-        data_size = 6 * 8
-        for i in range(JOINT_DOF):
-            data.double6dArr[i] = tcp[i]
-        return (data, data_size)
+        pass
 
     @tcp_command(CMD_RESET_DEFAULT_TCP)
     def reset_default_tcp(self):
         pass
 
-    @tcp_command(CMD_SET_COMP_TCP)
+    @tcp_command_req(CMD_SET_COMP_TCP, 'double6dArr', 6 * 8)
     def set_tcp_comp(self, tcp):
-        data = Data()
-        data_size = 6 * 8
-        for i in range(JOINT_DOF):
-            data.double6dArr[i] = tcp[i]
-        return (data, data_size)
+        pass
 
     @tcp_command(CMD_RESET_COMP_TCP)
     def reset_tcp_compensation(self):
         pass
 
-    @tcp_command(CMD_SET_REFFRAME)
+    @tcp_command_req(CMD_SET_REFFRAME, 'double6dArr', 6 * 8)
     def set_reference_frame(self, ref):
-        data = Data()
-        data_size = 6 * 8
-        for i in range(JOINT_DOF):
-            data.double6dArr[i] = ref[i]
-        return (data, data_size)
+        pass
 
     @tcp_command(CMD_RESET_REFFRAME)
     def reset_reference_frame(self):
         pass
 
-    @tcp_command(CMD_SET_COLLISION_LEVEL)
+    @tcp_command_req(CMD_SET_COLLISION_LEVEL, 'intVal', 4)
     def set_collision_level(self, level):
-        data = Data()
-        data_size = 4
-        data.intVal = level
-        return (data, data_size)
+        pass
 
-    @tcp_command(CMD_SET_JOINT_BOUNDARY)
+    @tcp_command_req(CMD_SET_JOINT_BOUNDARY, 'intVal', 4)
     def set_joint_vel_level(self, level):
-        data = Data()
-        data_size = 4
-        data.intVal = level
-        return (data, data_size)
+        pass
 
-    @tcp_command(CMD_SET_TASK_BOUNDARY)
+    @tcp_command_req(CMD_SET_TASK_BOUNDARY, 'intVal', 4)
     def set_task_vel_level(self, level):
-        data = Data()
-        data_size = 4
-        data.intVal = level
-        return (data, data_size)
+        pass
 
-    @tcp_command(CMD_SET_JOINT_WTIME)
+    @tcp_command_req(CMD_SET_JOINT_WTIME, 'doubleVal', 8)
     def set_joint_waypoint_time(self, wp_time):
-        data = Data()
-        data_size = 8
-        data.doubleVal = wp_time
-        return (data, data_size)
+        pass
 
-    @tcp_command(CMD_SET_TASK_WTIME)
+    @tcp_command_req(CMD_SET_TASK_WTIME, 'doubleVal', 8)
     def set_task_waypoint_time(self, wp_time):
-        data = Data()
-        data_size = 8
-        data.doubleVal = wp_time
-        return (data, data_size)
+        pass
 
-    @tcp_command(CMD_SET_TASK_CMODE)
+    @tcp_command_req(CMD_SET_TASK_CMODE, 'intVal', 4)
     def set_task_base(self, mode):
         # 0: reference frame, 1: TCO
-        data = Data()
-        data_size = 4
-        data.intVal = mode
-        return (data, data_size)
+        pass
 
-    @tcp_command(CMD_SET_JOINT_BLEND_RADIUS)
+    @tcp_command_req(CMD_SET_JOINT_BLEND_RADIUS, 'doubleVal', 8)
     def set_joint_blend_radius(self, radius):
-        data = Data()
-        data_size = 8
-        data.doubleVal = radius
-        return (data, data_size)
+        pass
 
-    @tcp_command(CMD_SET_TASK_BLEND_RADIUS)
+    @tcp_command_req(CMD_SET_TASK_BLEND_RADIUS, 'doubleVal', 8)
     def set_task_blend_radius(self, radius):
-        data = Data()
-        data_size = 8
-        data.doubleVal = radius
-        return (data, data_size)
+        pass
 
     # Get global robot variables
-    @tcp_command(CMD_GET_DEFAULT_TCP, 'double6dArr')
+    @tcp_command_rec(CMD_GET_DEFAULT_TCP, 'double6dArr')
     def get_default_tcp(self):
         pass
 
-    @tcp_command(CMD_GET_COMP_TCP, 'double6dArr')
+    @tcp_command_rec(CMD_GET_COMP_TCP, 'double6dArr')
     def get_tcp_comp(self):
         pass
 
-    @tcp_command(CMD_GET_REFFRAME, 'double6dArr')
+    @tcp_command_rec(CMD_GET_REFFRAME, 'double6dArr')
     def get_reference_frame(self):
         pass
 
-    @tcp_command(CMD_GET_COLLISION_LEVEL, 'intVal')
+    @tcp_command_rec(CMD_GET_COLLISION_LEVEL, 'intVal')
     def get_collision_level(self):
         pass
 
-    @tcp_command(CMD_GET_JOINT_BOUNDARY, 'intVal')
+    @tcp_command_rec(CMD_GET_JOINT_BOUNDARY, 'intVal')
     def get_joint_vel_level(self):
         pass
 
-    @tcp_command(CMD_GET_TASK_BOUNDARY, 'intVal')
+    @tcp_command_rec(CMD_GET_TASK_BOUNDARY, 'intVal')
     def get_task_vel_level(self):
         pass
 
-    @tcp_command(CMD_GET_JOINT_WTIME, 'doubleVal')
+    @tcp_command_rec(CMD_GET_JOINT_WTIME, 'doubleVal')
     def get_joint_waypoint_time(self):
         pass
 
-    @tcp_command(CMD_GET_TASK_WTIME, 'doubleVal')
+    @tcp_command_rec(CMD_GET_TASK_WTIME, 'doubleVal')
     def get_task_waypoint_time(self):
         pass
 
-    @tcp_command(CMD_GET_TASK_CMODE, 'intVal')
+    @tcp_command_rec(CMD_GET_TASK_CMODE, 'intVal')
     def get_task_base(self):
         pass
 
-    @tcp_command(CMD_GET_JOINT_BLEND_RADIUS, 'doubleVal')
+    @tcp_command_rec(CMD_GET_JOINT_BLEND_RADIUS, 'doubleVal')
     def get_joint_blend_radius(self):
         pass
 
-    @tcp_command(CMD_GET_TASK_BLEND_RADIUS, 'doubleVal')
+    @tcp_command_rec(CMD_GET_TASK_BLEND_RADIUS, 'doubleVal')
     def get_task_blend_radius(self):
         pass
 
-    @tcp_command(CMD_GET_RUNNING_TIME, 'doubleVal')
+    @tcp_command_rec(CMD_GET_RUNNING_TIME, 'doubleVal')
     def get_robot_running_time(self):
         pass
 
-    @tcp_command(CMD_GET_CMODE, 'intVal')
+    @tcp_command_rec(CMD_GET_CMODE, 'intVal')
     def get_cmode(self):
         pass
 
     def get_servo_state(self):
         error_code, _res_data, _res_data_size = self._handle_command(CMD_GET_JOINT_STATE)
-        if error_code:
-            return error_code
-
-        result = np.array(_res_data.charArr)
-        servo_state = result[0:JOINT_DOF].tolist()
-        brake_state = result[JOINT_DOF:2 * JOINT_DOF].tolist()
-        return servo_state, brake_state
+        if not error_code:
+            result = np.array(_res_data.charArr)
+            servo_state = result[0:JOINT_DOF].tolist()
+            brake_state = result[JOINT_DOF:2 * JOINT_DOF].tolist()
+            return servo_state, brake_state
 
     # Not released
-    @tcp_command(CMD_SET_REDUCED_MODE)
+    @tcp_command_req(CMD_SET_REDUCED_MODE, 'boolVal', 1)
     def set_reduced_mode(self, mode):
-        data = Data()
-        data_size = 1
-        data.boolVal = mode
-        return (data, data_size)
+        pass
 
-    @tcp_command(CMD_SET_REDUCED_SPEED_RATIO)
+    @tcp_command_req(CMD_SET_REDUCED_SPEED_RATIO, 'doubleVal', 8)
     def set_reduced_speed_ratio(self, ratio):
-        data = Data()
-        data_size = 8
-        data.doubleVal = ratio
-        return (data, data_size)
+        pass
 
-    @tcp_command(CMD_GET_REDUCED_MODE, 'boolVal')
+    @tcp_command_rec(CMD_GET_REDUCED_MODE, 'boolVal')
     def get_reduced_mode(self):
         pass
 
-    @tcp_command(CMD_GET_REDUCED_SPEED_RATIO, 'doubleVal')
+    @tcp_command_rec(CMD_GET_REDUCED_SPEED_RATIO, 'doubleVal')
     def get_reduced_speed_ratio(self):
         pass
 
     # Get robot data
-    @tcp_command(CMD_GET_JOINT_POSITION, "jointArr")
+    @tcp_command_rec(CMD_GET_JOINT_POSITION, "double6dArr")
     def get_joint_pos(self):
-        pass
+        if JOINT_DOF == 7:
+            return "double7dArr"
+        else:
+            return "double6dArr"
 
-    @tcp_command(CMD_GET_JOINT_VELOCITY, "jointArr")
+    @tcp_command_rec(CMD_GET_JOINT_VELOCITY, "double6dArr")
     def get_joint_vel(self):
-        pass
+        if JOINT_DOF == 7:
+            return "double7dArr"
+        else:
+            return "double6dArr"
 
-    @tcp_command(CMD_GET_TASK_POSITION, 'double6dArr')
+    @tcp_command_rec(CMD_GET_TASK_POSITION, 'double6dArr')
     def get_task_pos(self):
-        pass
+        return "double6dArr"
 
-    @tcp_command(CMD_GET_TASK_VELOCITY, 'double6dArr')
+    @tcp_command_rec(CMD_GET_TASK_VELOCITY, 'double6dArr')
     def get_task_vel(self):
-        pass
+        return "double6dArr"
 
-    @tcp_command(CMD_GET_TORQUE, 'jointArr')
+    @tcp_command_rec(CMD_GET_TORQUE, 'double6dArr')
     def get_control_torque(self):
-        pass
+        return "double6dArr"
 
     def get_last_emergency_info(self):
         # Check (TODO: represent meaning of results)
         error_code, _res_data, _res_data_size = self._handle_command(CMD_GET_LAST_EMG_INFO)
-        if error_code:
-            return error_code
-        else:
+        if not error_code:
             ret_code = c_int32()
             ret_int_arr = (c_int32 * 3)()
             ret_double_arr = (c_double * 3)()
@@ -1015,134 +1005,80 @@ class IndyDCPClient:
     def go_zero(self):
         pass
 
-    @tcp_command(CMD_JOINT_MOVE_TO)
     def joint_move_to(self, q):
-        data = Data()
-        data_size = JOINT_DOF * 8
-        for i in range(JOINT_DOF):
-            data.doubleArr[i] = q[i]
-        return (data, data_size)
+        if JOINT_DOF == 7:
+            @tcp_command_req(CMD_JOINT_MOVE_TO, 'double7dArr', JOINT_DOF * 8)
+            def j_m_to(self, q):
+                pass
 
-    @tcp_command(CMD_JOINT_MOVE_BY)
+            j_m_to(self, q)
+        else:
+            @tcp_command_req(CMD_JOINT_MOVE_TO, 'double6dArr', JOINT_DOF * 8)
+            def j_m_to(self, q):
+                pass
+
+            j_m_to(self, q)
+
     def joint_move_by(self, q):
-        data = Data()
-        data_size = JOINT_DOF * 8
-        for i in range(JOINT_DOF):
-            data.doubleArr[i] = q[i]
-        return (data, data_size)
+        if JOINT_DOF == 7:
+            @tcp_command_req(CMD_JOINT_MOVE_BY, 'double7dArr', JOINT_DOF * 8)
+            def j_m_by(self, q):
+                pass
 
-    @tcp_command(CMD_TASK_MOVE_TO)
+            j_m_by(self, q)
+        else:
+            @tcp_command_req(CMD_JOINT_MOVE_BY, 'double6dArr', JOINT_DOF * 8)
+            def j_m_by(self, q):
+                pass
+
+            j_m_by(self, q)
+
+    @tcp_command_req(CMD_TASK_MOVE_TO, 'double6dArr', 6 * 8)
     def task_move_to(self, p):
-        data = Data()
-        data_size = 6 * 8
-        for i in range(6):
-            data.double6dArr[i] = p[i]
-        return (data, data_size)
+        pass
 
-    @tcp_command(CMD_TASK_MOVE_BY)
+    @tcp_command_req(CMD_TASK_MOVE_BY, 'double6dArr', 6 * 8)
     def task_move_by(self, p):
-        data = Data()
-        data_size = 6 * 8
-        for i in range(6):
-            data.double6dArr[i] = p[i]
-        return (data, data_size)
+        pass
 
     # Waypoint move
-    @tcp_command(CMD_JOINT_PUSH_BACK_WAYPOINT_SET)
-    def joint_waypoint_append(self, q, wp_type=0, blend_radius=0):
-        # wp_type: 0 (absolute), 1 (relative joint)
-        # blend_radius: 0 ~ 23 [deg]
-
-        data = Data()
-        data_size = (JOINT_DOF + 2) * 8
-        data.doubleArr[0] = wp_type
-
-        if blend_radius >= 3 and blend_radius <= 27:
-            data.doubleArr[1] = blend_radius
-        else: 
-            data.doubleArr[1] = 0
-
-        for i in range(JOINT_DOF):
-            data.doubleArr[i + 2] = q[i]
-        
-        return (data, data_size)
+    @tcp_command_req(CMD_JOINT_PUSH_BACK_WAYPOINT_SET, 'double6dArr', JOINT_DOF * 8)
+    def push_back_joint_waypoint(self, q):
+        pass
 
     @tcp_command(CMD_JOINT_POP_BACK_WAYPOINT_SET)
-    def joint_waypoint_remove(self):
+    def pop_back_joint_waypoint(self):
         pass
 
     @tcp_command(CMD_JOINT_CLEAR_WAYPOINT_SET)
-    def joint_waypoint_clean(self):
+    def clear_joint_waypoints(self):
         pass
 
-# gwkim
     @tcp_command(CMD_JOINT_EXECUTE_WAYPOINT_SET)
-    def joint_waypoint_execute(self, policy=0, resume_time=2):
-        # 0 : stop
-        # 1 : auto resume
-        # 2 : auto resume reverse
-        # 3 : no detection
-        # return : target waypoint number when robot is collided
+    def execute_joint_waypoints(self):
+        pass
 
-        data = Data()
-        data_size = 2 * 8
-
-        data.doubleArr[0] = policy
-        data.doubleArr[1] = resume_time
-        
-        return (data, data_size)
-
-    @tcp_command(CMD_TASK_PUSH_BACK_WAYPOINT_SET)
-    def task_waypoint_append(self, p, wp_type=0, blend_radius=0):
-        # wp_type: 0 (absolute), 2 (relative task)
-        # task_base = 0 (base reference), 1 (base tcp)
-        # blend radius: 0.02 ~ 0.2 [m]
-
-        data = Data()
-        data_size = (6 + 2) * 8
-        data.doubleArr[0] = wp_type
-
-        if blend_radius >= 0.02 and blend_radius <= 0.2:
-            data.doubleArr[1] = blend_radius
-        else: 
-            data.doubleArr[1] = 0
-
-        for i in range(6):
-            data.doubleArr[i + 2] = p[i]
-
-        return (data, data_size)
+    @tcp_command_req(CMD_TASK_PUSH_BACK_WAYPOINT_SET, 'double6dArr', 6 * 8)
+    def push_back_task_waypoint(self, p):
+        pass
 
     @tcp_command(CMD_TASK_POP_BACK_WAYPOINT_SET)
-    def task_waypoint_remove(self):
+    def pop_back_task_waypoint(self):
         pass
 
     @tcp_command(CMD_TASK_CLEAR_WAYPOINT_SET)
-    def task_waypoint_clean(self):
+    def clear_task_waypoints(self):
         pass
 
-# gwkim
     @tcp_command(CMD_TASK_EXECUTE_WAYPOINT_SET)
-    def task_waypoint_execute(self, policy=0, resume_time=2):
-        # 0 : stop
-        # 1 : auto resume
-        # 2 : auto resume reverse
-        # 3 : no detection
-        # return : target waypoint number when robot is collided
-        data = Data()
-        data_size = 2 * 8
-
-        data.doubleArr[0] = policy
-        data.doubleArr[1] = resume_time
-
-        return (data, data_size)
-
+    def execute_task_waypoints(self):
+        pass
 
     # Conty's move command
-    @tcp_command(CMD_MOVE)
     def execute_move(self, cmd_name):
-        data = cmd_name.encode('ascii')
-        data_size = len(cmd_name)
-        return (data, data_size)
+        _req_data = cmd_name.encode('ascii')
+        _req_data_size = len(cmd_name)
+        self._handle_command(CMD_MOVE, _req_data, _req_data_size)
 
     # Program control
     @tcp_command(CMD_START_CURRENT_PROGRAM)
@@ -1165,14 +1101,11 @@ class IndyDCPClient:
     def start_default_program(self):
         pass
 
-    @tcp_command(CMD_REGISTER_DEFAULT_PROGRAM_IDX)
+    @tcp_command_req(CMD_REGISTER_DEFAULT_PROGRAM_IDX, 'intVal', 4)
     def set_default_program(self, idx):
-        data = Data()
-        data_size = 4
-        data.intVal = idx
-        return (data, data_size)
+        pass
 
-    @tcp_command(CMD_GET_REGISTERED_DEFAULT_PROGRAM_IDX, 'intVal')
+    @tcp_command_rec(CMD_GET_REGISTERED_DEFAULT_PROGRAM_IDX, 'intVal')
     def get_default_program_idx(self):
         pass
 
@@ -1184,76 +1117,77 @@ class IndyDCPClient:
         else:
             return np.array(_res_data.charArr).tolist()[0:32]
 
-    @tcp_command(CMD_SET_SMART_DO)
     def set_do(self, idx, val):
-        data = Data()
-        data_size = 5
+        _req_data = Data()
+        _req_data_size = 5
 
-        memset(data.byte, 0, sizeof(data.byte))
-        memmove(data.byte, pointer(c_int32(idx)), sizeof(c_int32))
-        memmove(addressof(data.byte)+4, pointer(c_ubyte(val)), sizeof(c_ubyte))
+        memset(_req_data.byte, 0, sizeof(_req_data.byte))
+        memmove(_req_data.byte, pointer(c_int32(idx)), sizeof(c_int32))
+        memmove(addressof(_req_data.byte)+4, pointer(c_ubyte(val)), sizeof(c_ubyte))
 
-        return (data, data_size)
+        self._handle_command(CMD_SET_SMART_DO, _req_data, _req_data_size)
 
-    @tcp_command(CMD_GET_SMART_DOS, 'charArr')
+    # @tcp_command_req(CMD_SET_SMART_DOS, 'charArr', 32)
+    # def set_do(self, arr):
+    #     pass
+
+    @tcp_command_rec(CMD_GET_SMART_DOS, 'charArr')
     def get_do(self):
         pass
 
-    @tcp_command(CMD_GET_SMART_AI, 'intVal')
+    @tcp_command_req_rec(CMD_GET_SMART_AI, 'intVal', 4, 'intVal')
     def get_ai(self, idx):
-        data = Data()
-        data_size = 4
-        data.intVal = idx
-        return (data, data_size)
+        pass
 
-    @tcp_command(CMD_SET_SMART_AO)
     def set_ao(self, idx, val):
-        data = Data()
-        data_size = 8
-        data.intArr[0] = idx
-        data.intArr[1] = val
-        return (data, data_size)
+        _req_data = Data()
+        _req_data_size = 8
+        _req_data.intArr[0] = idx
+        _req_data.intArr[1] = val
+        self._handle_command(CMD_SET_SMART_AO, _req_data, _req_data_size)
 
-    @tcp_command(CMD_GET_SMART_AO, 'intVal')
+    # def set_ao(self, arr):
+    #     _req_data = Data()
+    #     _req_data_size = 8
+    #     _req_data.intArr[0] = 0
+    #     _req_data.intArr[1] = arr[0]
+    #     self._handle_command(CMD_SET_SMART_AO, _req_data, _req_data_size)
+    #     _req_data.intArr[0] = 1
+    #     _req_data.intArr[1] = arr[1]
+    #     self._handle_command(CMD_SET_SMART_AO, _req_data, _req_data_size)
+
+    @tcp_command_req_rec(CMD_GET_SMART_AO, 'intVal', 4, 'intVal')
     def get_ao(self, idx):
-        data = Data()
-        data_size = 4
-        data.intVal = idx
-        return (data, data_size)
+        pass
 
-    @tcp_command(CMD_SET_ENDTOOL_DO)
     def set_endtool_do(self, endtool_type, val):
         # endtool_type:
         # 0: NPN, 1: PNP, 2: Not use, 3: eModi
-        data = Data()
-        data_size = 5
-        memset(data.byte, 0, sizeof(data.byte))
-        memmove(data.byte, pointer(c_int32(endtool_type)), sizeof(c_int32))
-        memmove(addressof(data.byte) + 4, pointer(c_ubyte(val)), sizeof(c_ubyte))
+        _req_data = Data()
+        _req_data_size = 5
+        memset(_req_data.byte, 0, sizeof(_req_data.byte))
+        memmove(_req_data.byte, pointer(c_int32(endtool_type)), sizeof(c_int32))
+        memmove(addressof(_req_data.byte) + 4, pointer(c_ubyte(val)), sizeof(c_ubyte))
+        self._handle_command(CMD_SET_ENDTOOL_DO, _req_data, _req_data_size)
 
-        return (data, data_size)
-
-    @tcp_command(CMD_GET_ENDTOOL_DO, 'charVal')
+    @tcp_command_req_rec(CMD_GET_ENDTOOL_DO, 'intVal', 4, 'charVal')
     def get_endtool_do(self, type):
-        data = Data()
-        data_size = 4
-        data.intVal = type
-        return (data, data_size)
+        pass
 
     # FT sensor interface
-    @tcp_command(CMD_GET_EXTIO_FTCAN_ROBOT_RAW, 'int6dArr')
+    @tcp_command_rec(CMD_GET_EXTIO_FTCAN_ROBOT_RAW, 'int6dArr')
     def get_robot_ft_raw(self):
         pass
 
-    @tcp_command(CMD_GET_EXTIO_FTCAN_ROBOT_TRANS, 'double6dArr')
+    @tcp_command_rec(CMD_GET_EXTIO_FTCAN_ROBOT_TRANS, 'double6dArr')
     def get_robot_ft(self):
         pass
 
-    @tcp_command(CMD_GET_EXTIO_FTCAN_CB_RAW, 'int6dArr')
+    @tcp_command_rec(CMD_GET_EXTIO_FTCAN_CB_RAW, 'int6dArr')
     def get_cb_ft_raw(self):
         pass
 
-    @tcp_command(CMD_GET_EXTIO_FTCAN_CB_TRANS, 'double6dArr')
+    @tcp_command_rec(CMD_GET_EXTIO_FTCAN_CB_TRANS, 'double6dArr')
     def get_cb_ft(self):
         pass
 
@@ -1465,26 +1399,6 @@ class IndyDCPClient:
 
         self._handle_command(CMD_WRITE_DIRECT_VARIABLES, _req_data, _req_data_size)
 
-    @tcp_command(CMD_GET_INV_KIN, 'jointArr')
-    def get_inv_kin(self, task_pos, init_q):
-        data = Data()
-        data_size = (JOINT_DOF + 6) * 8
-
-        for i in range(6):
-            data.doubleArr[i] = task_pos[i]
-
-        for i in range(JOINT_DOF):
-            data.doubleArr[i+6] = init_q[i]
-
-        return (data, data_size)
-
-    @tcp_command(CMD_SET_SYNC_MODE)
-    def set_sync_mode(self, isSyncMode):
-        data = Data()
-        data_size = 1
-        data.boolVal = isSyncMode
-        return (data, data_size)
-
     ############################################################################
     ## Extended IndyDCP command (Check all)                                    #
     ############################################################################
@@ -1582,44 +1496,44 @@ class IndyDCPClient:
         else:
             return False
 
-############################################################################
-## Teaching points                                                         #
-############################################################################
-def load_teaching_data(file_name):
-    with open(file_name, "r") as json_file:
-        teach_config = json.load(json_file)
+    ############################################################################
+    ## Teaching points                                                         #
+    ############################################################################
+    def load_teaching_data(self, file_name):
+        with open(file_name, "r") as json_file:
+            teach_config = json.load(json_file)
+            return teach_config
+
+    def update_teaching_data(self, file_name, wp_name, j_pos):
+        new_pos = []
+        for pos in j_pos:
+            new_pos.append(float(pos))
+
+        teach_data = {wp_name: new_pos}
+
+        # If not an exist file
+        if not os.path.isfile(file_name):
+            with open(file_name, "w+") as f:
+                json.dump(teach_data, f)
+                return teach_data
+        #
+        with open(file_name, "r") as json_file:
+            teach_config = json.load(json_file)
+            teach_config.update(teach_data)
+
+        with open(file_name, "w+") as json_file:
+            json.dump(teach_config, json_file)
+            return teach_config
+
+    def del_teaching_data(self, file_name, wp_name):
+        with open(file_name) as json_file:
+            teach_config = json.load(json_file)
+            del teach_config[wp_name]
+
+        with open(file_name, 'w') as f:
+            json.dump(teach_config, f)
+
         return teach_config
-
-def update_teaching_data(file_name, wp_name, j_pos):
-    new_pos = []
-    for pos in j_pos:
-        new_pos.append(float(pos))
-
-    teach_data = {wp_name: new_pos}
-
-    # If not an exist file
-    if not os.path.isfile(file_name):
-        with open(file_name, "w+") as f:
-            json.dump(teach_data, f)
-            return teach_data
-    #
-    with open(file_name, "r") as json_file:
-        teach_config = json.load(json_file)
-        teach_config.update(teach_data)
-
-    with open(file_name, "w+") as json_file:
-        json.dump(teach_config, json_file)
-        return teach_config
-
-def del_teaching_data(file_name, wp_name):
-    with open(file_name) as json_file:
-        teach_config = json.load(json_file)
-        del teach_config[wp_name]
-
-    with open(file_name, 'w') as f:
-        json.dump(teach_config, f)
-
-    return teach_config
 
 
 ###############################################################################
@@ -1638,6 +1552,32 @@ if __name__ == '__main__':
     indy.connect()
 
 
+    # Check robot ready
+    print('### Test: IsReady() ###')
+    if indy.is_robot_ready():
+        print('Robot is ready!')
+    else:
+        print('Robot is not ready!')
+
+    # Check moving finished
+    print('### Test: IsMoveFinished() ###')
+    if indy.is_move_finished():
+        print('Robot is not moving!')
+    else:
+        print('Robot is moving!')
+
+    # Check DirectTeaching
+    print('### Test: StartDirectTeaching() ###')
+    if indy.direct_teaching(True):
+        print('Start DirectTeaching success!')
+    else:
+        print('Start DirectTeaching failed!')
+
+    print('### Test: StopDirectTeaching() ###')
+    if indy.direct_teaching(False):
+        print('Stop DirectTeaching success!')
+    else:
+        print('Stop DirectTeaching failed!')
 
     # Get Task Position
     print('### Test: GetTaskPos() ###')
@@ -1651,21 +1591,13 @@ if __name__ == '__main__':
     print ("Joint Pos: ")
     print (joint_pos)
 
-    # check if next move is available
-    print('get_inv_kin test: ')
-    print(indy.get_inv_kin(task_pos, joint_pos))
+    # Move to Task
+    print('### Test: MoveToT() ###')
+    indy.task_move_to(task_pos)
 
-
-
-    # # Move to Task
-    # print('### Test: MoveToT() ###')
-    # indy.task_move_to(task_pos)
-
-    # # Move to Joint
-    # print('### Test: MoveToJ() ###')
-    # indy.joint_move_to(joint_pos)
-    
-    
+    # Move to Joint
+    print('### Test: MoveToJ() ###')
+    indy.joint_move_to(joint_pos)
     # Disconnect
     indy.disconnect()
     print("Test finished")

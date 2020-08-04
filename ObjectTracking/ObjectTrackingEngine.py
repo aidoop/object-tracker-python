@@ -112,8 +112,8 @@ if __name__ == '__main__':
         vtc.ROIMgr = ROIMgr
 
         # setup an opencv window 
-        cv2.namedWindow(vtc.name, cv2.WINDOW_NORMAL)
-        cv2.setWindowProperty(vtc.name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        # cv2.namedWindow(vtc.name, cv2.WINDOW_NORMAL)
+        # cv2.setWindowProperty(vtc.name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
         vtcList.append(vtc)
         idx+=1
@@ -173,6 +173,10 @@ if __name__ == '__main__':
                         for resultObj in resultObjs:
                             (found, foundRIDs) = vtc.ROIMgr.isInsideROI(resultObj.corners)
                             [x, y, z, u, v, w] = resultObj.targetPos
+
+                            # modify z axis rotation
+                            w = w + 180.0 if w < 0 else w
+
                             if found is True:
                                 objStatusUpdate.addObjStatus(resultObj.markerID, foundRIDs, x, y, z, u, v, w)
                             else:

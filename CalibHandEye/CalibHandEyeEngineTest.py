@@ -60,7 +60,7 @@ if __name__ == '__main__':
     rsCamDev = OpencvCapture(int(rsCamIndex))
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, 'camera03')     # fix camera name
+    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, 'camera04')     # fix camera name
 
     # Start streaming
     vcap.start()
