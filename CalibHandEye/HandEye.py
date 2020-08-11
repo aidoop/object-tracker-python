@@ -187,7 +187,7 @@ class HandEyeCalibration:
         self.cntInputData = 0
 
     def getHandEyeResultMatrixUsingOpenCV(self):
-        methodHE = [cv2.CALIB_HAND_EYE_TSAI, cv2.CALIB_HAND_EYE_PARK, cv2.CALIB_HAND_EYE_HORAUD, cv2.CALIB_HAND_EYE_ANDREFF, cv2.CALIB_HAND_EYE_DANIILIDIS]
+        methodHE = [cv2.CALIB_HAND_EYE_PARK, cv2.CALIB_HAND_EYE_HORAUD]
 
         if(self.AlgorithmTest == True):
             fsHandEyeTest = cv2.FileStorage("HandEyeResultsLog.xml", cv2.FILE_STORAGE_WRITE)
