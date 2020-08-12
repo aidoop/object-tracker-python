@@ -99,6 +99,9 @@ class HandEyeCalibration:
         # input data count
         self.cntInputData = 0
 
+        # distance
+        self.distance = 0.0
+
 
     #deperecated
     # Ref) https://stackoverflow.com/questions/27546081/determining-a-homogeneous-affine-transformation-matrix-from-six-points-in-3d-usi
@@ -186,11 +189,8 @@ class HandEyeCalibration:
         self.t_target2cam.clear()
         self.cntInputData = 0
 
-    def getHandEyeResultMatrixUsingOpenCV(self):
-        methodHE = [cv2.CALIB_HAND_EYE_PARK, cv2.CALIB_HAND_EYE_HORAUD]
-
-        if(self.AlgorithmTest == True):
-            fsHandEyeTest = cv2.FileStorage("HandEyeResultsLog.xml", cv2.FILE_STORAGE_WRITE)
+    def calculateHandEyeMatrix(self):
+        methodHE = [cv2.CALIB_HAND_EYE_HORAUD]
             
         for mth in methodHE:
             self.R_cam2gripper, self.t_cam2gripper = cv2.calibrateHandEye(self.R_gripper2base, self.t_gripper2base, self.R_target2cam, self.t_target2cam, None, None, mth)
@@ -200,27 +200,35 @@ class HandEyeCalibration:
             PrintMsg.printStdErr(self.R_cam2gripper)
             PrintMsg.printStdErr(self.t_cam2gripper)
             PrintMsg.printStdErr("--------------------------------------")
-            PrintMsg.printStdErr("Distance: %f" % math.sqrt(math.pow(self.t_cam2gripper[0], 2.0)+math.pow(self.t_cam2gripper[1], 2.0)+math.pow(self.t_cam2gripper[2], 2.0)))
-            PrintMsg.printStdErr("--------------------------------------")
+            self.distance = math.sqrt(math.pow(self.t_cam2gripper[0], 2.0)+math.pow(self.t_cam2gripper[1], 2.0)+math.pow(self.t_cam2gripper[2], 2.0))
+            PrintMsg.printStdErr("Distance: %f" % self.distance)
+            PrintMsg.printStdErr("--------------------------------------")        
 
-            if(self.AlgorithmTest == True):
-                fsHandEyeTest.write("Method"+str(mth), math.sqrt(math.pow(self.t_cam2gripper[0], 2.0)+math.pow(self.t_cam2gripper[1], 2.0)+math.pow(self.t_cam2gripper[2], 2.0)))
+    def getHandEyeResultMatrixUsingOpenCV(self):
 
-            # select HORAUD algorithm on temporary
-            if(mth == cv2.CALIB_HAND_EYE_HORAUD):
-                # for idx in range(len(self.R_gripper2base)):
-                #     print("######")
-                # make a homogeneous matrix from Target(Calibration) to Gripper(TCP)
-                hmT2G = HMUtil.makeHM(self.R_cam2gripper, self.t_cam2gripper.T)
-                # make a homogeneous matrix from Gripper(TCP) to Robot Base
-                hmG2B = HMUtil.makeHM(self.R_gripper2base[0], self.t_gripper2base[0].reshape(1,3))
-                # make a homogeneous matrix from Camera to Target(Target)
-                hmC2T = HMUtil.makeHM(self.R_target2cam[0], self.t_target2cam[0].reshape(1,3))
+        if(self.AlgorithmTest == True):
+            fsHandEyeTest = cv2.FileStorage("HandEyeResultsLog.xml", cv2.FILE_STORAGE_WRITE)
 
-                # Final HM(Camera to Robot Base)
-                # H(C2B) = H(G2B)H(T2G)H(C2T)
-                hmResultTransform = np.dot(hmG2B, hmT2G)
-                hmResultTransform = np.dot(hmResultTransform, hmC2T)            
+        self.calculateHandEyeMatrix()
+            
+        if(self.AlgorithmTest == True):
+            fsHandEyeTest.write("Method", math.sqrt(math.pow(self.t_cam2gripper[0], 2.0)+math.pow(self.t_cam2gripper[1], 2.0)+math.pow(self.t_cam2gripper[2], 2.0)))            
+
+        # select HORAUD algorithm on temporary
+        #if(mth == cv2.CALIB_HAND_EYE_HORAUD):
+        # for idx in range(len(self.R_gripper2base)):
+        #     print("######")
+        # make a homogeneous matrix from Target(Calibration) to Gripper(TCP)
+        hmT2G = HMUtil.makeHM(self.R_cam2gripper, self.t_cam2gripper.T)
+        # make a homogeneous matrix from Gripper(TCP) to Robot Base
+        hmG2B = HMUtil.makeHM(self.R_gripper2base[0], self.t_gripper2base[0].reshape(1,3))
+        # make a homogeneous matrix from Camera to Target(Target)
+        hmC2T = HMUtil.makeHM(self.R_target2cam[0], self.t_target2cam[0].reshape(1,3))
+
+        # Final HM(Camera to Robot Base)
+        # H(C2B) = H(G2B)H(T2G)H(C2T)
+        hmResultTransform = np.dot(hmG2B, hmT2G)
+        hmResultTransform = np.dot(hmResultTransform, hmC2T)       
 
         if(self.AlgorithmTest == True):
             fsHandEyeTest.release()          

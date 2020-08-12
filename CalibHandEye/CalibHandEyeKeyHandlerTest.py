@@ -73,8 +73,12 @@ class CalibHandEyeKeyHandler(KeyHandler):
 
                 # capture additional matrices here
                 handeye.captureHandEyeInputs(currTaskPose, rvec[idx], tvec[idx])
+
+                if handeye.cntInputData >= 3:
+                    handeye.calculateHandEyeMatrix()
+
                 PrintMsg.printStdErr("Input Data Count: " + str(handeye.cntInputData))
-                strText = "Input Data Count: " + str(handeye.cntInputData)
+                strText = "Input Data Count: " + str(handeye.cntInputData) +"(" + str(handeye.distance) + ")"
                 infoText.setText(strText)
 
     def processZ(self, *args):
