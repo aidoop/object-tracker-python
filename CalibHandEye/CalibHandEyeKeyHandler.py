@@ -85,6 +85,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
     def processZ(self, *args):
         handeye = args[7]
         handeye.resetHandEyeInputs()
+        handeye.distance = 0.0
 
     def processG(self, *args):
         handeye = args[7]

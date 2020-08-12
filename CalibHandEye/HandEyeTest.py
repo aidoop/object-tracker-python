@@ -161,11 +161,11 @@ class HandEyeCalibration:
             self.R_cam2gripper, self.t_cam2gripper = cv2.calibrateHandEye(self.R_gripper2base, self.t_gripper2base, self.R_target2cam, self.t_target2cam, None, None, mth)
             cv2.calibrateHandEye(self.R_gripper2base, self.t_gripper2base, self.R_target2cam, self.t_target2cam, None, None, mth)
             # output results
-            PrintMsg.printStdErr("--------------------------------------")
-            PrintMsg.printStdErr("Method %d" % mth)
-            PrintMsg.printStdErr(self.R_cam2gripper)
-            PrintMsg.printStdErr(self.t_cam2gripper)
-            PrintMsg.printStdErr("--------------------------------------")
+            # PrintMsg.printStdErr("--------------------------------------")
+            # PrintMsg.printStdErr("Method %d" % mth)
+            # PrintMsg.printStdErr(self.R_cam2gripper)
+            # PrintMsg.printStdErr(self.t_cam2gripper)
+            # PrintMsg.printStdErr("--------------------------------------")
 
     def captureHandEyeInputs(self, robotXYZABC, camRVec, camTVec):
         # prepare Gripper2Base inputs
