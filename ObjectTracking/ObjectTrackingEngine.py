@@ -187,6 +187,8 @@ if __name__ == '__main__':
                 for ROIRegion in vtc.ROIMgr.getROIList():
                     cv2.rectangle(color_image, (ROIRegion[0], ROIRegion[1]), (ROIRegion[2], ROIRegion[3]), (255,0,0), 3)
 
+                # display a video by half of original size
+                #color_image_half = cv2.resize(color_image, (960, 540)) 
                 cv2.imshow(vtc.name, color_image)
 
             # send object information to UI and clear all
@@ -195,7 +197,7 @@ if __name__ == '__main__':
             objStatusUpdate.clearObjStatus()
 
             # sleep for the specified duration.
-            time.sleep(0.1)
+            time.sleep(0.2)
 
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
