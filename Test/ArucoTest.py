@@ -11,7 +11,7 @@ dcnode = calibFile.getNode("distCoeff")
 dist = dcnode.mat()
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-cap = cv2.VideoCapture(12)
+cap = cv2.VideoCapture(10)
 
 while (True):
     ret, frame = cap.read()

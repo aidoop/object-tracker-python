@@ -53,7 +53,7 @@ if __name__ == '__main__':
     handeye = HandEyeCalibration()
 
     # camera index
-    rsCamIndex = '4'
+    rsCamIndex = '10'
 
     # create the camera device object
     #rsCamDev = RealsenseCapture(rsCamIndex)

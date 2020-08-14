@@ -28,10 +28,10 @@ import math
 if __name__ == '__main__':
     
     # camera index
-    rsCamIndex = '4'
+    rsCamIndex = '10'
     #rsCamDev = RealsenseCapture(rsCamIndex)
     rsCamDev = OpencvCapture(int(rsCamIndex))
-    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, 'camera01')
+    vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, 'camera02')
 
     # Start streaming
     vcap.start()
@@ -52,6 +52,8 @@ if __name__ == '__main__':
 
             # lists of ids and the corners belonging to each id
             corners, ids = arucoDetect.detect(gray)
+            if (corners is None) or (ids is None):
+                continue
 
             # rvet and tvec-different from camera coefficients
             rvec, tvec = arucoDetect.estimatePose(corners)
@@ -63,8 +65,6 @@ if __name__ == '__main__':
             tdiff = abs(tvec[0] - tvec[1])
             tdist = math.sqrt(math.pow(tdiff[0][0], 2.0)+math.pow(tdiff[0][1], 2.0)+math.pow(tdiff[0][2], 2.0))
             print(tdist)
-
-            time.sleep(0.1)
 
             # display the captured image
             cv2.imshow('Prcision Test', color_image)
