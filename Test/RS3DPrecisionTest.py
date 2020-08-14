@@ -41,7 +41,7 @@ if __name__ == '__main__':
     depth_scale = depth_sensor.get_depth_scale()        
 
     # to test using calibrated parameters, not internal...
-    rsCamIndex = '001622072547'
+    rsCamIndex = '001622071306'
     rsCamDev = RealsenseCapture(rsCamIndex)
     vcap = VideoCapture(rsCamDev, Config.VideoFrameWidth, Config.VideoFrameHeight, Config.VideoFramePerSec, 'camera01')
     mtx, dist = vcap.getIntrinsicsMat(0, False)
@@ -80,6 +80,8 @@ if __name__ == '__main__':
 
             # lists of ids and the corners belonging to each id
             corners, ids = arucoDetect.detect(gray)
+            if (corners is None) or (ids is None):
+                continue
 
             # rvet and tvec-different from camera coefficients
             rvec, tvec = arucoDetect.estimatePose(corners)

@@ -52,21 +52,20 @@ if __name__ == '__main__':
 
             # lists of ids and the corners belonging to each id
             corners, ids = arucoDetect.detect(gray)
-            if (corners is None) or (ids is None):
-                continue
+            if (corners is not None) and (ids is not None):
 
-            # rvet and tvec-different from camera coefficients
-            rvec, tvec = arucoDetect.estimatePose(corners)
-            #print(tvec)
-            if len(tvec) < 2:
-                continue
+                # rvet and tvec-different from camera coefficients
+                rvec, tvec = arucoDetect.estimatePose(corners)
+                #print(tvec)
+                if len(tvec) < 2:
+                    continue
 
-            # calculate the distance between two any aruco markers.
-            tdiff = abs(tvec[0] - tvec[1])
-            tdist = math.sqrt(math.pow(tdiff[0][0], 2.0)+math.pow(tdiff[0][1], 2.0)+math.pow(tdiff[0][2], 2.0))
-            print(tdist)
+                # calculate the distance between two any aruco markers.
+                tdiff = abs(tvec[0] - tvec[1])
+                tdist = math.sqrt(math.pow(tdiff[0][0], 2.0)+math.pow(tdiff[0][1], 2.0)+math.pow(tdiff[0][2], 2.0))
+                print(tdist)
 
-            # display the captured image
+            # displaqy the captured image
             cv2.imshow('Prcision Test', color_image)
 
             # TODO: arrange these opencv key events based on other key event handler class
