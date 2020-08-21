@@ -7,8 +7,8 @@ class ArucoDetect:
         self.arucoDict = aruco.Dictionary_get(arucoDict)
 
         # create aruco board 
-        markerLength = 3.75  # Here, measurement unit is centimetre.
-        markerSeparation = 0.5   # Here, measurement unit is centimetre.
+        markerLength = 0.0375 # Here, measurement unit is centimetre.
+        markerSeparation = 0.005   # Here, measurement unit is centimetre.
         self.arucoBoard = aruco.GridBoard_create(4, 5, markerLength, markerSeparation, self.arucoDict)
 
         # set aruco size
@@ -29,10 +29,10 @@ class ArucoDetect:
         self.arucoParameters.adaptiveThreshConstant = 7
 
         # Contour filtering        
-        self.arucoParameters.minMarkerPerimeterRate = 0.02          # default: 0.03
+        self.arucoParameters.minMarkerPerimeterRate = 0.03          # default: 0.03
         self.arucoParameters.maxMarkerPerimeterRate = 4.0
         self.arucoParameters.polygonalApproxAccuracyRate = 0.01
-        self.arucoParameters.minCornerDistanceRate = 0.055           # default: 0.05
+        self.arucoParameters.minCornerDistanceRate = 0.05           # default: 0.05
         self.arucoParameters.minMarkerDistanceRate = 0.05
         self.arucoParameters.minDistanceToBorder = 3
 
@@ -48,9 +48,9 @@ class ArucoDetect:
 
         # Corner Refinement
         self.arucoParameters.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX  #CORNER_REFINE_NONE(defalut)/CORNER_REFINE_SUBPIX/CORNER_REFINE_CONTOUR
-        self.arucoParameters.cornerRefinementWinSize = 3            # default: 5
-        self.arucoParameters.cornerRefinementMaxIterations = 100     # default: 30
-        self.arucoParameters.cornerRefinementMinAccuracy = 0.001    # default: 0.1
+        self.arucoParameters.cornerRefinementWinSize = 5            # default: 5
+        self.arucoParameters.cornerRefinementMaxIterations = 30     # default: 30
+        self.arucoParameters.cornerRefinementMinAccuracy = 0.1    # default: 0.1
 
 
     def detect(self, grayFrameImage):
@@ -62,4 +62,10 @@ class ArucoDetect:
         return (rvec, tvec)
 
     def estimatePoseBoard(self, corners, ids):
-        ret, rvec, tvec = aruco.estimatePoseBoard(corners, ids, self.arucoBoard, self.cameraMat, self.distCoeff) # For a board
+        rvec = None
+        tvec = None
+        ret, rvec, tvec = aruco.estimatePoseBoard(corners, ids, self.arucoBoard, self.cameraMat, self.distCoeff, rvec, tvec) # For a board
+        return (ret, rvec, tvec)
+
+    def drawAx(self, color_image, rvec, tvec, defAxisLen=0.03):
+        return aruco.drawAxis(color_image, self.cameraMat, self.distCoeff, rvec, tvec, defAxisLen)

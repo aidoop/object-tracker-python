@@ -40,7 +40,7 @@ if __name__ == '__main__':
     mtx, dist = vcap.getIntrinsicsMat(int(rsCamIndex), Config.UseRealSenseInternalMatrix)
 
     # create an aruco detect object
-    arucoDetect = ArucoDetect(Config.ArucoDict, Config.ArucoSize, mtx, dist)
+    arucoDetect = ArucoDetect(aruco.DICT_6X6_1000, 0.0375, mtx, dist)
     #arucoDetect = ArucoDetect(Config.ArucoDict, 0.075, mtx, dist)
     #arucoDetect = ArucoDetect(aruco.DICT_7X7_250, 0.05, mtx, dist)
     
@@ -58,19 +58,11 @@ if __name__ == '__main__':
             if (corners is not None) and (ids is not None):
 
                 # rvet and tvec-different from camera coefficients
-                rvec, tvec = arucoDetect.estimatePose(corners)
-                #print(tvec)
-                if len(tvec) < 2:
-                    continue
+                poseret, rvec, tvec = arucoDetect.estimatePoseBoard(corners, ids)
 
-                # draw axis
-                arucoDetect.drawAx(color_image, rvec[0], tvec[0])
-                arucoDetect.drawAx(color_image, rvec[1], tvec[1])
-
-                # calculate the distance between two any aruco markers.
-                tdiff = abs(tvec[0] - tvec[1])
-                tdist = math.sqrt(math.pow(tdiff[0][0], 2.0)+math.pow(tdiff[0][1], 2.0)+math.pow(tdiff[0][2], 2.0))
-                print(tdist)
+                if poseret >= 4:
+                    # draw a cooordinate axis(x, y, z)
+                    arucoDetect.drawAx(color_image, rvec, tvec, 16.5)
 
             # displaqy the captured image
             cv2.imshow('Prcision Test', color_image)

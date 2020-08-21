@@ -82,8 +82,8 @@ if __name__ == '__main__':
         sys.exit(0)
 
     # setup an opencv window
-    # cv2.namedWindow(cameraName, cv2.WINDOW_NORMAL)
-    # cv2.setWindowProperty(cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    cv2.namedWindow(cameraName, cv2.WINDOW_NORMAL)
+    cv2.setWindowProperty(cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     iteration = 0
     try: 

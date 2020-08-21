@@ -23,9 +23,18 @@ class HandEyeAruco:
 
         # test aruco marker id
         self.testMarkerID = 14
+        
+        # use the specific aruco board?
+        self.useArucoBoard = Config.UseArucoBoard
+
+        self.flagFindMainAruco = False
 
         # create an aruco detect object
-        self.arucoDetect = ArucoDetect(markerSelectDict, markerSize, mtx, dist)
+        if self.useArucoBoard is False:
+            self.arucoDetect = ArucoDetect(markerSelectDict, markerSize, mtx, dist)
+        else:
+            # if use a board, fixed parameters would be used. (6x6, 3.75 size, 0.05 gap, ...)
+            self.arucoDetect = ArucoDetect(aruco.DICT_6X6_1000, 0.0375, mtx, dist)
 
     def setCalibMarkerID(self, markerID):
         self.calibMarkerID = markerID
@@ -41,45 +50,50 @@ class HandEyeAruco:
         # check if the ids list is not empty
         # if no check is added the code will crash
         if np.all(ids != None):
-            # estimate pose of each marker and return the values
-            # rvet and tvec-different from camera coefficients
-            rvec, tvec = self.arucoDetect.estimatePose(corners)
 
-            # should do something here using extracted aruco marker ids here
-            flagFindMainAruco = False
-            for idx in range(0, ids.size):
-                if(ids[idx] == self.calibMarkerID) or (ids[idx] == self.testMarkerID):
-                    if((rvec[idx].shape == (1,3)) or (rvec[idx].shape == (3,1))):
-                        inputObjPts = np.float32([[0.0,0.0,0.0]]).reshape(-1,3)
-                        imgpts, jac = cv2.projectPoints(inputObjPts, rvec[idx], tvec[idx], mtx, dist)
-                        centerPoint = tuple(imgpts[0][0])
-                        #cv2.circle(color_image,centerPoint,1,(0,0,255), -1)
-                        #print(str(rvec[idx]) + str(' ') + str(tvec[idx]))
+            if self.useArucoBoard is False:
+                # estimate pose of each marker and return the values
+                # rvet and tvec-different from camera coefficients
+                rvec, tvec = self.arucoDetect.estimatePose(corners)
 
-                        # print 3D position using realsense SDK
-                        if(Config.UseHandEyePrecisionTest == True):
-                            # depth = aligned_depth_frame.get_distance(centerPoint[0], centerPoint[1])
-                            # depth_point = rs.rs2_deproject_pixel_to_point(depth_intrin, [centerPoint[0], centerPoint[1]], depth)
-                            depth_point = vcap.get3DPosition(centerPoint[0], centerPoint[1])
-                            print(str(depth_point) + str(' ') + str(tvec[idx]))
+                # should do something here using extracted aruco marker ids here
+                self.flagFindMainAruco = False
+                for idx in range(0, ids.size):
+                    if(ids[idx] == self.calibMarkerID) or (ids[idx] == self.testMarkerID):
+                        if((rvec[idx].shape == (1,3)) or (rvec[idx].shape == (3,1))):
+                            # inputObjPts = np.float32([[0.0,0.0,0.0]]).reshape(-1,3)
+                            # imgpts, jac = cv2.projectPoints(inputObjPts, rvec[idx], tvec[idx], mtx, dist)
+                            # centerPoint = tuple(imgpts[0][0])
+                            # #cv2.circle(color_image,centerPoint,1,(0,0,255), -1)
+                            # #print(str(rvec[idx]) + str(' ') + str(tvec[idx]))
 
-                        # find the main aruco marker 
-                        self.flagFindMainAruco = True
+                            # find the main aruco marker 
+                            self.flagFindMainAruco = True
 
                 aruco.drawAxis(color_image, mtx, dist, rvec[idx], tvec[idx], 0.03)
 
-            # draw a square around the markers
-            aruco.drawDetectedMarkers(color_image, corners)
+                # draw a square around the markers
+                aruco.drawDetectedMarkers(color_image, corners)
+            else:
+                # rvet and tvec-different from camera coefficients
+                poseret, rvec, tvec = self.arucoDetect.estimatePoseBoard(corners, ids)
+
+                if poseret >= 4:
+                    # draw a cooordinate axis(x, y, z)
+                    self.arucoDetect.drawAx(color_image, rvec, tvec, 0.165)
+                     
+                     # find the main aruco board
+                    self.flagFindMainAruco = True            
 
         else:
             # code to show 'No Ids' when no markers are found
             #cv2.putText(frame, "No Ids", (0,64), font, 1, (0,255,0),2,cv2.LINE_AA)
-            flagFindMainAruco = False
+            self.flagFindMainAruco = False
             tvec = None
             rvec = None
             pass   
 
-        return (flagFindMainAruco, ids, rvec, tvec)
+        return (self.flagFindMainAruco, ids, rvec, tvec)
 
 
 class HandEyeCalibration:

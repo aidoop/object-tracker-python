@@ -51,6 +51,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
     #     PrintMsg.printStdErr("resetting the robot")
 
     def processC(self, *args):
+        findAruco = args[0]
         colorImage = args[1]
         tvec = args[3]
         rvec = args[4]
@@ -63,8 +64,28 @@ class CalibHandEyeKeyHandler(KeyHandler):
         PrintMsg.printStdErr("---------------------------------------------------------------")
         if ids is None:
             return
-        for idx in range(0, ids.size):
-            if(ids[idx] == Config.CalibMarkerID):
+
+        if Config.UseArucoBoard == False:
+            for idx in range(0, ids.size):
+                if(ids[idx] == Config.CalibMarkerID):
+                    # get the current robot position
+                    # currTaskPose = indy.getCurrentPos()
+                    currTaskPose = gqlDataClient.getRobotPose(robotName)
+
+                    # convert dict. to list
+                    currTPList = [currTaskPose['x'], currTaskPose['y'], currTaskPose['z'], currTaskPose['u'], currTaskPose['v'], currTaskPose['w']]
+
+                    # capture additional matrices here
+                    handeye.captureHandEyeInputs(currTPList, rvec[idx], tvec[idx])
+
+                    if handeye.cntInputData >= 3:
+                        handeye.calculateHandEyeMatrix()
+
+                    PrintMsg.printStdErr("Input Data Count: " + str(handeye.cntInputData))
+                    strText = "Input Data Count: " + str(handeye.cntInputData) +"(" + str(handeye.distance) + ")"
+                    infoText.setText(strText)
+        else:
+            if findAruco is True:
                 # get the current robot position
                 # currTaskPose = indy.getCurrentPos()
                 currTaskPose = gqlDataClient.getRobotPose(robotName)
@@ -73,14 +94,15 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 currTPList = [currTaskPose['x'], currTaskPose['y'], currTaskPose['z'], currTaskPose['u'], currTaskPose['v'], currTaskPose['w']]
 
                 # capture additional matrices here
-                handeye.captureHandEyeInputs(currTPList, rvec[idx], tvec[idx])
+                handeye.captureHandEyeInputs(currTPList, rvec.T, tvec.T)
 
                 if handeye.cntInputData >= 3:
                     handeye.calculateHandEyeMatrix()
 
                 PrintMsg.printStdErr("Input Data Count: " + str(handeye.cntInputData))
                 strText = "Input Data Count: " + str(handeye.cntInputData) +"(" + str(handeye.distance) + ")"
-                infoText.setText(strText)
+                infoText.setText(strText)            
+
 
     def processZ(self, *args):
         handeye = args[7]

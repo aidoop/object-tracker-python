@@ -11,7 +11,12 @@ dcnode = calibFile.getNode("distCoeff")
 dist = dcnode.mat()
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-cap = cv2.VideoCapture(10)
+cap = cv2.VideoCapture(4)
+
+# set opencv videocapture properties for width, height and fps
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+cap.set(cv2.CAP_PROP_FPS, 30)
 
 while (True):
     ret, frame = cap.read()

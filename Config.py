@@ -2,6 +2,7 @@ import cv2
 import cv2.aruco as aruco
 
 # robot parameters
+#INDY_SERVER_IP = "192.168.0.104"
 INDY_SERVER_IP = "192.168.0.207"
 INDY_SERVER_NAME = "NRMK-Indy7"
 
@@ -22,9 +23,10 @@ ChessHeight = 7
 # handeye calibration parameters
 UseHandEyePrecisionTest = False
 UseNewCameraMatrix = False
-HandEyeTargetZ = 0.30
+HandEyeTargetZ = 0.20
 CalibMarkerID = 2
 TestMarkerID = 14
+UseArucoBoard = True
 
 # Object Tracking parameters
 ObjTrackingDebugMode = False

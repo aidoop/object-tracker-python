@@ -57,6 +57,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         PrintMsg.printStdErr("resetting the robot")
 
     def processC(self, *args):
+        findAruco = args[0]
         colorImage = args[1]
         tvec = args[3]
         rvec = args[4]
@@ -68,13 +69,29 @@ class CalibHandEyeKeyHandler(KeyHandler):
         PrintMsg.printStdErr("---------------------------------------------------------------")
         if ids is None:
             return
-        for idx in range(0, ids.size):
-            if(ids[idx] == Config.CalibMarkerID):
+
+        if Config.UseArucoBoard == False:
+            for idx in range(0, ids.size):
+                if(ids[idx] == Config.CalibMarkerID):
+                    # get the current robot position
+                    currTaskPose = indy.getCurrentPos()
+
+                    # capture additional matrices here
+                    handeye.captureHandEyeInputs(currTaskPose, rvec[idx], tvec[idx])
+
+                    if handeye.cntInputData >= 3:
+                        handeye.calculateHandEyeMatrix()
+
+                    PrintMsg.printStdErr("Input Data Count: " + str(handeye.cntInputData))
+                    strText = "Input Data Count: " + str(handeye.cntInputData) +"(" + str(handeye.distance) + ")"
+                    infoText.setText(strText)
+        else:
+            if findAruco is True:
                 # get the current robot position
                 currTaskPose = indy.getCurrentPos()
 
                 # capture additional matrices here
-                handeye.captureHandEyeInputs(currTaskPose, rvec[idx], tvec[idx])
+                handeye.captureHandEyeInputs(currTaskPose, rvec.T, tvec.T)
 
                 if handeye.cntInputData >= 3:
                     handeye.calculateHandEyeMatrix()
