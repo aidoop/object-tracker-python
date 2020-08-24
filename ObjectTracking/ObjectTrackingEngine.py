@@ -174,8 +174,7 @@ if __name__ == '__main__':
                             (found, foundRIDs) = vtc.ROIMgr.isInsideROI(resultObj.corners)
                             [x, y, z, u, v, w] = resultObj.targetPos
 
-                            # modify z axis rotation
-                            #w = w + 180.0 if w < 0 else w
+                            
 
                             if found is True:
                                 objStatusUpdate.addObjStatus(resultObj.markerID, foundRIDs, x, y, z, u, v, w)

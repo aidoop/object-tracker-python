@@ -11,6 +11,7 @@ from ObjectTracker import ObjectTracker
 from CalibHandEye.HandEye import HandEyeCalibration
 from CalibHandEye.HandEyeUtilSet import HMUtil
 from packages.Aruco import ArucoDetect
+from packages.ArucoAdvPose import ArucoAdvPose
 
 # TODO: should be derived in a abstraction class like TrackingObject later.......
 class ArucoMarkerObject:
@@ -36,6 +37,7 @@ class ArucoMarkerTracker(ObjectTracker):
         self.markerObjIDList.clear()
         self.handEyeMat = args[4] #HandEyeCalibration.loadTransformMatrix()
         self.arucoDetect = ArucoDetect(self.markerSelectDict, self.markerSize, self.camMtx, self.dist)
+        self.arucoAdvPose = ArucoAdvPose()
 
     ## set detectable features like marker id of aruco marker
     def setTrackingObject(self, object):
@@ -90,7 +92,7 @@ class ArucoMarkerTracker(ObjectTracker):
 
                         # make a homogeneous matrix using a rotation matrix and a translation matrix
                         hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec[idx])
-                        xyzuvw_midterm = HMUtil.convertHMtoXYZABCDeg(hmCal2Cam)
+                        #xyzuvw_midterm = HMUtil.convertHMtoXYZABCDeg(hmCal2Cam)
                         #print("Esitmated Mark Pose: ", xyzuvw_midterm)
 
                         # calcaluate the modified position based on pivot offset
@@ -114,10 +116,17 @@ class ArucoMarkerTracker(ObjectTracker):
                         hmResult = np.dot(self.handEyeMat, hmInput)
                         xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
 
+                        # [x,y,z,u,v,w] = xyzuvw
+                        # self.arucoAdvPose.setPose(x,y,z,u,v,w)
+
+                        # if(self.arucoAdvPose.stable() == True):
+                        #     xyzuvw = self.arucoAdvPose.getPoses()
+                            #print('Adv. Poses: ', arucoAdvPose.getPoses())
+
                         # TODO:.............................................
                         # TODO: should change this routine....
 
-                        # this conversion is gone to Operato..
+                        # this conversion is moved to Operato..
                         # [x,y,z,u,v,w] = xyzuvw
                         # xyzuvw = [x,y,z,u*(-1),v+180.0,w]   # indy7 base position to gripper position
 

@@ -17,6 +17,11 @@ from packages.CameraDevOpencv import OpencvCapture
 from packages.CameraVideoCapture import VideoCapture
 import json
 from packages.Aruco import ArucoDetect
+from packages.ArucoAdvPose import ArucoAdvPose
+
+from CalibHandEye.HandEyeUtilSet import *
+from CalibHandEye.HandEye import *
+
 
 import math
 
@@ -43,6 +48,8 @@ if __name__ == '__main__':
     arucoDetect = ArucoDetect(Config.ArucoDict, Config.ArucoSize, mtx, dist)
     #arucoDetect = ArucoDetect(Config.ArucoDict, 0.075, mtx, dist)
     #arucoDetect = ArucoDetect(aruco.DICT_7X7_250, 0.05, mtx, dist)
+
+    arucoAdvPose = ArucoAdvPose()
     
 
     try:
@@ -59,10 +66,42 @@ if __name__ == '__main__':
 
                 # rvet and tvec-different from camera coefficients
                 rvec, tvec = arucoDetect.estimatePose(corners)
-                #print(tvec)
+
+                # change a rotation vector to a rotation matrix
+                rotMatrix = np.zeros(shape=(3,3))
+                cv2.Rodrigues(rvec, rotMatrix)
+
+                # make a homogeneous matrix using a rotation matrix and a translation matrix a
+                hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec)                
+
+                # get a transformation matrix which was created by calibration process
+                hmmtx = HandEyeCalibration.loadTransformMatrix()
+
+                # calcaluate the specific position based on hmInput
+                hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.0, 0.0, 0.0]).T)
+                hmInput = np.dot(hmCal2Cam, hmWanted)
+
+                # get the last homogeneous matrix
+                hmResult = np.dot(hmmtx, hmInput)
+
+                # get a final xyzuvw for the last homogenous matrix
+                xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
+
+                #print(hmmtx)
+                print(xyzuvw)
+
+                [x,y,z,u,v,w] = xyzuvw
+                arucoAdvPose.setPose(x,y,z,u,v,w)
+
+                # if(arucoAdvPose.stable() == True):
+                #     print('Adv. Poses: ', arucoAdvPose.getPoses())
+
+                arucoDetect.drawAx(color_image, rvec, tvec)
 
             # displaqy the captured image
             cv2.imshow('Prcision Fixing', color_image)
+
+            time.sleep(0.1)
 
             # TODO: arrange these opencv key events based on other key event handler class
             # handle key inputs
