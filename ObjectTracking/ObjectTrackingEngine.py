@@ -170,17 +170,20 @@ if __name__ == '__main__':
                         # detect markers here..
                         resultObjs = vtc.arucoMarkTracker.findObjects(color_image, vtc, ra.gripperOffset)
 
+                        if(resultObjs == None):
+                            continue
+
                         for resultObj in resultObjs:
                             (found, foundRIDs) = vtc.ROIMgr.isInsideROI(resultObj.corners)
-                            [x, y, z, u, v, w] = resultObj.targetPos
 
-                            
+                            if resultObj.targetPos is not None:
+                                [x, y, z, u, v, w] = resultObj.targetPos
 
-                            if found is True:
-                                objStatusUpdate.addObjStatus(resultObj.markerID, foundRIDs, x, y, z, u, v, w)
-                            else:
-                                objStatusUpdate.addObjStatus(resultObj.markerID, [None], x, y, z, u, v, w)
-                            tobjIDList.remove(resultObj.markerID)
+                                if found is True:
+                                    objStatusUpdate.addObjStatus(resultObj.markerID, foundRIDs, x, y, z, u, v, w)
+                                else:
+                                    objStatusUpdate.addObjStatus(resultObj.markerID, [None], x, y, z, u, v, w)
+                                tobjIDList.remove(resultObj.markerID)
 
                 # draw ROI Region..
                 for ROIRegion in vtc.ROIMgr.getROIList():

@@ -116,12 +116,12 @@ class ArucoMarkerTracker(ObjectTracker):
                         hmResult = np.dot(self.handEyeMat, hmInput)
                         xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
 
-                        # [x,y,z,u,v,w] = xyzuvw
-                        # self.arucoAdvPose.setPose(x,y,z,u,v,w)
+                        # applying advance pose model
+                        [x,y,z,u,v,w] = xyzuvw
+                        self.arucoAdvPose.setPose(x,y,z,u,v,w)
 
-                        # if(self.arucoAdvPose.stable() == True):
-                        #     xyzuvw = self.arucoAdvPose.getPoses()
-                            #print('Adv. Poses: ', arucoAdvPose.getPoses())
+                        if(self.arucoAdvPose.stable() == True):
+                            xyzuvw = self.arucoAdvPose.getPoses()
 
                         # TODO:.............................................
                         # TODO: should change this routine....
