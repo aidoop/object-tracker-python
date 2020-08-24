@@ -1,11 +1,14 @@
 import cv2
 import cv2.aruco as aruco
 
+import collections
+
 class ArucoDetect:
     def __init__(self, arucoDict, arucoSize, mtx, dist):
         # set aruco mark dictionary
         self.arucoDict = aruco.Dictionary_get(arucoDict)
 
+        # set aruco detection parameters (see 'https://docs.opencv.org/trunk/d5/dae/tutorial_aruco_detection.html')
         # create aruco board 
         markerLength = 0.0375 # Here, measurement unit is centimetre.
         markerSeparation = 0.005   # Here, measurement unit is centimetre.
@@ -17,8 +20,12 @@ class ArucoDetect:
         # set camera matrix and distortion coeffs.
         self.cameraMat = mtx
         self.distCoeff = dist
+
+        self.sizeEstPoses = 10
+        self.queueEstimatedPoses = collections.deque(maxlen=self.sizeEstPoses)
         
-        # set aruco detection parameters (see 'https://docs.opencv.org/trunk/d5/dae/tutorial_aruco_detection.html')
+        ###########################################################
+        # aruco parameters
         self.arucoParameters = aruco.DetectorParameters_create()
         self.arucoParameters.adaptiveThreshConstant = 7
         
@@ -61,6 +68,19 @@ class ArucoDetect:
         rvec, tvec ,_ = aruco.estimatePoseSingleMarkers(corners, self.arucoSize, self.cameraMat, self.distCoeff)
         return (rvec, tvec)
 
+    def estimatePose2(self, corners):
+        rvec, tvec ,_ = aruco.estimatePoseSingleMarkers(corners, self.arucoSize, self.cameraMat, self.distCoeff)
+
+        # look through poses
+        self.queueEstimatedPoses.append((rvec, tvec))
+
+        for pose in self.queueEstimatedPoses:
+            (rp, tp) = pose
+            print("estimate pose: ", rp, " ", tp)
+        
+
+        return (rvec, tvec)
+
     def estimatePoseBoard(self, corners, ids):
         rvec = None
         tvec = None
@@ -69,3 +89,5 @@ class ArucoDetect:
 
     def drawAx(self, color_image, rvec, tvec, defAxisLen=0.03):
         return aruco.drawAxis(color_image, self.cameraMat, self.distCoeff, rvec, tvec, defAxisLen)
+
+
