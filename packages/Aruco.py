@@ -59,6 +59,13 @@ class ArucoDetect:
         self.arucoParameters.cornerRefinementMaxIterations = 30     # default: 30
         self.arucoParameters.cornerRefinementMinAccuracy = 0.1    # default: 0.1
 
+        # use get optimal 
+        # newcameramtx, roi=cv2.getOptimalNewCameraMatrix(mtx,dist,(w,h),1,(w,h))
+        # self.newcameramtx = newcameramtx
+
+    def undistort(self,grayFrameImage):
+        dst = cv2.undistort(grayFrameImage, self.cameraMat, self.distCoeff, None, self.newcameramtx)
+        return dst
 
     def detect(self, grayFrameImage):
         corners, ids, rejectedImgPoints = aruco.detectMarkers(grayFrameImage, self.arucoDict, parameters=self.arucoParameters)
@@ -90,4 +97,7 @@ class ArucoDetect:
     def drawAx(self, color_image, rvec, tvec, defAxisLen=0.03):
         return aruco.drawAxis(color_image, self.cameraMat, self.distCoeff, rvec, tvec, defAxisLen)
 
+    def calibrateCamera(self, corners, ids, counter, imageSize):
+        ret, mtx, dist, rvecs, tvecs = aruco.calibrateCameraAruco(corners, ids, counter, self.arucoBoard, imageSize, None, None )
+        return (ret, mtx, dist)
 

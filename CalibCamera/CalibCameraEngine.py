@@ -15,6 +15,7 @@ from packages.CameraDevRealsense import RealsenseCapture
 from packages.CameraVideoCapture import VideoCapture
 from packages.Util import ArucoTrackerErrMsg, DisplayInfoText, PrintMsg
 from CalibCamera import CalibrationCamera
+from CalibCameraAruco import CalibrationCameraAruco
 from CalibCameraKeyHandler import CalibCameraKeyHandler
 from packages.VisionGqlClient import VisonGqlDataClient
 
@@ -67,7 +68,10 @@ if __name__ == '__main__':
         vcap.start()
 
         # create a camera calibration object
-        calibcam = CalibrationCamera(Config.ChessWidth, Config.ChessHeight)
+        if Config.UseCalibChessBoard == True:
+            calibcam = CalibrationCamera(Config.ChessWidth, Config.ChessHeight)
+        else:
+            calibcam = CalibrationCameraAruco()
 
         # TODO: check where an image directory is created..
         dirFrameImage = makeFrameImageDirectory()

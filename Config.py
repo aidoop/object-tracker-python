@@ -17,6 +17,7 @@ ArucoDict = aruco.DICT_5X5_250
 ArucoSize = 0.05
 
 # camera calibration parameters
+UseCalibChessBoard = True
 ChessWidth = 10
 ChessHeight = 7
 
