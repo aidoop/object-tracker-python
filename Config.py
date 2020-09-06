@@ -12,7 +12,7 @@ VideoFrameWidth = 1920
 VideoFrameHeight = 1080
 VideoFramePerSec = 30
 
-# aruco parameters
+# default aruco parameters
 ArucoDict = aruco.DICT_5X5_250
 ArucoSize = 0.05
 
