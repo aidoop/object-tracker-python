@@ -103,8 +103,11 @@ class ArucoMarkerTracker(ObjectTracker):
                         #     hmWanted = HMUtil.convertXYZABCtoHMDeg(markerObject.pivotOffset)                            
                         #     hmInput = np.dot(hmCal2Cam, hmWanted)
                         
-                        # udpate a pivot offset
-                        offsetPoint = markerObject.pivotOffset
+                        # update a pivot offset
+                        if vtc.camObjOffset is not None:
+                            offsetPoint = markerObject.pivotOffset + vtc.camObjOffset
+                        else:
+                            offsetPoint = markerObject.pivotOffset
                         
                         hmWanted = HMUtil.convertXYZABCtoHMDeg(offsetPoint)     # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
                         hmInput = np.dot(hmCal2Cam, hmWanted)

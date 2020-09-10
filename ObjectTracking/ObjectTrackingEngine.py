@@ -27,6 +27,7 @@ class VisionTrackingCamera:
     ROIMgr = None
     arucoMarkTracker = None
     handeye = None
+    camObjOffset = None
 
 ###############################################################################
 # Hand-eye calibration process 
@@ -110,6 +111,8 @@ if __name__ == '__main__':
             ROIInput = [ROIData.tl[0], ROIData.tl[1], ROIData.rb[0], ROIData.rb[1], ROIData.id]
             ROIMgr.appendROI(ROIInput)
         vtc.ROIMgr = ROIMgr
+
+        vtc.camObjOffset = trackingCamera.camObjOffset
 
         # setup an opencv window 
         # cv2.namedWindow(vtc.name, cv2.WINDOW_NORMAL)
