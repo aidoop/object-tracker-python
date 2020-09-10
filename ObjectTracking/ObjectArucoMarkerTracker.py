@@ -126,7 +126,7 @@ class ArucoMarkerTracker(ObjectTracker):
                         # TODO:.............................................
                         # TODO: should change this routine....
 
-                        # this conversion is moved to Operato, but come back by make robot move policy consistent
+                        # this conversion is moved to Operato, but come back by making robot move policy consistent
                         if xyzuvw != None:
                             [x,y,z,u,v,w] = xyzuvw
                             xyzuvw = [x,y,z,u*(-1),v+180.0,w]   # indy7 base position to gripper position

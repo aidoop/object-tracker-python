@@ -53,6 +53,8 @@ class VisonGqlDataClient:
             if ObjectTypeCheck.checkValueIsAvail(cameraData['rois']):
                 cameraObject.setROIData(cameraData['rois'])
 
+            cameraObject.camObjOffset = VisionGqlUtil.setPoseData(cameraData['camObjOffset'])
+
             self.trackingCameras[name] = cameraObject
 
     def fetchTrackingCamerasAll(self):

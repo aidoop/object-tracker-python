@@ -37,37 +37,35 @@ if __name__ == '__main__':
     # create an aruco detect object
     arucoDetect = ArucoDetect(Config.ArucoDict, Config.ArucoSize, mtx, dist)
 
-    # align
-    align_to = rs.stream.color
-    align = rs.align(align_to)
-
     try:
         while(True):
             # Wait for a coherent pair of frames: depth and color
             (color_image, depth_image) = vcap.getFrame()
 
-            # operations on the frame
-            gray = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)
+            # # operations on the frame
+            # gray = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)
 
-            # # lists of ids and the corners belonging to each id
-            corners, ids = arucoDetect.detect(gray)
-            if (corners is None) or (ids is None):
-                continue
+            # # # lists of ids and the corners belonging to each id
+            # corners, ids = arucoDetect.detect(gray)
+            # if (corners is None) or (ids is None):
+            #     continue
 
-            # # rvet and tvec-different from camera coefficients
-            rvec, tvec = arucoDetect.estimatePose(corners)
-            print(tvec[0])
+            # # # rvet and tvec-different from camera coefficients
+            # rvec, tvec = arucoDetect.estimatePose(corners)
+            # print(tvec[0])
 
-            if len(tvec) >= 1:
-                centerPoints = list()
-                for idx in range(0, ids.size):
-                    if((rvec[idx].shape == (1,3)) or (rvec[idx].shape == (3,1))):
-                        inputObjPts = np.float32([[0.0,0.0,0.0]]).reshape(-1,3)
-                        imgpts, jac = cv2.projectPoints(inputObjPts, rvec[idx], tvec[idx], mtx, dist)
-                        centerPoints.append(tuple(imgpts[0][0]))
-            print(centerPoints[0])
-            print(vcap.get3DPosition(centerPoints[0][0], centerPoints[0][1]))
-            print('-------------------------------------')
+            # if len(tvec) >= 1:
+            #     centerPoints = list()
+            #     for idx in range(0, ids.size):
+            #         if((rvec[idx].shape == (1,3)) or (rvec[idx].shape == (3,1))):
+            #             inputObjPts = np.float32([[0.0,0.0,0.0]]).reshape(-1,3)
+            #             imgpts, jac = cv2.projectPoints(inputObjPts, rvec[idx], tvec[idx], mtx, dist)
+            #             centerPoints.append(tuple(imgpts[0][0]))
+            # print(centerPoints[0])
+            # print(vcap.get3DPosition(centerPoints[0][0], centerPoints[0][1]))
+            # print('-------------------------------------')
+
+            print(vcap.get3DPosition(421, 247))
 
             #     center3Ds = list()
             #     for centerPoint in centerPoints:
