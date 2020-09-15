@@ -1,6 +1,7 @@
 # object-tracker-python
 
 - Prerequisites
+
   - Python: > 3.x
   - Requried Python Modules
     - pip install numpy
@@ -10,6 +11,7 @@
     - pip install requests
     - pip install gql
   - Install librealsense (https://github.com/IntelRealSense/librealsense/issues/793)
+
   ```
   git clone https://github.com/IntelRealSense/librealsense
   cd librealsense
@@ -21,38 +23,56 @@
   ```
 
 - vision-base (https://github.com/things-factory/vision-base.git)
+
   - to run with vision-base web application, you should change paths in 'vision-base/config.developmnet.ts' and 'vision-base/config.production.ts' as below.
-  The files should be copied to the root folder of 'vision-base' from 'vision-base/config' and then modified with the real path of 'CoboMarkerTrakcing'
+    The files should be copied to the root folder of 'vision-base' from 'vision-base/config' and then modified with the real path of 'CoboMarkerTrakcing'
+
   ```
   module.exports = {
-    vision: {
-      streamingPort: 3001,
-      camera: {
-        cameraCalibrator: {
-          program: ['/home/jinwon/Documents/venv/objtrack/bin/python3', '/home/jinwon/Documents/github/CoboMarkerTracking/CalibCamera/CalibCameraEngine.py']
-        },
-        handEyeCalibrator: {
-          program: ['/home/jinwon/Documents/venv/objtrack/bin/python3', '/home/jinwon/Documents/github/CoboMarkerTracking/CalibHandEye/CalibHandEyeEngine.py']
-        },
-        ROIDetector: {
-          program: ['/home/jinwon/Documents/venv/objtrack/bin/python3', '/home/jinwon/Documents/github/CoboMarkerTracking/ROISettings/ROISettingsEngine.py']
-        }
+  vision: {
+    streamingPort: 3001,
+    camera: {
+      cameraCalibrator: {
+        program: [
+          '/home/jinwon/Documents/venv/objtrack/bin/python3',
+          '/home/jinwon/Documents/github/object-tracker-python/object_tracker/calibcamera_engine.py'
+        ]
       },
-      robotArm: {
-        markerOffsetCalibrator: {
-          program: ['/home/jinwon/Documents/venv/objtrack/bin/python3', '/home/jinwon/Documents/github/CoboMarkerTracking/ArucoTracking/ObjectTrackingEngine.py']
-        }
+      handEyeCalibrator: {
+        program: [
+          '/home/jinwon/Documents/venv/objtrack/bin/python3',
+          '/home/jinwon/Documents/github/object-tracker-python/object_tracker/calibhandeye_engine.py'
+        ]
       },
-      objectTracker: {
-        program: ['/home/jinwon/Documents/venv/objtrack/bin/python3', '/home/jinwon/Documents/github/CoboMarkerTracking/ArucoTracking/ObjectTrackingEngine.py']
+      ROIDetector: {
+        program: [
+          '/home/jinwon/Documents/venv/objtrack/bin/python3',
+          '/home/jinwon/Documents/github/object-tracker-python/object_tracker/roi_engine.py'
+        ]
       }
+    },
+    robotArm: {
+      markerOffsetCalibrator: {
+        program: [
+          '/home/jinwon/Documents/venv/objtrack/bin/python3',
+          '/home/jinwon/Documents/github/object-tracker-python/object_tracker/objecttracking_engine.py'
+        ]
+      }
+    },
+    objectTracker: {
+      program: [
+        '/home/jinwon/Documents/venv/objtrack/bin/python3',
+        '/home/jinwon/Documents/github/object-tracker-python/object_tracker/objecttracking_engine.py'
+      ]
     }
+  }
   }
   ```
 
-
 - References
+
   - how to get serial number of a realsense camera
+
   ```
   jinwon@jinwon-G5:~/Documents$ rs-sensor-control
 

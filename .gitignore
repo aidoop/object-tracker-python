@@ -134,7 +134,7 @@ dmypy.json
 # generated files
 .vscode/launch.json
 .vscode/settings.json
-CalibCamResult*
+CalibCamResult*.json
 HandEyeCalibResult.json
 ROIRegions*.json
 HandEyeResultsLog.xml
