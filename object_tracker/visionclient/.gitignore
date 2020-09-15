@@ -1,6 +1,3 @@
-# based on this project
-Captured/
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -94,12 +91,8 @@ ipython_config.py
 #   install all needed dependencies.
 #Pipfile.lock
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow
-__pypackages__/
-
-# Celery stuff
+# celery beat schedule file
 celerybeat-schedule
-celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
@@ -130,12 +123,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# generated files
-.vscode/launch.json
-.vscode/settings.json
-CalibCamResult*
-HandEyeCalibResult.json
-ROIRegions*.json
-HandEyeResultsLog.xml
-.yo-rc.json
