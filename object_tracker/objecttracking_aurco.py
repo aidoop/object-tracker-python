@@ -2,7 +2,8 @@ import cv2
 import cv2.aruco as aruco
 
 import numpy as np
-import sys, os
+import sys
+import os
 
 import config
 from objecttracking import ObjectTracker
@@ -12,6 +13,8 @@ from aruco.aruco_detect import ArucoDetect
 from aruco.aruco_advanced_pose import ArucoAdvPose
 
 # TODO: should be derived in a abstraction class like TrackingObject later.......
+
+
 class ArucoMarkerObject:
     def __init__(self, markerID, pivotOffset):
         self.markerID = markerID
@@ -19,7 +22,9 @@ class ArucoMarkerObject:
         self.corners = None
         self.targetPos = None
 
-# 
+#
+
+
 class ArucoMarkerTracker(ObjectTracker):
     def __init__(self):
         self.markerObjectList = []
@@ -33,11 +38,12 @@ class ArucoMarkerTracker(ObjectTracker):
         self.dist = args[3]
         self.markerObjectList.clear()
         self.markerObjIDList.clear()
-        self.handEyeMat = args[4] #HandEyeCalibration.loadTransformMatrix()
-        self.arucoDetect = ArucoDetect(self.markerSelectDict, self.markerSize, self.camMtx, self.dist)
+        self.handEyeMat = args[4]  # HandEyeCalibration.loadTransformMatrix()
+        self.arucoDetect = ArucoDetect(
+            self.markerSelectDict, self.markerSize, self.camMtx, self.dist)
         self.arucoAdvPose = ArucoAdvPose()
 
-    ## set detectable features like marker id of aruco marker
+    # set detectable features like marker id of aruco marker
     def setTrackingObject(self, object):
         assert(isinstance(object, ArucoMarkerObject))
 
@@ -45,7 +51,7 @@ class ArucoMarkerTracker(ObjectTracker):
         for mo in self.markerObjectList:
             if object.markerID == mo.markerID:
                 found = True
-           
+
         if found is False:
             self.markerObjIDList.append(object.markerID)
             self.markerObjectList.append(object)
@@ -56,7 +62,7 @@ class ArucoMarkerTracker(ObjectTracker):
     def getTrackingObjIDList(self):
         return self.markerObjIDList
 
-    ## set detectable features and return the 2D or 3D positons in case that objects are detected..
+    # set detectable features and return the 2D or 3D positons in case that objects are detected..
     def findObjects(self, *args):
         color_image = args[0]
         vtc = args[1]
@@ -82,10 +88,11 @@ class ArucoMarkerTracker(ObjectTracker):
                     if ids[idx] == markerObject.markerID:
                         # set additional properties to this found object..
                         #print(vtc.name, ") Found Target ID: " + str(markerObject.markerID))
-                        markerObject.corners = corners[idx].reshape(4,2)    # reshape: (1,4,2) --> (4,2)
+                        markerObject.corners = corners[idx].reshape(
+                            4, 2)    # reshape: (1,4,2) --> (4,2)
 
                         # change a rotation vector to a rotation matrix
-                        rotMatrix = np.zeros(shape=(3,3))
+                        rotMatrix = np.zeros(shape=(3, 3))
                         cv2.Rodrigues(rvec[idx], rotMatrix)
 
                         # make a homogeneous matrix using a rotation matrix and a translation matrix
@@ -98,16 +105,17 @@ class ArucoMarkerTracker(ObjectTracker):
                         #     hmWanted = HMUtil.convertXYZABCtoHMDeg([0.0, 0.0, 0.00, 0.0, 0.0, 0.0])     # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
                         #     hmInput = np.dot(hmCal2Cam, hmWanted)
                         # else:
-                        #     hmWanted = HMUtil.convertXYZABCtoHMDeg(markerObject.pivotOffset)                            
+                        #     hmWanted = HMUtil.convertXYZABCtoHMDeg(markerObject.pivotOffset)
                         #     hmInput = np.dot(hmCal2Cam, hmWanted)
-                        
+
                         # update a pivot offset
                         if vtc.camObjOffset is not None:
                             offsetPoint = markerObject.pivotOffset + vtc.camObjOffset
                         else:
                             offsetPoint = markerObject.pivotOffset
-                        
-                        hmWanted = HMUtil.convertXYZABCtoHMDeg(offsetPoint)     # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
+
+                        # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
+                        hmWanted = HMUtil.convertXYZABCtoHMDeg(offsetPoint)
                         hmInput = np.dot(hmCal2Cam, hmWanted)
 
                         ###########################################################################################
@@ -118,8 +126,8 @@ class ArucoMarkerTracker(ObjectTracker):
                         xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
 
                         # applying advance pose model
-                        [x,y,z,u,v,w] = xyzuvw
-                        self.arucoAdvPose.setPose(x,y,z,u,v,w)
+                        [x, y, z, u, v, w] = xyzuvw
+                        self.arucoAdvPose.setPose(x, y, z, u, v, w)
 
                         if(self.arucoAdvPose.stable() == True):
                             xyzuvw = self.arucoAdvPose.getPoses()
@@ -129,31 +137,23 @@ class ArucoMarkerTracker(ObjectTracker):
 
                         # this conversion is moved to Operato, but come back by making robot move policy consistent
                         if xyzuvw != None:
-                            [x,y,z,u,v,w] = xyzuvw
-                            xyzuvw = [x,y,z,u*(-1),v+180.0,w]   # indy7 base position to gripper position
+                            [x, y, z, u, v, w] = xyzuvw
+                            # indy7 base position to gripper position
+                            xyzuvw = [x, y, z, u*(-1), v+180.0, w]
 
                         # set final target position..
-                        markerObject.targetPos = xyzuvw                        
+                        markerObject.targetPos = xyzuvw
 
                         #print("Final XYZUVW: ", xyzuvw)
-                  
+
                         # append this object to the list to be returned
                         resultList.append(markerObject)
 
                         # draw a cooordinate axis(x, y, z)
-                        aruco.drawAxis(color_image, mtx, dist, rvec[idx], tvec[idx], 0.02)
+                        aruco.drawAxis(color_image, mtx, dist,
+                                       rvec[idx], tvec[idx], 0.02)
 
             # draw a square around the markers
             aruco.drawDetectedMarkers(color_image, corners)
 
         return resultList
-
-        
-
-
-        
-
-
-
-
-    

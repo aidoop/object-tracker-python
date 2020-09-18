@@ -1,7 +1,9 @@
 from abc import *
 import enum
 
-## CameraPortLayer abstraction class
+# CameraPortLayer abstraction class
+
+
 class ROIManager(metaclass=ABCMeta):
 
     ###################################
@@ -22,5 +24,3 @@ class ROIManager(metaclass=ABCMeta):
     @abstractclassmethod
     def clearROIAll(self):
         pass
-
-

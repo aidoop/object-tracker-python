@@ -1,9 +1,11 @@
 from abc import *
 import enum
 
-## CameraPortLayer abstraction class
+# CameraPortLayer abstraction class
+
+
 class ObjectTracker(metaclass=ABCMeta):
-    
+
     ###################################
     # Properties
     ###################################
@@ -11,7 +13,7 @@ class ObjectTracker(metaclass=ABCMeta):
     ###################################
     # Abstraction Functions
     ###################################
-    ## initialize parameters for any camera operation
+    # initialize parameters for any camera operation
     @abstractmethod
     def initialize(self, *args):
         pass

@@ -1,9 +1,11 @@
 
-import sys, os
+import sys
+import os
 import json
 from random import choice, random
 
 import config
+
 
 class ObjectUpdateStatus:
     ObjStatusList = list()
@@ -35,24 +37,26 @@ class ObjectUpdateStatus:
 
         # process undetected marks
         for markerID in undetectedObjectIDList:
-            self.addObjStatus(markerID, [None], None, None, None, None, None, None)
+            self.addObjStatus(markerID, [None],
+                              None, None, None, None, None, None)
 
         # prcess duplicated marks
         checkIDList = list()
         for objStatus in self.ObjStatusList:
             objID = objStatus['id']
-            
+
             if objID in checkIDList:
                 self.ObjStatusList.remove(objStatus)
             else:
                 checkIDList.append(objID)
 
         status = {
-        "objectStatus": self.ObjStatusList
+            "objectStatus": self.ObjStatusList
         }
 
         if config.ObjTrackingDebugMode == False:
-            self.gqlClient.update_tracking_workspace_status(name='workspace', status=status)
+            self.gqlClient.update_tracking_workspace_status(
+                name='workspace', status=status)
         else:
             print('\n', status, '\n')
 
@@ -63,22 +67,12 @@ class ObjectUpdateStatus:
         self.ObjStatusList.clear()
 
 
-
-
 ###############################################################################
 # sample codes
 ###############################################################################
-
 if __name__ == '__main__':
     rur = ROIUpdateRegions()
 
     rur.addROIRegion('abc', 100, 200, 500, 600)
     rur.addROIRegion('uuu', 300, 500, 600, 900)
     rur.printROIRegions()
-
-
-
-
-
-
-
