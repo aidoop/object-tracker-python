@@ -10,19 +10,15 @@ WORKDIR /app
 COPY . .
 
 RUN apt-get update \
-  && apt-get install -y python3-pip python3-dev \
-  && cd /usr/local/bin \
-  && ln -s /usr/bin/python3 python \
-  && pip3 install --upgrade pip
+    && apt-get install -y python3-pip python3-dev \
+    && cd /usr/local/bin \
+    && ln -s /usr/bin/python3 python \
+    && pip3 install --upgrade pip
 
-RUN apt-get install -y libgl1-mesa-glx libusb-1.0-0
+RUN apt-get install -y libgl1-mesa-glx libusb-1.0-0 libqt5x11extras5 \
+    && pip3 install -r requirements.txt
 
-RUN pip install -r requirements.txt
-
-ENTRYPOINT ["python3"]
-
-
-
+#ENTRYPOINT ["python3"]
 
 # Install the required packages
 
