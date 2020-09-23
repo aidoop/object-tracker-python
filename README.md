@@ -10,22 +10,15 @@
     - pip install pyrealsense2
     - pip install requests
     - pip install gql
-  - Install librealsense (https://github.com/IntelRealSense/librealsense/issues/793)
 
-  ```
-  git clone https://github.com/IntelRealSense/librealsense
-  cd librealsense
-  mkdir build
-  cd build
-  cmake ../ -DBUILD_PYTHON_BINDINGS=TRUE
-  make -j4
-  sudo make install #Optional if you want the library to be installed in your system
-  ```
+- Module Installation
+  - pip install -r requirements.txt
 
-- vision-base (https://github.com/things-factory/vision-base.git)
 
-  - to run with vision-base web application, you should change paths in 'vision-base/config.developmnet.ts' and 'vision-base/config.production.ts' as below.
-    The files should be copied to the root folder of 'vision-base' from 'vision-base/config' and then modified with the real path of 'CoboMarkerTrakcing'
+- Operato-Robotics (https://github.com/things-factory/things-factory/tree/master/packages/operato-robotics)
+
+  - to run with Operato-Robotics, you should change paths in 'config/config.developmnet.ts' and 'config/config.production.ts' as below.
+    The files should be copied to the root folder of 'operato-robotics' from 'operato-robotics/config' and then modified with the real path of 'object-tracker-python'
 
   ```
   module.exports = {
@@ -70,6 +63,18 @@
   ```
 
 - References
+
+  - Install librealsense (https://github.com/IntelRealSense/librealsense/issues/793)
+
+  ```
+  git clone https://github.com/IntelRealSense/librealsense
+  cd librealsense
+  mkdir build
+  cd build
+  cmake ../ -DBUILD_PYTHON_BINDINGS=TRUE
+  make -j4
+  sudo make install #Optional if you want the library to be installed in your system
+  ```
 
   - how to get serial number of a realsense camera
 
