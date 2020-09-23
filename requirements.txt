@@ -1,6 +1,12 @@
 #
-###  CoboMarkerTrakcing 
+###  object-tracker-python
 #
+# numpy (1.19.1)
+# opencv-contrib-python (4.2.0.34)
+# opencv-python (4.2.0.34)
+# pyrealsense2 (2.35.2.1937)
+# requests (2.24.0)
+# gql (2.0.0)
 
 numpy
 opencv-python

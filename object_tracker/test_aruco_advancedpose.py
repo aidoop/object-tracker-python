@@ -24,23 +24,25 @@ from CalibHandEye.HandEye import *
 import math
 
 ###############################################################################
-# Hand-eye calibration process 
-#   -                                                                
+# Hand-eye calibration process
+#   -
 ###############################################################################
 
 if __name__ == '__main__':
-    
+
     # camera index
     rsCamIndex = '4'
     #rsCamDev = RealsenseCapture(rsCamIndex)
     rsCamDev = OpencvCapture(int(rsCamIndex))
-    vcap = VideoCapture(rsCamDev, config.VideoFrameWidth, config.VideoFrameHeight, config.VideoFramePerSec, 'camera02')
+    vcap = VideoCapture(rsCamDev, config.VideoFrameWidth,
+                        config.VideoFrameHeight, config.VideoFramePerSec, 'camera02')
 
     # Start streamingq
     vcap.start()
 
     # get instrinsics
-    mtx, dist = vcap.getIntrinsicsMat(int(rsCamIndex), config.UseRealSenseInternalMatrix)
+    mtx, dist = vcap.getIntrinsicsMat(
+        int(rsCamIndex), config.UseRealSenseInternalMatrix)
 
     # create an aruco detect object
     arucoDetect = ArucoDetect(config.ArucoDict, config.ArucoSize, mtx, dist)
@@ -48,7 +50,6 @@ if __name__ == '__main__':
     #arucoDetect = ArucoDetect(aruco.DICT_7X7_250, 0.05, mtx, dist)
 
     arucoAdvPose = ArucoAdvPose()
-    
 
     try:
         while(True):
@@ -66,17 +67,18 @@ if __name__ == '__main__':
                 rvec, tvec = arucoDetect.estimatePose(corners)
 
                 # change a rotation vector to a rotation matrix
-                rotMatrix = np.zeros(shape=(3,3))
+                rotMatrix = np.zeros(shape=(3, 3))
                 cv2.Rodrigues(rvec, rotMatrix)
 
                 # make a homogeneous matrix using a rotation matrix and a translation matrix a
-                hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec)                
+                hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec)
 
                 # get a transformation matrix which was created by calibration process
                 hmmtx = HandEyeCalibration.loadTransformMatrix()
 
                 # calcaluate the specific position based on hmInput
-                hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.0, 0.0, 0.0]).T)
+                hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [
+                                         0.0, 0.0, 1.0]]), np.array([0.0, 0.0, 0.0]).T)
                 hmInput = np.dot(hmCal2Cam, hmWanted)
 
                 # get the last homogeneous matrix
@@ -85,11 +87,11 @@ if __name__ == '__main__':
                 # get a final xyzuvw for the last homogenous matrix
                 xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
 
-                #print(hmmtx)
+                # print(hmmtx)
                 print(xyzuvw)
 
-                [x,y,z,u,v,w] = xyzuvw
-                arucoAdvPose.setPose(x,y,z,u,v,w)
+                [x, y, z, u, v, w] = xyzuvw
+                arucoAdvPose.setPose(x, y, z, u, v, w)
 
                 # if(arucoAdvPose.stable() == True):
                 #     print('Adv. Poses: ', arucoAdvPose.getPoses())
@@ -115,4 +117,3 @@ if __name__ == '__main__':
         vcap.stop()
 
     cv2.destroyAllWindows()
-
