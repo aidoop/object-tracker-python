@@ -5,16 +5,17 @@ import datetime
 import glob
 import sys
 
+
 class CalibrationCamera:
-    
+
     def __init__(self, chessboardX, chessboardY):
         # prepare arrays to store object points and image points from all the images.
         # 3d point in real world space
-        self.objpoints = [] 
+        self.objpoints = []
         # 2d points in image plane.
-        self.imgpoints = [] 
-        # width and height of chessboard 
-        self.chessboardX = chessboardX  
+        self.imgpoints = []
+        # width and height of chessboard
+        self.chessboardX = chessboardX
         self.chessboardY = chessboardY
 
         # reprojection error criterion
@@ -22,19 +23,22 @@ class CalibrationCamera:
 
     def calcuateCameraMatrix(self, images):
         # opencv algorithm termination criteria
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+        criteria = (cv2.TERM_CRITERIA_EPS +
+                    cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
         # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(9,6,0)
-        objp = np.zeros((self.chessboardY*self.chessboardX,3), np.float32)
-        objp[:,:2] = np.mgrid[0:self.chessboardX,0:self.chessboardY].T.reshape(-1,2)
+        objp = np.zeros((self.chessboardY*self.chessboardX, 3), np.float32)
+        objp[:, :2] = np.mgrid[0:self.chessboardX,
+                               0:self.chessboardY].T.reshape(-1, 2)
 
         for fname in images:
             print(fname, file=sys.stderr)
             img = cv2.imread(fname)
-            gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
             # Find the chess board corners
-            ret, corners = cv2.findChessboardCorners(gray, (self.chessboardX,self.chessboardY),None)
+            ret, corners = cv2.findChessboardCorners(
+                gray, (self.chessboardX, self.chessboardY), None)
 
             # If found, add object points, image points (after refining them)
             if ret == True:
@@ -42,12 +46,14 @@ class CalibrationCamera:
                 self.objpoints.append(objp)
 
                 # refine corners coordinates
-                corners2 = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
+                corners2 = cv2.cornerSubPix(
+                    gray, corners, (11, 11), (-1, -1), criteria)
                 self.imgpoints.append(corners2)
 
         # start camera calibartion
         if (len(self.objpoints) > 0) and (len(self.imgpoints) > 0):
-            reperr, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(self.objpoints, self.imgpoints, gray.shape[::-1], None, None)
+            reperr, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(
+                self.objpoints, self.imgpoints, gray.shape[::-1], None, None)
             print("Reprojection Error: " + str(reperr), file=sys.stderr)
 
             # TODO: should check this reprojection eror is available...

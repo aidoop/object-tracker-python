@@ -11,6 +11,7 @@ from calibhandeye_utilset import *
 from aruco.aruco_detect import ArucoDetect
 from etc.util import PrintMsg
 
+
 class HandEyeAruco:
 
     def __init__(self, markerSelectDict, markerSize, mtx, dist):
@@ -20,7 +21,7 @@ class HandEyeAruco:
 
         # test aruco marker id
         self.testMarkerID = 14
-        
+
         # use the specific aruco board?
         self.useArucoBoard = config.UseArucoBoard
 
@@ -28,10 +29,12 @@ class HandEyeAruco:
 
         # create an aruco detect object
         if self.useArucoBoard is False:
-            self.arucoDetect = ArucoDetect(markerSelectDict, markerSize, mtx, dist)
+            self.arucoDetect = ArucoDetect(
+                markerSelectDict, markerSize, mtx, dist)
         else:
             # if use a board, fixed parameters would be used. (6x6, 3.75 size, 0.05 gap, ...)
-            self.arucoDetect = ArucoDetect(aruco.DICT_6X6_1000, 0.0375, mtx, dist)
+            self.arucoDetect = ArucoDetect(
+                aruco.DICT_6X6_1000, 0.0375, mtx, dist)
 
     def setCalibMarkerID(self, markerID):
         self.calibMarkerID = markerID
@@ -57,30 +60,32 @@ class HandEyeAruco:
                 self.flagFindMainAruco = False
                 for idx in range(0, ids.size):
                     if(ids[idx] == self.calibMarkerID) or (ids[idx] == self.testMarkerID):
-                        if((rvec[idx].shape == (1,3)) or (rvec[idx].shape == (3,1))):
+                        if((rvec[idx].shape == (1, 3)) or (rvec[idx].shape == (3, 1))):
                             # inputObjPts = np.float32([[0.0,0.0,0.0]]).reshape(-1,3)
                             # imgpts, jac = cv2.projectPoints(inputObjPts, rvec[idx], tvec[idx], mtx, dist)
                             # centerPoint = tuple(imgpts[0][0])
                             # #cv2.circle(color_image,centerPoint,1,(0,0,255), -1)
                             # #print(str(rvec[idx]) + str(' ') + str(tvec[idx]))
 
-                            # find the main aruco marker 
+                            # find the main aruco marker
                             self.flagFindMainAruco = True
 
-                aruco.drawAxis(color_image, mtx, dist, rvec[idx], tvec[idx], 0.03)
+                aruco.drawAxis(color_image, mtx, dist,
+                               rvec[idx], tvec[idx], 0.03)
 
                 # draw a square around the markers
                 aruco.drawDetectedMarkers(color_image, corners)
             else:
                 # rvet and tvec-different from camera coefficients
-                poseret, rvec, tvec = self.arucoDetect.estimatePoseBoard(corners, ids)
+                poseret, rvec, tvec = self.arucoDetect.estimatePoseBoard(
+                    corners, ids)
 
                 if poseret >= 4:
                     # draw a cooordinate axis(x, y, z)
                     self.arucoDetect.drawAx(color_image, rvec, tvec, 0.165)
-                     
-                     # find the main aruco board
-                    self.flagFindMainAruco = True            
+
+                    # find the main aruco board
+                    self.flagFindMainAruco = True
 
         else:
             # code to show 'No Ids' when no markers are found
@@ -88,7 +93,7 @@ class HandEyeAruco:
             self.flagFindMainAruco = False
             tvec = None
             rvec = None
-            pass   
+            pass
 
         return (self.flagFindMainAruco, ids, rvec, tvec)
 
@@ -109,22 +114,22 @@ class HandEyeCalibration:
 
         # input data count
         self.cntInputData = 0
-        
+
         # distance
         self.distance = 0.0
 
-
-    #deperecated
+    # deperecated
     # Ref) https://stackoverflow.com/questions/27546081/determining-a-homogeneous-affine-transformation-matrix-from-six-points-in-3d-usi
     #      https://math.stackexchange.com/questions/222113/given-3-points-of-a-rigid-body-in-space-how-do-i-find-the-corresponding-orienta/222170#222170
+
     def calculateTransformMatrixUsing3Points(self, p, p_prime):
         # construct intermediate matrix
-        Q       = p[1:]       - p[0]
+        Q = p[1:] - p[0]
         Q_prime = p_prime[1:] - p_prime[0]
 
         # calculate rotation matrix
         R = np.dot(np.linalg.inv(np.row_stack((Q, np.cross(*Q)))),
-                np.row_stack((Q_prime, np.cross(*Q_prime))))
+                   np.row_stack((Q_prime, np.cross(*Q_prime))))
 
         # calculate translation vector
         t = p_prime[0] - np.dot(p[0], R)
@@ -164,13 +169,16 @@ class HandEyeCalibration:
             rotataion = hmmat[0:3, 0:3]
             self.R_target2cam.append(rotataion)
             translation = hmmat[0:3, 3]
-            self.t_target2cam.append(translation) 
-        
-        methodHE = [cv2.CALIB_HAND_EYE_TSAI, cv2.CALIB_HAND_EYE_PARK, cv2.CALIB_HAND_EYE_HORAUD, cv2.CALIB_HAND_EYE_ANDREFF, cv2.CALIB_HAND_EYE_DANIILIDIS]
+            self.t_target2cam.append(translation)
+
+        methodHE = [cv2.CALIB_HAND_EYE_TSAI, cv2.CALIB_HAND_EYE_PARK,
+                    cv2.CALIB_HAND_EYE_HORAUD, cv2.CALIB_HAND_EYE_ANDREFF, cv2.CALIB_HAND_EYE_DANIILIDIS]
 
         for mth in methodHE:
-            self.R_cam2gripper, self.t_cam2gripper = cv2.calibrateHandEye(self.R_gripper2base, self.t_gripper2base, self.R_target2cam, self.t_target2cam, None, None, mth)
-            cv2.calibrateHandEye(self.R_gripper2base, self.t_gripper2base, self.R_target2cam, self.t_target2cam, None, None, mth)
+            self.R_cam2gripper, self.t_cam2gripper = cv2.calibrateHandEye(
+                self.R_gripper2base, self.t_gripper2base, self.R_target2cam, self.t_target2cam, None, None, mth)
+            cv2.calibrateHandEye(self.R_gripper2base, self.t_gripper2base,
+                                 self.R_target2cam, self.t_target2cam, None, None, mth)
             # output results
             # PrintMsg.printStdErr("--------------------------------------")
             # PrintMsg.printStdErr("Method %d" % mth)
@@ -185,7 +193,7 @@ class HandEyeCalibration:
         self.t_gripper2base.append(hmRobot[0:3, 3])
 
         # prepare Target2Cam inputs
-        camRMatrix = np.zeros(shape=(3,3))
+        camRMatrix = np.zeros(shape=(3, 3))
         cv2.Rodrigues(camRVec, camRMatrix)
         hmCam = HMUtil.makeHM(camRMatrix, camTVec)
         hmCam = HMUtil.inverseHM(hmCam)
@@ -202,46 +210,52 @@ class HandEyeCalibration:
 
     def calculateHandEyeMatrix(self):
         methodHE = [cv2.CALIB_HAND_EYE_HORAUD]
-            
+
         for mth in methodHE:
-            self.R_cam2gripper, self.t_cam2gripper = cv2.calibrateHandEye(self.R_gripper2base, self.t_gripper2base, self.R_target2cam, self.t_target2cam, None, None, mth)
+            self.R_cam2gripper, self.t_cam2gripper = cv2.calibrateHandEye(
+                self.R_gripper2base, self.t_gripper2base, self.R_target2cam, self.t_target2cam, None, None, mth)
             # output results
             PrintMsg.printStdErr("--------------------------------------")
             PrintMsg.printStdErr("Method %d" % mth)
             PrintMsg.printStdErr(self.R_cam2gripper)
             PrintMsg.printStdErr(self.t_cam2gripper)
             PrintMsg.printStdErr("--------------------------------------")
-            self.distance = math.sqrt(math.pow(self.t_cam2gripper[0], 2.0)+math.pow(self.t_cam2gripper[1], 2.0)+math.pow(self.t_cam2gripper[2], 2.0))
+            self.distance = math.sqrt(math.pow(self.t_cam2gripper[0], 2.0)+math.pow(
+                self.t_cam2gripper[1], 2.0)+math.pow(self.t_cam2gripper[2], 2.0))
             PrintMsg.printStdErr("Distance: %f" % self.distance)
-            PrintMsg.printStdErr("--------------------------------------")        
+            PrintMsg.printStdErr("--------------------------------------")
 
     def getHandEyeResultMatrixUsingOpenCV(self):
         if(self.AlgorithmTest == True):
-            fsHandEyeTest = cv2.FileStorage("HandEyeResultsLog.xml", cv2.FILE_STORAGE_WRITE)
+            fsHandEyeTest = cv2.FileStorage(
+                "HandEyeResultsLog.xml", cv2.FILE_STORAGE_WRITE)
 
         self.calculateHandEyeMatrix()
- 
+
         if(self.AlgorithmTest == True):
-            fsHandEyeTest.write("Method", math.sqrt(math.pow(self.t_cam2gripper[0], 2.0)+math.pow(self.t_cam2gripper[1], 2.0)+math.pow(self.t_cam2gripper[2], 2.0)))            
+            fsHandEyeTest.write("Method", math.sqrt(math.pow(self.t_cam2gripper[0], 2.0)+math.pow(
+                self.t_cam2gripper[1], 2.0)+math.pow(self.t_cam2gripper[2], 2.0)))
 
         # select HORAUD algorithm on temporary
-        #if(mth == cv2.CALIB_HAND_EYE_HORAUD):
+        # if(mth == cv2.CALIB_HAND_EYE_HORAUD):
         # for idx in range(len(self.R_gripper2base)):
         #     print("######")
         # make a homogeneous matrix from Target(Calibration) to Gripper(TCP)
         hmT2G = HMUtil.makeHM(self.R_cam2gripper, self.t_cam2gripper.T)
         # make a homogeneous matrix from Gripper(TCP) to Robot Base
-        hmG2B = HMUtil.makeHM(self.R_gripper2base[0], self.t_gripper2base[0].reshape(1,3))
+        hmG2B = HMUtil.makeHM(
+            self.R_gripper2base[0], self.t_gripper2base[0].reshape(1, 3))
         # make a homogeneous matrix from Camera to Target(Target)
-        hmC2T = HMUtil.makeHM(self.R_target2cam[0], self.t_target2cam[0].reshape(1,3))
+        hmC2T = HMUtil.makeHM(
+            self.R_target2cam[0], self.t_target2cam[0].reshape(1, 3))
 
         # Final HM(Camera to Robot Base)
         # H(C2B) = H(G2B)H(T2G)H(C2T)
         hmResultTransform = np.dot(hmG2B, hmT2G)
-        hmResultTransform = np.dot(hmResultTransform, hmC2T)            
+        hmResultTransform = np.dot(hmResultTransform, hmC2T)
 
         if(self.AlgorithmTest == True):
-            fsHandEyeTest.release()          
+            fsHandEyeTest.release()
 
         PrintMsg.printStdErr("Result Transform: ")
         PrintMsg.printStdErr(hmResultTransform)
@@ -250,17 +264,20 @@ class HandEyeCalibration:
     # save a transform matrix to xml data as a file
     @staticmethod
     def saveTransformMatrix(resultMatrix):
-        calibFile = cv2.FileStorage("HandEyeCalibResult.json", cv2.FILE_STORAGE_WRITE)
+        calibFile = cv2.FileStorage(
+            "HandEyeCalibResult.json", cv2.FILE_STORAGE_WRITE)
         calibFile.write("HEMatrix", resultMatrix)
         calibFile.release()
 
     # get a transformation matrix which was created by calibration process
     @staticmethod
     def loadTransformMatrix():
-        calibFile = cv2.FileStorage("HandEyeCalibResult.json", cv2.FILE_STORAGE_READ)
+        calibFile = cv2.FileStorage(
+            "HandEyeCalibResult.json", cv2.FILE_STORAGE_READ)
         hmnode = calibFile.getNode("HEMatrix")
         hmmtx = hmnode.mat()
-        return hmmtx        
+        return hmmtx
+
 
 ###############################################################################
 # Test Codes using sample data in yml format
@@ -274,7 +291,7 @@ if __name__ == '__main__':
     robot3DTestPoints = []
 
     # handEyeInput = cv2.FileStorage("./handEyeSample.yml", cv2.FILE_STORAGE_READ)
-    # fileNode = handEyeInput.root()  
+    # fileNode = handEyeInput.root()
 
     handeye = HandEyeCalibration()
 
@@ -306,21 +323,24 @@ if __name__ == '__main__':
     robot3DTestPoints.append([0.06137, -0.68306, 0.01546])
     robot3DTestPoints.append([-0.18807, -0.66342, 0.01510])
 
-    result = handeye.calculateTransformMatrixUsing3Points(np.array(((-0.10259, 0.07283, 0.40900),(0.14604, 0.00431, 0.42700), (-0.00145, 0.10705, 0.31100))), 
-    np.array(((-0.18101, -0.52507, 0.01393),(0.06137, -0.68306, 0.01546), (-0.18807, -0.66342, 0.01510)))
-    )
+    result = handeye.calculateTransformMatrixUsing3Points(np.array(((-0.10259, 0.07283, 0.40900), (0.14604, 0.00431, 0.42700), (-0.00145, 0.10705, 0.31100))),
+                                                          np.array(
+                                                              ((-0.18101, -0.52507, 0.01393), (0.06137, -0.68306, 0.01546), (-0.18807, -0.66342, 0.01510)))
+                                                          )
     PrintMsg.printStdErr(result)
     PrintMsg.printStdErr(result.shape)
 
-    camC = np.array( ((cam3DTestPoints[0]), (cam3DTestPoints[1]), (cam3DTestPoints[2])) )
+    camC = np.array(
+        ((cam3DTestPoints[0]), (cam3DTestPoints[1]), (cam3DTestPoints[2])))
     PrintMsg.printStdErr(camC.shape)
-    robotC = np.array( ((robot3DTestPoints[0]), (robot3DTestPoints[1]), (robot3DTestPoints[2])) )
+    robotC = np.array(
+        ((robot3DTestPoints[0]), (robot3DTestPoints[1]), (robot3DTestPoints[2])))
     result = handeye.calculateTransformMatrixUsing3Points(camC, robotC)
     PrintMsg.printStdErr(result)
 
-    result = handeye.calculateTransformMatrix(cam3DTestPoints, robot3DTestPoints)
+    result = handeye.calculateTransformMatrix(
+        cam3DTestPoints, robot3DTestPoints)
     PrintMsg.printStdErr(result)
 
-    PrintMsg.printStdErr(np.dot(np.array([-0.10259, 0.07283, 0.40900, 1]).reshape(1,4), result[1]))
-
-
+    PrintMsg.printStdErr(
+        np.dot(np.array([-0.10259, 0.07283, 0.40900, 1]).reshape(1, 4), result[1]))

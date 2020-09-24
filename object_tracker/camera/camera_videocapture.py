@@ -4,6 +4,7 @@ import cv2
 
 from camera.camera_dev_realsense import RealsenseCapture  # for an example
 
+
 class VideoCapture:
 
     def __new__(cls, camDev, width, height, fps, name):
@@ -12,9 +13,9 @@ class VideoCapture:
             videoCap = None
         else:
             videoCap = object.__new__(cls)
-        
+
         return videoCap
-    
+
     def __init__(self, camDev, width, height, fps, name):
 
         # set camera device object
@@ -43,7 +44,7 @@ class VideoCapture:
 
     def getIntrinsicsMat(self, camIndex, UseInternal=False):
         # get internal intrinsics & extrinsics in D435
-        if(UseInternal == True):    
+        if(UseInternal == True):
             mtx, dist = self.getInternalIntrinsicsMat()
         else:
             loadFileName = "CalibCamResult"+str(camIndex)+".json"
@@ -56,6 +57,7 @@ class VideoCapture:
 
     def get3DPosition(self, imageX, imageY):
         return self.camDev.get3DPosition(imageX, imageY)
+
 
 ###############################################################################
 # test sample codes
@@ -80,4 +82,3 @@ if __name__ == '__main__':
         frameIdx += 1
 
     vcap.stop()
-

@@ -2,39 +2,43 @@ from abc import *
 import enum
 
 # video frame type enumeration
+
+
 class VideoFrameType(enum.Enum):
     ColorFrame = 0
     DepthFrame = 1
 
-## CameraPortLayer abstraction class
+# CameraPortLayer abstraction class
+
+
 class CameraDev(metaclass=ABCMeta):
-    
+
     ###################################
     # Properties
     ###################################
-    ## frame width
+    # frame width
     _frameWidth = 0
 
-    ## frame height      
+    # frame height
     _frameHeight = 0
 
-    ## frame per sec
+    # frame per sec
     _framePerSec = 0
 
     ###################################
     # Abstraction Functions
     ###################################
-    ## initialize parameters for any camera operation
+    # initialize parameters for any camera operation
     @abstractmethod
     def initialize(self):
         pass
 
-    ## start to capture frames
+    # start to capture frames
     @abstractmethod
     def startCapture(self):
         pass
 
-    ## stop to capture frames
+    # stop to capture frames
     @abstractmethod
     def stopCapture(self):
         pass
@@ -48,4 +52,3 @@ class CameraDev(metaclass=ABCMeta):
     @abstractmethod
     def get3DPosition(self):
         pass
-

@@ -3,7 +3,7 @@ import cv2
 from time import sleep
 import os
 import argparse
-import sys 
+import sys
 import numpy as np
 
 import config
@@ -24,12 +24,13 @@ from visiongql.visiongql_client import VisonGqlDataClient
 #####################################################################################
 def drawText(img, text, imgpt):
     font = cv2.FONT_HERSHEY_PLAIN
-    cv2.putText(img, text, imgpt, font, 1, (0,255,0),1,cv2.LINE_AA)
+    cv2.putText(img, text, imgpt, font, 1, (0, 255, 0), 1, cv2.LINE_AA)
 
 ###############################################################################
-# Hand-eye calibration process 
-#   -                                                                
+# Hand-eye calibration process
+#   -
 ###############################################################################
+
 
 if __name__ == '__main__':
 
@@ -69,7 +70,7 @@ if __name__ == '__main__':
     # start indy7 as a direct-teaching mode as default
     indy7.setDirectTeachingMode(True)
 
-    # create info text 
+    # create info text
     infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
 
     # setup an opencv window
@@ -95,7 +96,7 @@ if __name__ == '__main__':
             if ArucoTrackerErrMsg.checkValueIsNone(handeye, "hand eye matrix") == False:
                 break
             if ArucoTrackerErrMsg.checkValueIsNone(indy7, "indy7 object") == False:
-                break            
+                break
 
             #(flagFindMainAruco, ids, rvec, tvec) =  handeyeAruco.processArucoMarker(color_image, mtx, dist, vcap)
             # operations on the frame
@@ -115,12 +116,14 @@ if __name__ == '__main__':
             if len(tvec) >= 1:
                 centerPoints = list()
             for idx in range(0, ids.size):
-                if((rvec[idx].shape == (1,3)) or (rvec[idx].shape == (3,1))):
-                    inputObjPts = np.float32([[0.0,0.0,0.0]]).reshape(-1,3)
-                    imgpts, jac = cv2.projectPoints(inputObjPts, rvec[idx], tvec[idx], mtx, dist)
+                if((rvec[idx].shape == (1, 3)) or (rvec[idx].shape == (3, 1))):
+                    inputObjPts = np.float32([[0.0, 0.0, 0.0]]).reshape(-1, 3)
+                    imgpts, jac = cv2.projectPoints(
+                        inputObjPts, rvec[idx], tvec[idx], mtx, dist)
                     centerPoints.append(tuple(imgpts[0][0]))
 
-            tvec2 = np.array(vcap.get3DPosition(centerPoints[0][0], centerPoints[0][1]))
+            tvec2 = np.array(vcap.get3DPosition(
+                centerPoints[0][0], centerPoints[0][1]))
             print(tvec2)
             # tvec2.reshape(1,1,3)
 
@@ -136,28 +139,25 @@ if __name__ == '__main__':
 
             # display the captured image
             cv2.imshow('HandEye', color_image)
-            
+
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
             if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, indy7, infoText):
                 break
-            
+
             # have a delay to make CPU usage lower...
-            #sleep(0.1)
+            # sleep(0.1)
 
     except Exception as ex:
         print("Error :", ex)
 
     finally:
         # direct teaching mode is disalbe before exit
-        if( indy7.getDirectTeachingMode() == True):
+        if(indy7.getDirectTeachingMode() == True):
             indy7.setDirectTeachingMode(False)
         # Stop streaming
         vcap.stop()
-        
+
         # arrange all to finitsh this application here
         cv2.destroyAllWindows()
         indy7.finalize()
-    
-
-        

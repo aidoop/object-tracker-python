@@ -4,6 +4,7 @@ import cv2
 
 from camera.camera_dev import CameraDev
 
+
 class OpencvCapture(CameraDev):
 
     # TODO: check if any uvc device exists.
@@ -17,9 +18,9 @@ class OpencvCapture(CameraDev):
     #         camdev = object.__new__(cls)
     #     else:
     #         camdev = None
-            
+
     #     vcap.release()
-       
+
     #     return camdev
 
     def __init__(self, devIndex):
@@ -45,7 +46,7 @@ class OpencvCapture(CameraDev):
 
     # wait for a video color frame and return the frame
     def getFrame(self):
-        # get a frame 
+        # get a frame
         ret, frame = self.__videoCapture.read()
         if not ret:
             frame = None
@@ -54,6 +55,7 @@ class OpencvCapture(CameraDev):
     # get 3D position w.r.t an image pixel based on camera-based coordination
     def get3DPosition(self, imageX, imageY):
         raise NotImplementedError
+
 
 ###############################################################################
 # test sample codes
@@ -77,5 +79,3 @@ if __name__ == '__main__':
         frameIdx += 1
 
     rsCamDev.stopCapture()
-
-

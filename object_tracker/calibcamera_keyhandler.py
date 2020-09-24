@@ -8,6 +8,7 @@ from calibcamera_update import CalibCameraUpdate
 from etc.util import PrintMsg
 from etc.keyhandler import KeyHandler
 
+
 class CalibCameraKeyHandler(KeyHandler):
 
     def __init__(self):
@@ -26,11 +27,14 @@ class CalibCameraKeyHandler(KeyHandler):
         dirFrameImage = args[1]
         infoText = args[4]
 
-        cv2.imwrite(os.path.join(dirFrameImage, str(self.interation) + '.jpg'), color_image)
-        PrintMsg.printStdErr('Image caputured - ' + os.path.join(dirFrameImage, str(self.interation) + '.jpg'))
+        cv2.imwrite(os.path.join(dirFrameImage, str(
+            self.interation) + '.jpg'), color_image)
+        PrintMsg.printStdErr(
+            'Image caputured - ' + os.path.join(dirFrameImage, str(self.interation) + '.jpg'))
         self.interation += 1
 
-        strInfoText = 'Image Captured(' + str(self.interation) + ') - ' + os.path.join(dirFrameImage, str(self.interation) + '.jpg')
+        strInfoText = 'Image Captured(' + str(self.interation) + ') - ' + \
+            os.path.join(dirFrameImage, str(self.interation) + '.jpg')
         infoText.setText(strInfoText)
 
     def processZ(self, *args):
@@ -58,29 +62,25 @@ class CalibCameraKeyHandler(KeyHandler):
 
         # get image file names
         images = glob.glob(dirFrameImage + '/*.jpg')
-        ret, cammtx, distcoeff, reproerr = calibcam.calcuateCameraMatrix(images)
+        ret, cammtx, distcoeff, reproerr = calibcam.calcuateCameraMatrix(
+            images)
 
         strInfoText = ''
 
         if ret == True:
-            strInfoText = 'Calibration completed successfully... - ' + str(reproerr)
-            
+            strInfoText = 'Calibration completed successfully... - ' + \
+                str(reproerr)
+
             # save calibration data to the specific xml file
             savedFileName = "CalibCamResult"+str(camIndex)+".json"
             calibcam.saveResults(savedFileName, cammtx, distcoeff)
 
             # update the result data
             updateUI = CalibCameraUpdate()
-            updateUI.updateData(distcoeff[0], cammtx.reshape(1,9)[0])
+            updateUI.updateData(distcoeff[0], cammtx.reshape(1, 9)[0])
 
         else:
             strInfoText = 'Calibration failed. - ' + str(reproerr)
-        
+
         PrintMsg.printStdErr(strInfoText)
         infoText.setText(strInfoText)
-
-
-
-
-
- 

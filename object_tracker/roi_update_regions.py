@@ -1,5 +1,6 @@
 import json
 
+
 class ROIUpdateRegions:
     ROIRegionList = list()
 
@@ -27,22 +28,12 @@ class ROIUpdateRegions:
         print(json.dumps(self.ROIRegionList))
 
 
-
-
 ###############################################################################
 # sample codes
 ###############################################################################
-
 if __name__ == '__main__':
     rur = ROIUpdateRegions()
 
     rur.addROIRegion('abc', 100, 200, 500, 600)
     rur.addROIRegion('uuu', 300, 500, 600, 900)
     rur.printROIRegions()
-
-
-
-
-
-
-

@@ -1,13 +1,16 @@
 import numpy as np
 
+
 class ROI:
 
-    def __init__(self):    
+    def __init__(self):
         self.id = None
         self.tl = None
         self.rb = None
 
-## RobotArm
+# RobotArm
+
+
 class RobotArm:
 
     def __init__(self):
@@ -18,7 +21,9 @@ class RobotArm:
         self.gripperOffset = None
         self.markerOffset = None
 
-## Tracking Camera
+# Tracking Camera
+
+
 class TrackingCamera:
 
     def __init__(self):
@@ -32,13 +37,13 @@ class TrackingCamera:
         self.distCoeff = None
         self.cameraMatrix = None
         self.handEyeMatrix = None
-        self.camObjOffset = None        
+        self.camObjOffset = None
 
     def setCameraMatrix(self, row, col, inputData):
         self.cameraMatrix = VisionGqlUtil.setMatrixData(row, col, inputData)
-    
+
     def setHandeyeMatrix(self, row, col, inputData):
-        self.handEyeMatrix = VisionGqlUtil.setMatrixData(row, col, inputData)        
+        self.handEyeMatrix = VisionGqlUtil.setMatrixData(row, col, inputData)
 
     def _setMatrixData(self, row, col, inputData):
         if inputData is None:
@@ -57,7 +62,9 @@ class TrackingCamera:
             roiObject.rb = [roi['region']['rb']['x'], roi['region']['rb']['y']]
             self.ROIs.append(roiObject)
 
-## Trackable Object
+# Trackable Object
+
+
 class TrackableObject:
 
     def __init__(self):
@@ -67,7 +74,9 @@ class TrackableObject:
         self.active = None
         self.poseOffset = None
 
-## Workspace 
+# Workspace
+
+
 class VisonWorkspace:
 
     def __init__(self):
@@ -78,6 +87,8 @@ class VisonWorkspace:
         self.params = None
 
 # Utilities
+
+
 class VisionGqlUtil:
 
     @staticmethod
@@ -91,4 +102,3 @@ class VisionGqlUtil:
         if inputData is None:
             return
         return np.array([inputData['x'], inputData['y'], inputData['z'], inputData['u'], inputData['v'], inputData['w']])
-

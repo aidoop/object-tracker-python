@@ -1,5 +1,6 @@
 import string
 
+
 class KeyHandler:
     def __init__(self):
         self.keyHandler = dict()
@@ -26,7 +27,7 @@ class KeyHandler:
         # ascii value to character
         key = chr(keyVal)
 
-        # check if key is ascii 
+        # check if key is ascii
         if not (key in string.ascii_letters):
             return False
 
@@ -39,5 +40,3 @@ class KeyHandler:
             func(*args)
 
         return self.exitFlag
-
-    

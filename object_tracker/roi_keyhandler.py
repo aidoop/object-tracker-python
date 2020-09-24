@@ -7,6 +7,7 @@ from roi_update_regions import ROIUpdateRegions
 from etc.keyhandler import KeyHandler
 from etc.util import PrintMsg
 
+
 class ROIKeyHandler(KeyHandler):
 
     def __init__(self):
@@ -27,7 +28,7 @@ class ROIKeyHandler(KeyHandler):
         if regionCnt == 0:
             return
 
-        savedFileName = "ROIRegions" + str(camIndex) + ".json" 
+        savedFileName = "ROIRegions" + str(camIndex) + ".json"
         ROIRegionFile = cv2.FileStorage(savedFileName, cv2.FILE_STORAGE_WRITE)
         regionCnt = len(ROIRegions)
         ROIRegionFile.write("ROICnt", regionCnt)
@@ -37,7 +38,8 @@ class ROIKeyHandler(KeyHandler):
         for idx in range(regionCnt):
             ROIRegionFile.write("RegionID", str(ROIRegionIds[idx]))
             ROIRegionFile.write("Region", np.array(ROIRegions[idx]))
-            rur.addROIRegion(str(ROIRegionIds[idx]), int(round(ROIRegions[idx][1][0])), int(round(ROIRegions[idx][1][1])), int(round(ROIRegions[idx][0][0])), int(round(ROIRegions[idx][0][1])))
+            rur.addROIRegion(str(ROIRegionIds[idx]), int(round(ROIRegions[idx][1][0])), int(round(
+                ROIRegions[idx][1][1])), int(round(ROIRegions[idx][0][0])), int(round(ROIRegions[idx][0][1])))
 
         ROIRegionFile.release()
         PrintMsg.printStdErr("ROI Regions saved.")
@@ -47,12 +49,3 @@ class ROIKeyHandler(KeyHandler):
 
         # update info. text display
         infoText.setText("ROI Regions saved successfully.")
-
-
-
-
-
-
-    
-
-    

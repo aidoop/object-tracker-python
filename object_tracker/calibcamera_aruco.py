@@ -11,13 +11,13 @@ from aruco.aruco_detect import ArucoDetect
 
 
 class CalibrationCameraAruco:
-    
+
     def __init__(self):
         # prepare arrays to store object points and image points from all the images.
         # 3d point in real world space
-        self.objpoints = [] 
+        self.objpoints = []
         # 2d points in image plane.
-        self.imgpoints = [] 
+        self.imgpoints = []
 
         # reprojection error criterion
         self.REPROERR_CRITERION = 1.0
@@ -27,14 +27,15 @@ class CalibrationCameraAruco:
 
     def calcuateCameraMatrix(self, images):
         # opencv algorithm termination criteria
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+        criteria = (cv2.TERM_CRITERIA_EPS +
+                    cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
         counter, corners_list, id_list = [], [], []
         first = True
         for fname in images:
             print(fname, file=sys.stderr)
             img = cv2.imread(fname)
-            gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
             corners, ids = self.arucoDetect.detect(gray)
             if first == True:
@@ -43,15 +44,15 @@ class CalibrationCameraAruco:
                 first = False
             else:
                 corners_list = np.vstack((corners_list, corners))
-                id_list = np.vstack((id_list,ids))            
+                id_list = np.vstack((id_list, ids))
             counter.append(len(ids))
 
-
         counter = np.array(counter)
-        
+
         # start camera calibartion
         if (len(id_list) > 0):
-            ret, mtx, dist = self.arucoDetect.calibrateCamera(corners_list, id_list, counter, (config.VideoFrameHeight, config.VideoFrameWidth))
+            ret, mtx, dist = self.arucoDetect.calibrateCamera(
+                corners_list, id_list, counter, (config.VideoFrameHeight, config.VideoFrameWidth))
             print("Reprojection Error: " + str(ret), file=sys.stderr)
 
             # TODO: should check this reprojection eror is available...

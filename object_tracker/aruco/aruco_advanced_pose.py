@@ -4,22 +4,21 @@ import cv2.aruco as aruco
 import numpy as np
 import collections
 
+
 class ArucoAdvPose:
     def __init__(self):
 
         self.isStable = False
-        
+
         self.sizeEstPoses = 10
         self.queueEstimatedPoseX = collections.deque(maxlen=self.sizeEstPoses)
-        self.queueEstimatedPoseY= collections.deque(maxlen=self.sizeEstPoses)
+        self.queueEstimatedPoseY = collections.deque(maxlen=self.sizeEstPoses)
         self.queueEstimatedPoseZ = collections.deque(maxlen=self.sizeEstPoses)
         self.queueEstimatedPoseU = collections.deque(maxlen=self.sizeEstPoses)
         self.queueEstimatedPoseV = collections.deque(maxlen=self.sizeEstPoses)
         self.queueEstimatedPoseW = collections.deque(maxlen=self.sizeEstPoses)
 
         self.stdPoses = dict()
-
-
 
     def setPose(self, x, y, z, u, v, w):
         self.queueEstimatedPoseX.append(x)
@@ -71,10 +70,3 @@ class ArucoAdvPose:
         avgPoses['w'] = self.getPose(self.queueEstimatedPoseW)
 
         return [avgPoses['x'], avgPoses['y'], avgPoses['z'], avgPoses['u'], avgPoses['v'], avgPoses['w']]
-
-
-
-
-
-
-    

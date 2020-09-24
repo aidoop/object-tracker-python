@@ -21,8 +21,8 @@ from roi_update_regions import ROIUpdateRegions
 from visiongql.visiongql_client import VisonGqlDataClient
 
 ###############################################################################
-# Hand-eye calibration process 
-#   -                                                                
+# Hand-eye calibration process
+#   -
 ###############################################################################
 
 if __name__ == '__main__':
@@ -43,14 +43,14 @@ if __name__ == '__main__':
         print("Invalid paramters..")
         sys.exit()
 
-    cameraName = sys.argv[1]    
+    cameraName = sys.argv[1]
 
     gqlDataClient = VisonGqlDataClient()
     if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
         #print("Can't connect operato vision server.")
         sys.exit()
 
-    #gqlDataClient.parseVisionWorkspaces()
+    # gqlDataClient.parseVisionWorkspaces()
     # process all elements here...
     gqlDataClient.fetchTrackingCamerasAll()
     cameraObject = gqlDataClient.trackingCameras[cameraName]
@@ -58,10 +58,11 @@ if __name__ == '__main__':
     if cameraObject.type == 'realsense-camera':
         rsCamDev = RealsenseCapture(cameraObject.endpoint)
     elif cameraObject.type == 'camera-connector':
-        rsCamDev = OpencvCapture(int(cameraObject.endpoint))    
+        rsCamDev = OpencvCapture(int(cameraObject.endpoint))
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, config.VideoFrameWidth, config.VideoFrameHeight, config.VideoFramePerSec, cameraName)
+    vcap = VideoCapture(rsCamDev, config.VideoFrameWidth,
+                        config.VideoFrameHeight, config.VideoFramePerSec, cameraName)
 
     # Start streaming
     vcap.start()
@@ -70,9 +71,9 @@ if __name__ == '__main__':
     #mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), config.UseRealSenseInternalMatrix)
     if(config.UseRealSenseInternalMatrix == True):
         mtx, dist = vcap.getInternalIntrinsicsMat()
-    else:    
+    else:
         mtx = cameraObject.cameraMatrix
-        dist = cameraObject.distCoeff    
+        dist = cameraObject.distCoeff
 
     # create aruco manager
     ROIMgr = ROIAruco2DManager(config.ArucoDict, config.ArucoSize, mtx, dist)
@@ -82,12 +83,11 @@ if __name__ == '__main__':
     #     ROIMgr.setMarkIdPair((int(arucoPairValues[0]), int(arucoPairValues[1])))
 
     # create key handler for camera calibration1
-    keyhander = ROIKeyHandler()    
+    keyhander = ROIKeyHandler()
 
-    # create info text 
-    infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))    
+    # create info text
+    infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
 
-    
     try:
         while(True):
             # Wait for a coherent pair of frames: depth and color
@@ -106,13 +106,14 @@ if __name__ == '__main__':
 
             # draw ROI regions
             for ROIRegion in ROIRegions:
-                cv2.rectangle(color_image, ROIRegion[0], ROIRegion[1], (255,0,0), 3)
+                cv2.rectangle(
+                    color_image, ROIRegion[0], ROIRegion[1], (255, 0, 0), 3)
 
-            # create info text 
-            infoText.draw(color_image)                
+            # create info text
+            infoText.draw(color_image)
 
             # display the captured image
-            cv2.imshow('ROI Selection',color_image)
+            cv2.imshow('ROI Selection', color_image)
 
             time.sleep(0.2)
 
@@ -130,4 +131,3 @@ if __name__ == '__main__':
         vcap.stop()
 
     cv2.destroyAllWindows()
-

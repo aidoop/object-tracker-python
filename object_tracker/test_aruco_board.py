@@ -18,31 +18,31 @@ from camera.camera_videocapture import VideoCapture
 from aruco.aruco_detect import ArucoDetect
 
 
-
 ###############################################################################
-# Hand-eye calibration process 
-#   -                                                                
+# Hand-eye calibration process
+#   -
 ###############################################################################
 
 if __name__ == '__main__':
-    
+
     # camera index
     rsCamIndex = '4'
     #rsCamDev = RealsenseCapture(rsCamIndex)
     rsCamDev = OpencvCapture(int(rsCamIndex))
-    vcap = VideoCapture(rsCamDev, config.VideoFrameWidth, config.VideoFrameHeight, config.VideoFramePerSec, 'camera02')
+    vcap = VideoCapture(rsCamDev, config.VideoFrameWidth,
+                        config.VideoFrameHeight, config.VideoFramePerSec, 'camera02')
 
     # Start streamingq
     vcap.start()
 
     # get instrinsics
-    mtx, dist = vcap.getIntrinsicsMat(int(rsCamIndex), config.UseRealSenseInternalMatrix)
+    mtx, dist = vcap.getIntrinsicsMat(
+        int(rsCamIndex), config.UseRealSenseInternalMatrix)
 
     # create an aruco detect object
     arucoDetect = ArucoDetect(aruco.DICT_6X6_1000, 0.0375, mtx, dist)
     #arucoDetect = ArucoDetect(config.ArucoDict, 0.075, mtx, dist)
     #arucoDetect = ArucoDetect(aruco.DICT_7X7_250, 0.05, mtx, dist)
-    
 
     try:
         while(True):
@@ -57,7 +57,8 @@ if __name__ == '__main__':
             if (corners is not None) and (ids is not None):
 
                 # rvet and tvec-different from camera coefficients
-                poseret, rvec, tvec = arucoDetect.estimatePoseBoard(corners, ids)
+                poseret, rvec, tvec = arucoDetect.estimatePoseBoard(
+                    corners, ids)
 
                 if poseret >= 4:
                     # draw a cooordinate axis(x, y, z)
@@ -80,4 +81,3 @@ if __name__ == '__main__':
         vcap.stop()
 
     cv2.destroyAllWindows()
-

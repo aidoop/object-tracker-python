@@ -18,29 +18,30 @@ from camera.camera_videocapture import VideoCapture
 from aruco.aruco_detect import ArucoDetect
 
 ###############################################################################
-# Hand-eye calibration process 
-#   -                                                                
+# Hand-eye calibration process
+#   -
 ###############################################################################
 
 if __name__ == '__main__':
-    
+
     # camera index
     rsCamIndex = '4'
     #rsCamDev = RealsenseCapture(rsCamIndex)
     rsCamDev = OpencvCapture(int(rsCamIndex))
-    vcap = VideoCapture(rsCamDev, config.VideoFrameWidth, config.VideoFrameHeight, config.VideoFramePerSec, 'camera02')
+    vcap = VideoCapture(rsCamDev, config.VideoFrameWidth,
+                        config.VideoFrameHeight, config.VideoFramePerSec, 'camera02')
 
     # Start streamingq
     vcap.start()
 
     # get instrinsics
-    mtx, dist = vcap.getIntrinsicsMat(int(rsCamIndex), config.UseRealSenseInternalMatrix)
+    mtx, dist = vcap.getIntrinsicsMat(
+        int(rsCamIndex), config.UseRealSenseInternalMatrix)
 
     # create an aruco detect object
     arucoDetect = ArucoDetect(config.ArucoDict, config.ArucoSize, mtx, dist)
     #arucoDetect = ArucoDetect(config.ArucoDict, 0.075, mtx, dist)
     #arucoDetect = ArucoDetect(aruco.DICT_7X7_250, 0.05, mtx, dist)
-    
 
     try:
         while(True):
@@ -56,7 +57,7 @@ if __name__ == '__main__':
 
                 # rvet and tvec-different from camera coefficients
                 rvec, tvec = arucoDetect.estimatePose(corners)
-                #print(tvec)
+                # print(tvec)
                 if len(tvec) < 2:
                     continue
 
@@ -66,7 +67,8 @@ if __name__ == '__main__':
 
                 # calculate the distance between two any aruco markers.
                 tdiff = abs(tvec[0] - tvec[1])
-                tdist = math.sqrt(math.pow(tdiff[0][0], 2.0)+math.pow(tdiff[0][1], 2.0)+math.pow(tdiff[0][2], 2.0))
+                tdist = math.sqrt(math.pow(
+                    tdiff[0][0], 2.0)+math.pow(tdiff[0][1], 2.0)+math.pow(tdiff[0][2], 2.0))
                 print(tdist)
 
             # displaqy the captured image
@@ -86,4 +88,3 @@ if __name__ == '__main__':
         vcap.stop()
 
     cv2.destroyAllWindows()
-
