@@ -11,7 +11,7 @@ import config
 from camera.camera_dev_opencv import OpencvCapture
 from camera.camera_dev_realsense import RealsenseCapture
 from camera.camera_videocapture import VideoCapture
-from etc.util import ArucoTrackerErrMsg, DisplayInfoText, PrintMsg
+from util.util import ArucoTrackerErrMsg, DisplayInfoText, PrintMsg
 from calibcamera import CalibrationCamera
 from calibcamera_aruco import CalibrationCameraAruco
 from calibcamera_keyhandler import CalibCameraKeyHandler

@@ -14,7 +14,7 @@ import config
 from camera.camera_dev_realsense import RealsenseCapture
 from camera.camera_dev_opencv import OpencvCapture
 from camera.camera_videocapture import VideoCapture
-from etc.util import ArucoTrackerErrMsg, PrintMsg, DisplayInfoText
+from util.util import ArucoTrackerErrMsg, PrintMsg, DisplayInfoText
 from roi_arucomanager import ROIAruco2DManager
 from roi_keyhandler import ROIKeyHandler
 from roi_update_regions import ROIUpdateRegions

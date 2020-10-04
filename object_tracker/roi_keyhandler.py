@@ -4,8 +4,8 @@ import glob
 import numpy as np
 
 from roi_update_regions import ROIUpdateRegions
-from etc.keyhandler import KeyHandler
-from etc.util import PrintMsg
+from util.keyhandler import KeyHandler
+from util.util import PrintMsg
 
 
 class ROIKeyHandler(KeyHandler):

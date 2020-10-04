@@ -5,7 +5,7 @@ import numpy as np
 import sys
 import os
 
-from etc.keyhandler import KeyHandler
+from util.keyhandler import KeyHandler
 
 
 class ObjectTrackingKeyHandler(KeyHandler):

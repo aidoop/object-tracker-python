@@ -1,10 +1,10 @@
 import cv2
 
 import config
-from etc.keyhandler import KeyHandler
+from util.keyhandler import KeyHandler
 from robot.robot_dev_indydcp import RobotIndy7Dev
-from etc.util import PrintMsg
-from calibhandeye_utilset import *
+from util.util import PrintMsg
+from util.hm_util import *
 from calibhandeye_handeye import *
 from calibhandeye_update import CalibHandeyeUpdate
 

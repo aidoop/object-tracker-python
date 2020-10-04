@@ -7,9 +7,9 @@ import sys
 import os
 
 import config
-from calibhandeye_utilset import *
+from util.hm_util import *
 from aruco.aruco_detect import ArucoDetect
-from etc.util import PrintMsg
+from util.util import PrintMsg
 
 
 class HandEyeAruco:

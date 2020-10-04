@@ -10,9 +10,9 @@ from camera.camera_dev_opencv import OpencvCapture
 from camera.camera_dev_realsense import RealsenseCapture
 from camera.camera_videocapture import VideoCapture
 from robot.robot_dev_indydcp import RobotIndy7Dev
-from etc.util import ArucoTrackerErrMsg, DisplayInfoText
+from util.util import ArucoTrackerErrMsg, DisplayInfoText
 from calibhandeye_keyhandler import CalibHandEyeKeyHandler
-from calibhandeye_utilset import *
+from util.hm_util import *
 from calibhandeye_handeye import *
 
 from visiongql.visiongql_client import VisonGqlDataClient

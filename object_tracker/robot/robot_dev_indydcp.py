@@ -3,7 +3,7 @@ from time import sleep
 
 from robot.robot_dev import RobotDev
 import robot.indydcp_client as indycli
-from etc.util import PrintMsg
+from util.util import PrintMsg
 
 # Neuromeka Indy7
 

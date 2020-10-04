@@ -5,8 +5,8 @@ import sys
 import json
 
 from calibcamera_update import CalibCameraUpdate
-from etc.util import PrintMsg
-from etc.keyhandler import KeyHandler
+from util.util import PrintMsg
+from util.keyhandler import KeyHandler
 
 
 class CalibCameraKeyHandler(KeyHandler):

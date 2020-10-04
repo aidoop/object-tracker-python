@@ -10,7 +10,7 @@ import config
 from camera.camera_dev_realsense import RealsenseCapture
 from camera.camera_dev_opencv import OpencvCapture
 from camera.camera_videocapture import VideoCapture
-from etc.util import ArucoTrackerErrMsg, ObjectTypeCheck
+from util.util import ArucoTrackerErrMsg, ObjectTypeCheck
 from objecttracking_updatestatus import ObjectUpdateStatus
 from objecttracking_aurco import ArucoMarkerObject, ArucoMarkerTracker
 from objecttracking_keyhandler import ObjectTrackingKeyHandler
@@ -20,7 +20,7 @@ from visiongql.visiongql_client import VisonGqlDataClient
 
 class VisionTrackingCamera:
     name = None
-    robotName = None        # TODO: how does camera make relation with robot???
+    robotName = None
     vcap = None
     mtx = None
     dist = None
