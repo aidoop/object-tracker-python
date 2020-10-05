@@ -94,7 +94,7 @@ if __name__ == '__main__':
     glbData.robot = indy7
 
     # vistion tracking camera object list
-    #vtcList = list()
+    # vtcList = list()
 
     #########################################################################
     # intitialize tracking cameras
@@ -139,8 +139,8 @@ if __name__ == '__main__':
 
     # load weights
     model.load_weights(
-        # "/home/jinwon/Documents/github/object-tracker-python/mask_rcnn_nespresso_0030.h5", by_name=True)
-        "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201005T0817/mask_rcnn_object-train_0030.h5", by_name=True)
+        "/home/jinwon/Documents/github/object-tracker-python/mask_rcnn_nespresso_0030.h5", by_name=True)
+    # "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201005T0817/mask_rcnn_object-train_0030.h5", by_name=True)
 
     # Streaming loop
     try:
@@ -154,7 +154,11 @@ if __name__ == '__main__':
             if (color_image is None) or (depth_image is None):
                 continue
 
-            rcnn.detect_object_by_data(model, color_image)
+            mask_list = rcnn.detect_object_by_data(model, color_image)
+            for mask in mask_list:
+                mask_image = np.where(mask, 255, 0).astype(np.uint8)
+                cv2.imshow('mask', mask_image)
+                key = cv2.waitKey(1000)
 
             # to view images using cv2.imshow
             color_image_view = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
@@ -168,7 +172,7 @@ if __name__ == '__main__':
 
             # start: measure fps
             process_time = datetime.now() - dt0
-            #print("FPS: " + str(1 / process_time.total_seconds()))
+            # print("FPS: " + str(1 / process_time.total_seconds()))
 
             key = cv2.waitKey(1)
             # press esc or 'q' to close the image window

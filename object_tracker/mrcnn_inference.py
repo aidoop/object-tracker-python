@@ -49,7 +49,7 @@ class InferenceConfig(Config):
     DETECTION_MIN_CONFIDENCE = 0.9
 
 
-def get_mask(image, masks, mask_index):
+def get_mask_list(image, masks):
     """
     mask: instance segmentation mask [height, width, instance count]
     Returns mask image.
@@ -61,14 +61,34 @@ def get_mask(image, masks, mask_index):
     #     mask.reshape(mask.shape[0], mask.shape[1], 1)
     #     mask_gray = np.where(mask, 255, 0).astype(np.uint8)
 
-    # Make a grayscale copy of the image. The grayscale copy still
-    # has 3 RGB channels, though.
-    gray = skimage.color.gray2rgb(skimage.color.rgb2gray(image)) * 255
+    mask_list = list()
+
+    mask_cnt = masks.shape[-1]
+
+    for mask_idx in range(mask_cnt):
+        mask = masks[:, :, mask_idx]
+        mask_list.append(mask)
+
+    return mask_list
+
+
+def get_mask_by_index(image, masks, mask_index):
+    """
+    mask: instance segmentation mask [height, width, instance count]
+    Returns mask image.
+    """
+
+    # mask_cnt = masks.shape[-1]
+    # for idx in range(mask_cnt):
+    #     mask = masks[:, :, 0]
+    #     mask.reshape(mask.shape[0], mask.shape[1], 1)
+    #     mask_gray = np.where(mask, 255, 0).astype(np.uint8)
+
     # Copy color pixels from the original color image where mask is set
     if masks.shape[-1] > 0:
         # We're treating all instances as one, so collapse the mask into one layer
         # mask = (np.sum(mask, -1, keepdims=True) >= 1)
-        mask = masks[:, :, 3]
+        mask = masks[:, :, 0]
         mask.reshape(mask.shape[0], mask.shape[1], 1)
         splash = np.where(mask, 255, 0).astype(np.uint8)
     else:
@@ -95,7 +115,7 @@ def detect_object_by_path(model, image_path=None):
     print("WorkingTime: {} sec".format(edtime-sttime))
 
     # Color splash
-    splash = get_mask(image, r['masks'], 0)
+    splash = get_mask_by_index(image, r['masks'], 0)
 
     # Save output
     file_name = "splash_{:%Y%m%dT%H%M%S}.png".format(datetime.datetime.now())
@@ -116,8 +136,9 @@ def detect_object_by_data(model, image_data):
     print("WorkingTime: {} sec".format(edtime-sttime))
     print(r['masks'].shape[-1])
 
-    # # Color splash
-    # splash = get_mask(image, r['masks'], 0)
+    mask_list = get_mask_list(image_data, r['masks'])
+
+    return mask_list
 
     # # Save output
     # file_name = "splash_{:%Y%m%dT%H%M%S}.png".format(datetime.datetime.now())
@@ -161,4 +182,4 @@ if __name__ == '__main__':
     model.load_weights(weights_path, by_name=True)
 
     # Train or evaluate
-    detect_object(model, image_path=args.image)
+    detect_object_by_path(model, image_path=args.image)
