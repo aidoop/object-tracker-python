@@ -1,5 +1,5 @@
 #
-###  object-tracker-python
+###  pip list for aruco tracking
 #
 # numpy (1.19.1)
 # opencv-contrib-python (4.2.0.34)
@@ -8,9 +8,24 @@
 # requests (2.24.0)
 # gql (2.0.0)
 
+# NOTICE for installing tensorflow
+# to install tensorflow > 2.0, you need to 
+# pip install --upgrade pip
+# pip install setuptools --upgrade
+# pip install wheel
+
 numpy
 opencv-python
 opencv-contrib-python
 pyrealsense2
 requests
 gql
+scipy==1.4.1
+Pillow
+cython
+matplotlib
+scikit-image==0.16.2
+tensorflow==2.3.0
+h5py
+imgaug
+IPython[all]

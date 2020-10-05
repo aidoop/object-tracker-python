@@ -19,69 +19,35 @@ class RealSensePreset(IntEnum):
 
 class RealsenseCapture(CameraDev):
 
-    # def __new__(cls, devIndex):
-
-    #     devFound = False
-
-    #     ctx = rs.context()
-    #     if devIndex < (len(ctx.devices)):
-    #         devIter = 0
-    #         for d in ctx.devices:
-    #             if(devIter == devIndex):
-    #                 PrintMsg.printStdErr('Serial Number: ' + d.get_info(rs.camera_info.serial_number))
-    #                 devFound = True
-    #             devIter += 1
-    #     else:
-    #         pass
-
-    #     if(devFound == True):
-    #         camdev = object.__new__(cls)
-    #     else:
-    #         camdev = None
-
-    #     return camdev
-
     def __init__(self, matchedSerialNumber):  # devIndex):
-
-        self.foundDevice = False
-
-        # manage multiple devices
-        # ctx = rs.context()
-        # time.sleep(0.1) # to fix the internal uvc camera bug on linux
-        # rsDevices = ctx.devices
-        # time.sleep(0.1) # to fix the internal uvc camera bug on linux
-        # if devIndex < (len(rsDevices)):
-        #     devIter = 0
-        #     for d in rsDevices:
-        #         if(devIter == devIndex):
-        #             matchedSerialNumber = d.get_info(rs.camera_info.serial_number)
-        #             self.foundDevice = True
-        #             break
-        #         devIter += 1
-        # else:
-        #     self.foundDevice = False
-        #     return
 
         # configure depth and color streams
         self.__pipeline = rs.pipeline()
         self.__config = rs.config()
-        # self.__config.enable_device(matchedSerialNumber)
+        self.__config.enable_device(matchedSerialNumber)
 
         # check if the current device is availalbe
-        self.foundDevice = self.__config.can_resolve(self.__pipeline)
+        self.__foundDevice = self.__config.can_resolve(self.__pipeline)
 
-        #  declare align
+        #  prepare realsense modules
         self.__pipecfg = None
         self.__frames = None
         self.__aligned_frames = None
         self.aligned_depth_frame = None
 
-        # camera internal intrinsics
-        self.depth_intrin = None
-        self.color_intrin = None
+        # clipping
+        self.is_clipping = False
+        self.clipping_distance = 2  # default = 2 meters
+
+        # depth scalse
+        self.depth_scale = 0.0
+
+        # depth filters
+        self.filters = None
+        self.filters_is_applied = False
 
     def avaialbleDevice(self):
-        return self.foundDevice
+        return self.__foundDevice
 
     def initialize(self, width, height, fps):
         # set frame width, frame height and frame per secods
@@ -89,14 +55,14 @@ class RealsenseCapture(CameraDev):
         self._frameHeight = height
         self._framePerSec = fps
 
-        # enable color and depth streams
+        # enable color and depth streams with fixed resolutions & fps of the depth frame
         self.__config.enable_stream(
             rs.stream.depth, 848, 480, rs.format.z16, 30)
         self.__config.enable_stream(
-            rs.stream.color, 848, 480, rs.format.bgr8, 30)
+            rs.stream.color, width, height, rs.format.rgb8, fps)
 
         # create an align object based on color frames
-        self.__align = rs.align(rs.stream.depth)
+        self.__align = rs.align(rs.stream.color)
 
     def startCapture(self):
         # start streaming
@@ -107,9 +73,19 @@ class RealsenseCapture(CameraDev):
         depth_sensor.set_option(rs.option.visual_preset,
                                 RealSensePreset.HighAccuracy)
 
+        self.depth_scale = depth_sensor.get_depth_scale()
+
+        # if clipping enabled, clippint distance should be converted to milimeters using depth scale
+        if self.is_clipping == True:
+            self.clipping_distance = self.clipping_distance / self.depth_scale
+
     def stopCapture(self):
         # stop streaming
         self.__pipeline.stop()
+
+    def setClipping(self, clipping_distance):
+        self.is_clipping = True if clipping_distance > 0.0 else False
+        self.clipping_distance = clipping_distance
 
     def getFrame(self):
         # wait for a coherent pair of frames: depth an--d color
@@ -125,9 +101,7 @@ class RealsenseCapture(CameraDev):
         if not self.aligned_depth_frame or not color_frame:
             return None
 
-        # color_frame = self.__frames.get_color_frame()
-        # if not color_frame:
-        #    return None
+        self.aligned_depth_frame = self.apply_filters(self.aligned_depth_frame)
 
         # convert images to numpy arrays
         depth_image = np.asanyarray(self.aligned_depth_frame.get_data())
@@ -135,24 +109,65 @@ class RealsenseCapture(CameraDev):
 
         return (color_image, depth_image)
 
-    # get 3D position w.r.t an image pixel based on camera-based coordination
+        # # Remove background - Set pixels further than clipping_distance to grey
+        # color_image_outofdist = None
+        # if self.is_clipping:
+        #     outofdist_color = 150    # fixed color of 'out of distance'
+        #     # depth image is 1 channel, color is 3 channels
+        #     depth_image_3d = np.dstack((depth_image, depth_image, depth_image))
+        #     color_image_outofdist = np.where((depth_image_3d > self.clipping_distance) | (
+        #         depth_image_3d <= 0), outofdist_color, color_image)
+
+        # return (color_image_outofdist, depth_image) if self.is_clipping else (color_image, depth_image)
+
+    # TODO: arrange parameters for each filter as the inputs of this function
+    def prepare_filters(self):
+        # prepare post-processing filters
+        decimate = rs.decimation_filter()
+        decimate.set_option(rs.option.filter_magnitude, 2 ** 3)
+        spatial = rs.spatial_filter()
+        spatial.set_option(rs.option.filter_magnitude, 5)
+        spatial.set_option(rs.option.filter_smooth_alpha, 1)
+        spatial.set_option(rs.option.filter_smooth_delta, 50)
+        spatial.set_option(rs.option.holes_fill, 3)
+
+        colorizer = rs.colorizer()
+        self.filters = [rs.disparity_transform(),
+                        rs.decimation_filter(),
+                        rs.spatial_filter(),
+                        rs.temporal_filter(),
+                        rs.disparity_transform(False)]
+
+    def set_flag_filters(self, flag):
+        assert isinstance(flag, (int))
+        self.filters_is_applied = flag
+
+    def apply_filters(self, arg_depth_frame):
+        if self.filters_is_applied == True:
+            for f in self.filters:
+                arg_depth_frame = f.process(arg_depth_frame)
+
+        return arg_depth_frame
+
+        # get 3D position w.r.t an image pixel based on camera-based coordination
+
     def get3DPosition(self, imageX, imageY):
         aligned_depth_frame = self.__aligned_frames.get_depth_frame()
         depth = aligned_depth_frame.get_distance(imageX, imageY)
 
         depth_profile = self.__pipecfg.get_stream(rs.stream.depth)
-        self.depth_intrin = depth_profile.as_video_stream_profile().intrinsics
+        depth_intrin = depth_profile.as_video_stream_profile().intrinsics
 
         depth_point = rs.rs2_deproject_pixel_to_point(
-            self.depth_intrin, [imageX, imageY], depth)
+            depth_intrin, [imageX, imageY], depth)
         return depth_point
 
-    def getInternalIntrinsicsMat(self):
-        # get internal intrinsics & extrinsics in D435
-        profile = self.__pipecfg.get_stream(rs.stream.color)
-        self.color_intrin = profile.as_video_stream_profile().intrinsics
-        mtx, dist = self.convertIntrinsicsMat(self.color_intrin)
-        return (mtx, dist)
+    # def getInternalIntrinsicsMat(self):
+    #     # get internal intrinsics & extrinsics in D435
+    #     profile = self.__pipecfg.get_stream(rs.stream.color)
+    #     self.color_intrin = profile.as_video_stream_profile().intrinsics
+    #     mtx, dist = self.convertIntrinsicsMat(self.color_intrin)
+    #     return (mtx, dist)
 
     # covert realsense intrisic data to camera matrix
     def convertIntrinsicsMat(self, intrinsics):

@@ -1,5 +1,7 @@
 # based on this project
 Captured/
+*.h5
+splash*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -139,3 +141,4 @@ HandEyeCalibResult.json
 ROIRegions*.json
 HandEyeResultsLog.xml
 .yo-rc.json
+*.h5
