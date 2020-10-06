@@ -2,6 +2,8 @@
 Captured/
 *.h5
 splash*.png
+logs/
+dataset/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

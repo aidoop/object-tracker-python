@@ -64,10 +64,10 @@ class TrainConfig(Config):
     NUM_CLASSES = 1 + 1  # Background + balloon
 
     # Number of training steps per epoch
-    STEPS_PER_EPOCH = 100
+    STEPS_PER_EPOCH = 197
 
     # Skip detections with < 90% confidence
-    DETECTION_MIN_CONFIDENCE = 0.9
+    DETECTION_MIN_CONFIDENCE = 0.8
 
 
 ############################################################
@@ -84,7 +84,7 @@ class SingleObjectDataSet(utils.Dataset):
         subset: Subset to load: train or val
         """
         # Add classes. We have only one class to add.
-        self.add_class("baloon", 1, "baloon")
+        self.add_class("delbox", 1, "delbox")
 
         # Train or validation dataset?
         assert subset in ["train", "val"]
@@ -134,7 +134,7 @@ class SingleObjectDataSet(utils.Dataset):
             height, width = image.shape[:2]
 
             self.add_image(
-                "baloon",
+                "delbox",
                 image_id=a['filename'],  # use file name as a unique image id
                 path=image_path,
                 width=width, height=height,
@@ -147,9 +147,9 @@ class SingleObjectDataSet(utils.Dataset):
             one mask per instance.
         class_ids: a 1D array of class IDs of the instance masks.
         """
-        # If not a baloon dataset image, delegate to parent class.
+        # If not a delbox dataset image, delegate to parent class.
         image_info = self.image_info[image_id]
-        if image_info["source"] != "baloon":
+        if image_info["source"] != "delbox":
             return super(self.__class__, self).load_mask(image_id)
 
         # Convert polygons to a bitmap mask of shape
@@ -169,7 +169,7 @@ class SingleObjectDataSet(utils.Dataset):
     def image_reference(self, image_id):
         """Return the path of the image."""
         info = self.image_info[image_id]
-        if info["source"] == "baloon":
+        if info["source"] == "delbox":
             return info["path"]
         else:
             super(self.__class__, self).image_reference(image_id)
@@ -194,7 +194,7 @@ def train(model):
     print("Training network heads")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=30,  # 30 -> 100
+                epochs=50,  # 30 -> 100
                 layers='heads')
 
 
@@ -236,7 +236,7 @@ def detect_and_color_splash(model, image_path=None, video_path=None):
         edtime = time.time()
 
         print("-----------------------------------------------------")
-        print("WorkingTime: {} sec".format(edtime-sttime))
+        print("MRCNN Elapsed: {} sec".format(edtime-sttime))
 
         # Color splash
         splash = color_splash(image, r['masks'])

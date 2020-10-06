@@ -112,7 +112,7 @@ def detect_object_by_path(model, image_path=None):
     edtime = time.time()
 
     print("-----------------------------------------------------")
-    print("WorkingTime: {} sec".format(edtime-sttime))
+    print("MRCNN Elapsed Time: {} sec".format(edtime-sttime))
 
     # Color splash
     splash = get_mask_by_index(image, r['masks'], 0)
@@ -133,7 +133,7 @@ def detect_object_by_data(model, image_data):
     edtime = time.time()
 
     print("-----------------------------------------------------")
-    print("WorkingTime: {} sec".format(edtime-sttime))
+    print("MRCNN Elapsed Time: {} sec".format(edtime-sttime))
     print(r['masks'].shape[-1])
 
     mask_list = get_mask_list(image_data, r['masks'])

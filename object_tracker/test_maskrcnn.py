@@ -40,7 +40,7 @@ class InferenceConfig(Config):
     STEPS_PER_EPOCH = 100
 
     # Skip detections with < 90% confidence
-    DETECTION_MIN_CONFIDENCE = 0.9
+    DETECTION_MIN_CONFIDENCE = 0.8
 
 
 def mouse_event_cb(event, x, y, flags, param):
@@ -74,6 +74,7 @@ if __name__ == '__main__':
     glbData = GlobalData()
 
     # open a realsense camera
+    #rsCamDev = camera_dev_realsense.RealsenseCapture('001622071306')
     rsCamDev = camera_dev_realsense.RealsenseCapture('001622072547')
     if rsCamDev == None:
         print("can't initialize the realsense device")
@@ -87,11 +88,11 @@ if __name__ == '__main__':
     gqlDataClient.fetchTrackingCamerasAll()
 
     # create an indy7 object
-    indy7 = robot_dev_indydcp.RobotIndy7Dev()
-    if(indy7.initalize("192.168.0.207", "NRMK-Indy7") == False):
-        print("Can't connect the robot and exit this process..")
-        sys.exit()
-    glbData.robot = indy7
+    # indy7 = robot_dev_indydcp.RobotIndy7Dev()
+    # if(indy7.initalize("192.168.0.207", "NRMK-Indy7") == False):
+    #     print("Can't connect the robot and exit this process..")
+    #     sys.exit()
+    glbData.robot = None  # indy7
 
     # vistion tracking camera object list
     # vtcList = list()
@@ -139,8 +140,8 @@ if __name__ == '__main__':
 
     # load weights
     model.load_weights(
-        "/home/jinwon/Documents/github/object-tracker-python/mask_rcnn_nespresso_0030.h5", by_name=True)
-    # "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201005T0817/mask_rcnn_object-train_0030.h5", by_name=True)
+        # "/home/jinwon/Documents/github/object-tracker-python/mask_rcnn_nespresso_0030.h5", by_name=True)
+        "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201006T1521/mask_rcnn_object-train_0047.h5", by_name=True)
 
     # Streaming loop
     try:
@@ -157,6 +158,18 @@ if __name__ == '__main__':
             mask_list = rcnn.detect_object_by_data(model, color_image)
             for mask in mask_list:
                 mask_image = np.where(mask, 255, 0).astype(np.uint8)
+
+                # find contours
+                contours, hierarchy = cv2.findContours(
+                    mask_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+                for contour in contours:
+                    # calculate moments for each contour
+                    M = cv2.moments(contour)
+                    # calculate x,y coordinate of center
+                    cX = int(M["m10"] / M["m00"])
+                    cY = int(M["m01"] / M["m00"])
+                    cv2.circle(mask_image, (cX, cY), 5, (0, 0, 0), -1)
+
                 cv2.imshow('mask', mask_image)
                 key = cv2.waitKey(1000)
 
