@@ -45,6 +45,16 @@ class RobotIndy7Dev(RobotDev):
         self.indy.task_move_to(xyzuvw)
         self.indy.wait_for_move_finish()
 
+    # go to home
+    def home(self):
+        self.indy.go_home()
+        self.indy.wait_for_move_finish()
+
+    # go to zero
+    def zero(self):
+        self.indy.go_zero()
+        self.indy.wait_for_move_finish()
+
     # get the current hand position
     def getCurrentPos(self):
         return self.indy.get_task_pos()

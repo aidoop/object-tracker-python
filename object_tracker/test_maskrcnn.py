@@ -48,6 +48,9 @@ def mouse_event_cb(event, x, y, flags, param):
         print('last: ', xyzuvw)
         glbData.robot.moveTaskPos(xyzuvw)
 
+    if event == cv2.EVENT_RBUTTONDBLCLK:
+        glbData.robot.home()
+
 
 def move_to_poistion(glbData, x, y):
     print('click: ', x, y)

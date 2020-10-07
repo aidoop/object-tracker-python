@@ -43,3 +43,13 @@ class RobotDev(metaclass=ABCMeta):
     @abstractmethod
     def resetRobot(self):
         pass
+
+    # home
+    @abstractmethod
+    def home(self):
+        pass
+
+    # zero
+    @abstractmethod
+    def zero(self):
+        pass
