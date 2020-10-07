@@ -17,7 +17,7 @@ from camera.camera_videocapture import VideoCapture
 from util.util import ArucoTrackerErrMsg, PrintMsg, DisplayInfoText
 from roi_arucomanager import ROIAruco2DManager
 from roi_keyhandler import ROIKeyHandler
-from roi_update_regions import ROIUpdateRegions
+from data_update.roi_update_regions import ROIUpdateRegions
 from visiongql.visiongql_client import VisonGqlDataClient
 
 ###############################################################################

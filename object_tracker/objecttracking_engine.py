@@ -11,7 +11,7 @@ from camera.camera_dev_realsense import RealsenseCapture
 from camera.camera_dev_opencv import OpencvCapture
 from camera.camera_videocapture import VideoCapture
 from util.util import ArucoTrackerErrMsg, ObjectTypeCheck
-from objecttracking_updatestatus import ObjectUpdateStatus
+from data_update.objecttracking_updatestatus import ObjectUpdateStatus
 from objecttracking_aurco import ArucoMarkerObject, ArucoMarkerTracker
 from objecttracking_keyhandler import ObjectTrackingKeyHandler
 from objecttracking_roimgr_retangle import ROIRetangleManager

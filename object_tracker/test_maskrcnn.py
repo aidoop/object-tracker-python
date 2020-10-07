@@ -10,37 +10,18 @@ from visiongql import visiongql_client, visiongql_data
 from robot import robot_dev_indydcp
 from util.hm_util import HMUtil
 
-from mrcnn import model as modellib, utils
-from mrcnn.config import Config
+# from mrcnn import model as modellib, utils
+# from mrcnn.config import Config
 
-import mrcnn_inference as rcnn
+# import mrcnn_inference as rcnn
+
+from mrcnn import object_detect as maskdetect
 
 
 class GlobalData:
     vcap = None
     handeye = None
     robot = None
-
-
-class InferenceConfig(Config):
-    """Configuration for training on the toy  dataset.
-    Derives from the base Config class and overrides some values.
-    """
-    # Give the configuration a recognizable name
-    NAME = "object-train"
-
-    # We use a GPU with 12GB memory, which can fit two images.
-    # Adjust down if you use a smaller GPU.
-    IMAGES_PER_GPU = 1
-
-    # Number of classes (including background)
-    NUM_CLASSES = 1 + 1  # Background + balloon
-
-    # Number of training steps per epoch
-    STEPS_PER_EPOCH = 100
-
-    # Skip detections with < 90% confidence
-    DETECTION_MIN_CONFIDENCE = 0.8
 
 
 def mouse_event_cb(event, x, y, flags, param):
@@ -74,7 +55,7 @@ if __name__ == '__main__':
     glbData = GlobalData()
 
     # open a realsense camera
-    #rsCamDev = camera_dev_realsense.RealsenseCapture('001622071306')
+    # rsCamDev = camera_dev_realsense.RealsenseCapture('001622071306')
     rsCamDev = camera_dev_realsense.RealsenseCapture('001622072547')
     if rsCamDev == None:
         print("can't initialize the realsense device")
@@ -131,17 +112,20 @@ if __name__ == '__main__':
     cv2.setMouseCallback('projtest', mouse_event_cb, param=glbData)
 
     # initialize mask rcnn
-    config = InferenceConfig()
-    config.display()
+    maskdetect = maskdetect.MaskRcnnDetect(
+        "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201006T1521/mask_rcnn_object-train_0047.h5", "/home/jinwon/Documents/github/object-tracker-python/logs")
 
-    # create a model
-    model = modellib.MaskRCNN(mode="inference", config=config,
-                              model_dir="/home/jinwon/Documents/github/object-tracker-python/logs")
+    # config = InferenceConfig()
+    # config.display()
 
-    # load weights
-    model.load_weights(
-        # "/home/jinwon/Documents/github/object-tracker-python/mask_rcnn_nespresso_0030.h5", by_name=True)
-        "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201006T1521/mask_rcnn_object-train_0047.h5", by_name=True)
+    # # create a model
+    # model = modellib.MaskRCNN(mode="inference", config=config,
+    #                           model_dir="/home/jinwon/Documents/github/object-tracker-python/logs")
+
+    # # load weights
+    # model.load_weights(
+    #     # "/home/jinwon/Documents/github/object-tracker-python/mask_rcnn_nespresso_0030.h5", by_name=True)
+    #     "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201006T1521/mask_rcnn_object-train_0047.h5", by_name=True)
 
     # Streaming loop
     try:
@@ -155,7 +139,7 @@ if __name__ == '__main__':
             if (color_image is None) or (depth_image is None):
                 continue
 
-            mask_list = rcnn.detect_object_by_data(model, color_image)
+            mask_list = maskdetect.detect_object_by_data(color_image)
             for mask in mask_list:
                 mask_image = np.where(mask, 255, 0).astype(np.uint8)
 
@@ -165,6 +149,10 @@ if __name__ == '__main__':
                 for contour in contours:
                     # calculate moments for each contour
                     M = cv2.moments(contour)
+
+                    if M["m00"] == 0.0:
+                        continue
+
                     # calculate x,y coordinate of center
                     cX = int(M["m10"] / M["m00"])
                     cY = int(M["m01"] / M["m00"])

@@ -6,7 +6,7 @@ from robot.robot_dev_indydcp import RobotIndy7Dev
 from util.util import PrintMsg
 from util.hm_util import *
 from calibhandeye_handeye import *
-from calibhandeye_update import CalibHandeyeUpdate
+from data_update.calibhandeye_update import CalibHandeyeUpdate
 
 
 class CalibHandEyeKeyHandler(KeyHandler):

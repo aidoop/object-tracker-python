@@ -4,7 +4,7 @@ import glob
 import sys
 import json
 
-from calibcamera_update import CalibCameraUpdate
+from data_update.calibcamera_update import CalibCameraUpdate
 from util.util import PrintMsg
 from util.keyhandler import KeyHandler
 

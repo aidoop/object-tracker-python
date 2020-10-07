@@ -3,7 +3,7 @@ import os
 import glob
 import numpy as np
 
-from roi_update_regions import ROIUpdateRegions
+from data_update.roi_update_regions import ROIUpdateRegions
 from util.keyhandler import KeyHandler
 from util.util import PrintMsg
 
