@@ -131,7 +131,7 @@ class MaskRcnnDetect:
         if masks.shape[-1] > 0:
             # We're treating all instances as one, so collapse the mask into one layer
             # mask = (np.sum(mask, -1, keepdims=True) >= 1)
-            mask = masks[:, :, 0]
+            mask = masks[:, :, mask_index]
             mask.reshape(mask.shape[0], mask.shape[1], 1)
             splash = np.where(mask, 255, 0).astype(np.uint8)
         else:
