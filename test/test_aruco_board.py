@@ -41,8 +41,6 @@ if __name__ == '__main__':
 
     # create an aruco detect object
     arucoDetect = ArucoDetect(aruco.DICT_6X6_1000, 0.0375, mtx, dist)
-    #arucoDetect = ArucoDetect(config.ArucoDict, 0.075, mtx, dist)
-    #arucoDetect = ArucoDetect(aruco.DICT_7X7_250, 0.05, mtx, dist)
 
     try:
         while(True):

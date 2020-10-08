@@ -3,19 +3,13 @@ import numpy as np
 import cv2
 import cv2.aruco as aruco
 import glob
-import io 
+import io
 
 from PIL import Image
 
-# calibFile = cv2.FileStorage("calibData.xml", cv2.FILE_STORAGE_READ)
-# cmnode = calibFile.getNode("cameraMatrix")
-# mtx = cmnode.mat()
-# dcnode = calibFile.getNode("distCoeff")
-# dist = dcnode.mat()
-
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-#Configure depth and color streams
+# Configure depth and color streams
 pipeline = rs.pipeline()
 config = rs.config()
 config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
@@ -37,9 +31,9 @@ try:
 
     im = Image.frombytes("RGB", (1280, 720), color_image)
     (b, g, r) = im.split()
-    im = Image.merge("RGB", (r,g,b))
+    im = Image.merge("RGB", (r, g, b))
 
-    #im.save('test.jpg')
+    # im.save('test.jpg')
     tempBuffer = io.BytesIO()
     im.save(tempBuffer, format="jpeg")
     aaaa = tempBuffer.getbuffer()
@@ -52,10 +46,9 @@ try:
 
 except Exception as ex:
     print("Error :", ex)
-    
+
 finally:
     # When everything done, release the capture
     # Stop streaming
     pipeline.stop()
-    cv2.destroyAllWindows()   
-
+    cv2.destroyAllWindows()

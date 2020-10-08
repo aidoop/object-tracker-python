@@ -10,12 +10,7 @@ from visiongql import visiongql_client, visiongql_data
 from robot import robot_dev_indydcp
 from util.hm_util import HMUtil
 
-# from mrcnn import model as modellib, utils
-# from mrcnn.config import Config
-
-# import mrcnn_inference as rcnn
-
-from mrcnn import object_detect as maskdetect
+from mrcnn import object_detect as mo
 
 
 class GlobalData:
@@ -137,7 +132,7 @@ if __name__ == '__main__':
     cv2.setMouseCallback('projtest', mouse_event_cb, param=glbData)
 
     # initialize mask rcnn
-    maskdetect = maskdetect.MaskRcnnDetect(
+    maskdetect = mo.MaskRcnnDetect(
         "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201006T1521/mask_rcnn_object-train_0047.h5", "/home/jinwon/Documents/github/object-tracker-python/logs")
 
     # config = InferenceConfig()

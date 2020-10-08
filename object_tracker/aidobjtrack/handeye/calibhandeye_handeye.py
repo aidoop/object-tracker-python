@@ -7,9 +7,9 @@ import sys
 import os
 
 import config
-from util.hm_util import *
-from aruco.aruco_detect import ArucoDetect
-from util.util import PrintMsg
+from aidobjtrack.util.hm_util import *
+from aidobjtrack.aruco.aruco_detect import ArucoDetect
+from aidobjtrack.util.util import PrintMsg
 
 
 class HandEyeAruco:

@@ -22,8 +22,6 @@ class ArucoMarkerObject:
         self.corners = None
         self.targetPos = None
 
-#
-
 
 class ArucoMarkerTracker(ObjectTracker):
     def __init__(self):

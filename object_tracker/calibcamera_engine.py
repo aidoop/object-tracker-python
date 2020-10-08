@@ -14,7 +14,7 @@ from camera.camera_videocapture import VideoCapture
 from util.util import ArucoTrackerErrMsg, DisplayInfoText, PrintMsg
 from calibcamera import CalibrationCamera
 from calibcamera_aruco import CalibrationCameraAruco
-from calibcamera_keyhandler import CalibCameraKeyHandler
+from aidm.keyhandler.calibcamera_keyhandler import CalibCameraKeyHandler
 from visiongql.visiongql_client import VisonGqlDataClient
 
 # create a directory to save captured images

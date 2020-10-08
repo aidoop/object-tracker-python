@@ -6,7 +6,7 @@ import json
 
 from data_update.calibcamera_update import CalibCameraUpdate
 from util.util import PrintMsg
-from util.keyhandler import KeyHandler
+from aidm.base.keyhandler import KeyHandler
 
 
 class CalibCameraKeyHandler(KeyHandler):

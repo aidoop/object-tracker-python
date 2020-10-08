@@ -1,7 +1,7 @@
 import cv2
 
 import config
-from util.keyhandler import KeyHandler
+from aidm.base.keyhandler import KeyHandler
 from robot.robot_dev_indydcp import RobotIndy7Dev
 from util.util import PrintMsg
 from util.hm_util import *

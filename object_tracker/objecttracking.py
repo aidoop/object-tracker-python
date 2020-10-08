@@ -1,8 +1,6 @@
 from abc import *
 import enum
 
-# CameraPortLayer abstraction class
-
 
 class ObjectTracker(metaclass=ABCMeta):
 
