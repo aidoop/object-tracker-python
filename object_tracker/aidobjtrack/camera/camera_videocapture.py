@@ -2,7 +2,7 @@
 import sys
 import cv2
 
-from camera.camera_dev_realsense import RealsenseCapture  # for an example
+from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture  # for an example
 
 
 class VideoCapture:

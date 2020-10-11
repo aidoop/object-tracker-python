@@ -3,9 +3,9 @@ import os
 import glob
 import numpy as np
 
-from data_update.roi_update_regions import ROIUpdateRegions
-from util.keyhandler import KeyHandler
-from util.util import PrintMsg
+from aidobjtrack.data_update.roi_update_regions import ROIUpdateRegions
+from aidobjtrack.abc.keyhandlerdev import KeyHandler
+from aidobjtrack.util.util import PrintMsg
 
 
 class ROIKeyHandler(KeyHandler):

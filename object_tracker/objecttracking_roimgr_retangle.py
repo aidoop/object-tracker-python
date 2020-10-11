@@ -1,6 +1,6 @@
 from abc import *
 
-from objecttracking_roimgr import ROIManager
+from aidobjtrack.abc.objecttracking_roimgr_base import ROIManager
 
 
 class ROIRetangleManager(ROIManager):

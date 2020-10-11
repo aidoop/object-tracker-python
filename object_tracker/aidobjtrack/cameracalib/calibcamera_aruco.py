@@ -6,8 +6,8 @@ import datetime
 import glob
 import sys
 
-import config
-from aruco.aruco_detect import ArucoDetect
+import aidobjtrack.config.appconfig
+from aidobjtrack.aruco.aruco_detect import ArucoDetect
 
 
 class CalibrationCameraAruco:

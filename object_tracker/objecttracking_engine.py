@@ -6,16 +6,17 @@ import os
 import argparse
 import time
 
-import config
-from camera.camera_dev_realsense import RealsenseCapture
-from camera.camera_dev_opencv import OpencvCapture
-from camera.camera_videocapture import VideoCapture
-from util.util import ArucoTrackerErrMsg, ObjectTypeCheck
-from data_update.objecttracking_updatestatus import ObjectUpdateStatus
+from aidobjtrack.config.appconfig import AppConfig
+from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
+from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
+from aidobjtrack.camera.camera_videocapture import VideoCapture
+from aidobjtrack.util.util import ArucoTrackerErrMsg, ObjectTypeCheck
+from aidobjtrack.data_update.objecttracking_updatestatus import ObjectUpdateStatus
+from aidobjtrack.keyhandler.objecttracking_keyhandler import ObjectTrackingKeyHandler
+from aidobjtrack.visiongql.visiongql_client import VisonGqlDataClient
+
 from objecttracking_aurco import ArucoMarkerObject, ArucoMarkerTracker
-from objecttracking_keyhandler import ObjectTrackingKeyHandler
 from objecttracking_roimgr_retangle import ROIRetangleManager
-from visiongql.visiongql_client import VisonGqlDataClient
 
 
 class VisionTrackingCamera:
@@ -43,7 +44,7 @@ if __name__ == '__main__':
         sys.exit()
 
     # get gql data for a workspace
-    if config.ObjTrackingDebugMode == False:
+    if AppConfig.ObjTrackingDebugMode == False:
         gqlDataClient.fetchVisionWorkspace()
     else:
         gqlDataClient.fetchTrackingCamerasAll()
@@ -73,6 +74,7 @@ if __name__ == '__main__':
 
         # set robot name
         if ObjectTypeCheck.checkValueIsAvail(trackingCamera.baseRobotArm) == False:
+            print("robot arm is not detected..")
             continue
         vtc.robotName = trackingCamera.baseRobotArm['name']
 
@@ -86,8 +88,8 @@ if __name__ == '__main__':
             rsCamDev = OpencvCapture(int(trackingCamera.endpoint))
 
         # create a video capture object and start
-        vcap = VideoCapture(rsCamDev, config.VideoFrameWidth,
-                            config.VideoFrameHeight, config.VideoFramePerSec, vtc.name)
+        vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth,
+                            AppConfig.VideoFrameHeight, AppConfig.VideoFramePerSec, vtc.name)
         if vcap == None:
             continue
         vcap.start()
@@ -105,7 +107,7 @@ if __name__ == '__main__':
         # create aurco mark tracker object
         objTracker = ArucoMarkerTracker()
         objTracker.initialize(
-            config.ArucoDict, config.ArucoSize, mtx, dist, vtc.handeye)
+            AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist, vtc.handeye)
         vtc.arucoMarkTracker = objTracker
 
         # initialize ROI manager

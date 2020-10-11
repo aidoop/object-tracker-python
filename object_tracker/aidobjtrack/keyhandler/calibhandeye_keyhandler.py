@@ -1,12 +1,12 @@
 import cv2
 
-import config
-from aidm.base.keyhandler import KeyHandler
-from robot.robot_dev_indydcp import RobotIndy7Dev
-from util.util import PrintMsg
-from util.hm_util import *
-from calibhandeye_handeye import *
-from data_update.calibhandeye_update import CalibHandeyeUpdate
+from aidobjtrack.config.appconfig import AppConfig
+from aidobjtrack.abc.keyhandlerdev import KeyHandler
+from aidobjtrack.robot.robot_dev_indydcp import RobotIndy7Dev
+from aidobjtrack.util.util import PrintMsg
+from aidobjtrack.util.hm_util import *
+from aidobjtrack.handeye.calibhandeye_handeye import *
+from aidobjtrack.data_update.calibhandeye_update import CalibHandeyeUpdate
 
 
 class CalibHandEyeKeyHandler(KeyHandler):
@@ -62,9 +62,9 @@ class CalibHandEyeKeyHandler(KeyHandler):
         if ids is None:
             return
 
-        if config.UseArucoBoard == False:
+        if AppConfig.UseArucoBoard == False:
             for idx in range(0, ids.size):
-                if(ids[idx] == config.CalibMarkerID):
+                if(ids[idx] == AppConfig.CalibMarkerID):
                     # get the current robot position
                     # currTaskPose = indy.getCurrentPos()
                     currTaskPose = gqlDataClient.getRobotPose(robotName)

@@ -2,7 +2,7 @@
 import sys
 import cv2
 
-from camera.camera_dev import CameraDev
+from aidobjtrack.abc.cameradev import CameraDev
 
 
 class OpencvCapture(CameraDev):

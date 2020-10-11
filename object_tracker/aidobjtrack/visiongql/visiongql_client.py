@@ -1,7 +1,7 @@
 import numpy as np
 
-from visiongql.visiongql_data import VisonWorkspace, RobotArm, TrackingCamera, TrackableObject, VisionGqlUtil
-from util.util import ObjectTypeCheck
+from aidobjtrack.visiongql.visiongql_data import VisonWorkspace, RobotArm, TrackingCamera, TrackableObject, VisionGqlUtil
+from aidobjtrack.util.util import ObjectTypeCheck
 from visionclient.operato_vision import Client
 
 

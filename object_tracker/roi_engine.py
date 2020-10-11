@@ -10,15 +10,16 @@ import sys
 import argparse
 import json
 
-import config
-from camera.camera_dev_realsense import RealsenseCapture
-from camera.camera_dev_opencv import OpencvCapture
-from camera.camera_videocapture import VideoCapture
-from util.util import ArucoTrackerErrMsg, PrintMsg, DisplayInfoText
+from aidobjtrack.config.appconfig import AppConfig
+from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
+from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
+from aidobjtrack.camera.camera_videocapture import VideoCapture
+from aidobjtrack.util.util import ArucoTrackerErrMsg, PrintMsg, DisplayInfoText
+from aidobjtrack.keyhandler.roi_keyhandler import ROIKeyHandler
+from aidobjtrack.data_update.roi_update_regions import ROIUpdateRegions
+from aidobjtrack.visiongql.visiongql_client import VisonGqlDataClient
+
 from roi_arucomanager import ROIAruco2DManager
-from roi_keyhandler import ROIKeyHandler
-from data_update.roi_update_regions import ROIUpdateRegions
-from visiongql.visiongql_client import VisonGqlDataClient
 
 ###############################################################################
 # Hand-eye calibration process
@@ -61,22 +62,23 @@ if __name__ == '__main__':
         rsCamDev = OpencvCapture(int(cameraObject.endpoint))
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, config.VideoFrameWidth,
-                        config.VideoFrameHeight, config.VideoFramePerSec, cameraName)
+    vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth,
+                        AppConfig.VideoFrameHeight, AppConfig.VideoFramePerSec, cameraName)
 
     # Start streaming
     vcap.start()
 
     # get instrinsics
-    #mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), config.UseRealSenseInternalMatrix)
-    if(config.UseRealSenseInternalMatrix == True):
+    #mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), AppConfig.UseRealSenseInternalMatrix)
+    if(AppConfig.UseRealSenseInternalMatrix == True):
         mtx, dist = vcap.getInternalIntrinsicsMat()
     else:
         mtx = cameraObject.cameraMatrix
         dist = cameraObject.distCoeff
 
     # create aruco manager
-    ROIMgr = ROIAruco2DManager(config.ArucoDict, config.ArucoSize, mtx, dist)
+    ROIMgr = ROIAruco2DManager(
+        AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist)
 
     # for arucoPair in arucoPairList:
     #     arucoPairValues = arucoPair.split(',')
@@ -98,7 +100,7 @@ if __name__ == '__main__':
                 break
             if ArucoTrackerErrMsg.checkValueIsNone(dist, "distortion coeff.") == False:
                 break
-            if ArucoTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
+            if ArucoTrackerErrMsg.checkValueIsNone(color_image, "vidqeo color frame") == False:
                 break
 
             # find ROI region

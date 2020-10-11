@@ -5,7 +5,7 @@ import sys
 import time
 from enum import IntEnum
 
-from camera.camera_dev import CameraDev
+from aidobjtrack.abc.cameradev import CameraDev
 
 
 class RealSensePreset(IntEnum):

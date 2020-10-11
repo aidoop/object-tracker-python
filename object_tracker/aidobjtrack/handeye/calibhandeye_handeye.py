@@ -6,7 +6,7 @@ import math
 import sys
 import os
 
-import config
+from aidobjtrack.config.appconfig import AppConfig
 from aidobjtrack.util.hm_util import *
 from aidobjtrack.aruco.aruco_detect import ArucoDetect
 from aidobjtrack.util.util import PrintMsg
@@ -23,7 +23,7 @@ class HandEyeAruco:
         self.testMarkerID = 14
 
        # use the specific aruco board?
-        self.useArucoBoard = config.UseArucoBoard
+        self.useArucoBoard = AppConfig.UseArucoBoard
 
         self.flagFindMainAruco = False
 

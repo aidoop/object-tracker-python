@@ -5,10 +5,10 @@ import cv2
 import sys
 from datetime import datetime
 
-from camera import camera_dev_realsense, camera_videocapture
-from visiongql import visiongql_client, visiongql_data
-from robot import robot_dev_indydcp
-from util.hm_util import HMUtil
+from aidobjtrack.camera import camera_dev_realsense, camera_videocapture
+from aidobjtrack.visiongql import visiongql_client, visiongql_data
+from aidobjtrack.robot import robot_dev_indydcp
+from aidobjtrack.util.hm_util import HMUtil
 
 from mrcnn import object_detect as mo
 

@@ -7,15 +7,15 @@ import datetime
 import argparse
 import time
 
-import config
-from camera.camera_dev_opencv import OpencvCapture
-from camera.camera_dev_realsense import RealsenseCapture
-from camera.camera_videocapture import VideoCapture
-from util.util import ArucoTrackerErrMsg, DisplayInfoText, PrintMsg
-from calibcamera import CalibrationCamera
-from calibcamera_aruco import CalibrationCameraAruco
-from aidm.keyhandler.calibcamera_keyhandler import CalibCameraKeyHandler
-from visiongql.visiongql_client import VisonGqlDataClient
+from aidobjtrack.config.appconfig import AppConfig
+from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
+from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
+from aidobjtrack.camera.camera_videocapture import VideoCapture
+from aidobjtrack.util.util import ArucoTrackerErrMsg, DisplayInfoText, PrintMsg
+from aidobjtrack.cameracalib.calibcamera import CalibrationCamera
+from aidobjtrack.cameracalib.calibcamera_aruco import CalibrationCameraAruco
+from aidobjtrack.keyhandler.calibcamera_keyhandler import CalibCameraKeyHandler
+from aidobjtrack.visiongql.visiongql_client import VisonGqlDataClient
 
 # create a directory to save captured images
 
@@ -63,15 +63,16 @@ if __name__ == '__main__':
             rsCamDev = OpencvCapture(int(cameraObject.endpoint))
 
         # create video capture object using realsense camera device object
-        vcap = VideoCapture(rsCamDev, config.VideoFrameWidth,
-                            config.VideoFrameHeight, config.VideoFramePerSec, cameraName)
+        vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth,
+                            AppConfig.VideoFrameHeight, AppConfig.VideoFramePerSec, cameraName)
 
         # Start streaming
         vcap.start()
 
-        # create a camera calibration object
-        if config.UseCalibChessBoard == True:
-            calibcam = CalibrationCamera(config.ChessWidth, config.ChessHeight)
+        # create a camera calqibration object
+        if AppConfig.UseCalibChessBoard == True:
+            calibcam = CalibrationCamera(
+                AppConfig.ChessWidth, AppConfig.ChessHeight)
         else:
             calibcam = CalibrationCameraAruco()
 

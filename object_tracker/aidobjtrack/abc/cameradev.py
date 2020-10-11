@@ -1,13 +1,6 @@
 from abc import *
 import enum
 
-# video frame type enumeration
-
-
-class VideoFrameType(enum.Enum):
-    ColorFrame = 0
-    DepthFrame = 1
-
 # CameraPortLayer abstraction class
 
 

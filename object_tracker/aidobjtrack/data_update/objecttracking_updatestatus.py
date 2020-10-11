@@ -4,7 +4,7 @@ import os
 import json
 from random import choice, random
 
-import config
+from aidobjtrack.config.appconfig import AppConfig
 
 
 class ObjectUpdateStatus:
@@ -54,7 +54,7 @@ class ObjectUpdateStatus:
             "objectStatus": self.ObjStatusList
         }
 
-        if config.ObjTrackingDebugMode == False:
+        if AppConfig.ObjTrackingDebugMode == False:
             self.gqlClient.update_tracking_workspace_status(
                 name='workspace', status=status)
         else:

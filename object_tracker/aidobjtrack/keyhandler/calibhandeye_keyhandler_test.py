@@ -1,12 +1,12 @@
 import cv2
 
-import config
-from util.keyhandler import KeyHandler
-from robot.robot_dev_indydcp import RobotIndy7Dev
-from util.util import PrintMsg
-from util.hm_util import *
-from calibhandeye_handeye import *
-from data_update.calibhandeye_update import CalibHandeyeUpdate
+from aidobjtrack.config.appconfig import AppConfig
+from aidobjtrack.abc.keyhandlerdev import KeyHandler
+from aidobjtrack.robot.robot_dev_indydcp import RobotIndy7Dev
+from aidobjtrack.util.util import PrintMsg
+from aidobjtrack.util.hm_util import *
+from aidobjtrack.handeye.calibhandeye_handeye import *
+from aidobjtrack.data_update.calibhandeye_update import CalibHandeyeUpdate
 
 
 class CalibHandEyeKeyHandler(KeyHandler):
@@ -66,9 +66,9 @@ class CalibHandEyeKeyHandler(KeyHandler):
         if ids is None:
             return
 
-        if config.UseArucoBoard == False:
+        if AppConfig.UseArucoBoard == False:
             for idx in range(0, ids.size):
-                if(ids[idx] == config.CalibMarkerID):
+                if(ids[idx] == AppConfig.CalibMarkerID):
                     # get the current robot position
                     currTaskPose = indy.getCurrentPos()
 
@@ -138,7 +138,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         PrintMsg.printStdErr(
             "---------------------------------------------------------------")
         for idx in range(0, ids.size):
-            if ids[idx] == config.TestMarkerID:
+            if ids[idx] == AppConfig.TestMarkerID:
                 # change a rotation vector to a rotation matrix
                 rotMatrix = np.zeros(shape=(3, 3))
                 cv2.Rodrigues(rvec[idx], rotMatrix)
@@ -151,7 +151,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
 
                 # calcaluate the specific position based on hmInput
                 hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [
-                                         0.0, 0.0, 1.0]]), np.array([0.0, 0.0, config.HandEyeTargetZ]).T)
+                                         0.0, 0.0, 1.0]]), np.array([0.0, 0.0, AppConfig.HandEyeTargetZ]).T)
                 #hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.08, 0.0, 0.0]).T)
                 #hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.0, 0.0, 0.0]).T)
                 #hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.0, 0.0, 0.0]).T)
@@ -209,7 +209,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         PrintMsg.printStdErr(
             "---------------------------------------------------------------")
         for idx in range(0, ids.size):
-            if ids[idx] == config.TestMarkerID:
+            if ids[idx] == AppConfig.TestMarkerID:
                 # change a rotation vector to a rotation matrix
                 rotMatrix = np.zeros(shape=(3, 3))
                 cv2.Rodrigues(rvec[idx], rotMatrix)
@@ -222,7 +222,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
 
                 # calcaluate the specific position based on hmInput
                 hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [
-                                         0.0, 0.0, 1.0]]), np.array([0.0, 0.0, config.HandEyeTargetZ]).T)
+                                         0.0, 0.0, 1.0]]), np.array([0.0, 0.0, AppConfig.HandEyeTargetZ]).T)
                 #hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.08, 0.0, 0.0]).T)
                 #hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.0, 0.0, 0.0]).T)
                 #hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.0, 0.0, 0.0]).T)
@@ -285,7 +285,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         PrintMsg.printStdErr(
             "---------------------------------------------------------------")
         for idx in range(0, ids.size):
-            if ids[idx] == config.TestMarkerID:
+            if ids[idx] == AppConfig.TestMarkerID:
                 # change a rotation vector to a rotation matrix
                 rotMatrix = np.zeros(shape=(3, 3))
                 cv2.Rodrigues(rvec[idx], rotMatrix)
@@ -298,7 +298,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
 
                 # calcaluate the specific position based on hmInput
                 hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [
-                                         0.0, 0.0, 1.0]]), np.array([-0.01, 0.005, config.HandEyeTargetZ]).T)
+                                         0.0, 0.0, 1.0]]), np.array([-0.01, 0.005, AppConfig.HandEyeTargetZ]).T)
                 #hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.08, 0.0, 0.0]).T)
                 #hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.0, 0.0, 0.0]).T)
                 #hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]]), np.array([0.0, 0.0, 0.0]).T)

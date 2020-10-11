@@ -8,20 +8,18 @@ import datetime
 import glob
 import sys
 import argparse
-
-import config
-from packages.CameraDevRealsense import RealsenseCapture
-from packages.CameraDevOpencv import OpencvCapture
-from packages.CameraVideoCapture import VideoCapture
 import json
-from packages.Aruco import ArucoDetect
-from packages.ArucoAdvPose import ArucoAdvPose
-
-from CalibHandEye.HandEyeUtilSet import *
-from CalibHandEye.HandEye import *
-
-
 import math
+
+from aidobjtrack.config.appconfig import AppConfig
+from aidobjtrack.camera.CameraDevRealsense import RealsenseCapture
+from aidobjtrack.camera.CameraDevOpencv import OpencvCapture
+from aidobjtrack.camera.CameraVideoCapture import VideoCapture
+from aidobjtrack.aruco.aruco_detect import ArucoDetect
+from aidobjtrack.aruco.aruco_advanced_pose import ArucoAdvPose
+from aidobjtrack.util.hm_util import *
+from aidobjtrack.handeye.calibhandeye_handeye import *
+
 
 ###############################################################################
 # Hand-eye calibration process

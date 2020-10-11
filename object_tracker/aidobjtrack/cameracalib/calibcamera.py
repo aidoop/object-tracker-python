@@ -62,6 +62,7 @@ class CalibrationCamera:
             calibResult = False
             mtx = None
             dist = None
+            reperr = None
 
         # return reprojection error
         return (calibResult, mtx, dist, reperr)

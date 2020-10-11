@@ -1,12 +1,11 @@
 import os
 import numpy as np
 from typing import NamedTuple
-
 import cv2
 import cv2.aruco as aruco
 
-import config
-from aruco.aruco_detect import ArucoDetect
+from aidobjtrack.config.appconfig import AppConfig
+from aidobjtrack.aruco.aruco_detect import ArucoDetect
 
 # TODO: should be derived in abstract class??
 

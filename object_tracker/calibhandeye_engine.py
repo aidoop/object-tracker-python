@@ -5,17 +5,17 @@ import os
 import argparse
 import sys
 
-import config
-from camera.camera_dev_opencv import OpencvCapture
-from camera.camera_dev_realsense import RealsenseCapture
-from camera.camera_videocapture import VideoCapture
-from robot.robot_dev_indydcp import RobotIndy7Dev
-from util.util import ArucoTrackerErrMsg, DisplayInfoText
-from calibhandeye_keyhandler import CalibHandEyeKeyHandler
-from util.hm_util import *
-from calibhandeye_handeye import *
+from aidobjtrack.config.appconfig import AppConfig
+from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
+from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
+from aidobjtrack.camera.camera_videocapture import VideoCapture
+from aidobjtrack.robot.robot_dev_indydcp import RobotIndy7Dev
+from aidobjtrack.util.util import ArucoTrackerErrMsg, DisplayInfoText
+from aidobjtrack.keyhandler.calibhandeye_keyhandler import CalibHandEyeKeyHandler
+from aidobjtrack.util.hm_util import *
+from aidobjtrack.handeye.calibhandeye_handeye import *
 
-from visiongql.visiongql_client import VisonGqlDataClient
+from aidobjtrack.visiongql.visiongql_client import VisonGqlDataClient
 
 
 #####################################################################################
@@ -60,11 +60,11 @@ if __name__ == '__main__':
         robotObject = gqlDataClient.robotArms[robotName]
         robotIP = robotObject.endpoint
     else:
-        robotIP = config.INDY_SERVER_IP
+        robotIP = AppConfig.INDY_SERVER_IP
 
     # create an indy7 object
     # indy7 = RobotIndy7Dev()
-    # if(indy7.initalize(robotIP, config.INDY_SERVER_NAME) == False):
+    # if(indy7.initalize(robotIP, AppConfig.INDY_SERVER_NAME) == False):
     #     print("Can't connect the robot and exit this process..")
     #     sys.exit()
 
@@ -88,16 +88,16 @@ if __name__ == '__main__':
         rsCamDev = OpencvCapture(int(cameraObject.endpoint))
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, config.VideoFrameWidth,
-                        config.VideoFrameHeight, config.VideoFramePerSec, cameraName)
+    vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth,
+                        AppConfig.VideoFrameHeight, AppConfig.VideoFramePerSec, cameraName)
 
     # Start streaming
     vcap.start()
 
     # get instrinsics
-    #mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), config.UseRealSenseInternalMatrix)
+    #mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), AppConfig.UseRealSenseInternalMatrix)
     # get internal intrinsics & extrinsics in D435
-    if(config.UseRealSenseInternalMatrix == True):
+    if(AppConfig.UseRealSenseInternalMatrix == True):
         mtx, dist = vcap.getInternalIntrinsicsMat()
     else:
         mtx = cameraObject.cameraMatrix
@@ -107,8 +107,9 @@ if __name__ == '__main__':
     keyhandler = CalibHandEyeKeyHandler()
 
     # create handeye object
-    handeyeAruco = HandEyeAruco(config.ArucoDict, config.ArucoSize, mtx, dist)
-    handeyeAruco.setCalibMarkerID(config.CalibMarkerID)
+    handeyeAruco = HandEyeAruco(
+        AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist)
+    handeyeAruco.setCalibMarkerID(AppConfig.CalibMarkerID)
 
     # start indy7 as a direct-teaching mode as default
     # indy7.setDirectTeachingMode(True)

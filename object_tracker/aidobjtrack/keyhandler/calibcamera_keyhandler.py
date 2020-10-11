@@ -4,9 +4,9 @@ import glob
 import sys
 import json
 
-from data_update.calibcamera_update import CalibCameraUpdate
-from util.util import PrintMsg
-from aidm.base.keyhandler import KeyHandler
+from aidobjtrack.data_update.calibcamera_update import CalibCameraUpdate
+from aidobjtrack.util.util import PrintMsg
+from aidobjtrack.abc.keyhandlerdev import KeyHandler
 
 
 class CalibCameraKeyHandler(KeyHandler):
