@@ -112,7 +112,7 @@ if __name__ == '__main__':
         vtc.dist = dist
 
         # set hand eye matrix
-        vtc.handeye = trackingCamera.handEyeMatrix or {}
+        vtc.handeye = trackingCamera.handEyeMatrix
 
         # create aurco mark tracker object
         # objTracker = ArucoMarkerTracker()
@@ -145,17 +145,20 @@ if __name__ == '__main__':
 
     #########################################################################
     # intialize trackable marks.
-    # trackableMarkKeys = gqlDataClient.trackableObjects.keys()
-    # for trackableMarkKey in trackableMarkKeys:
-    #     trackableMark = gqlDataClient.trackableObjects[trackableMarkKey]
-    #     print('Trackable Marks')
-    #     print(trackableMark.endpoint, ', ', trackableMark.poseOffset)
+    trackableMarkKeys = gqlDataClient.trackableObjects.keys()
+    for trackableMarkKey in trackableMarkKeys:
+        trackableMark = gqlDataClient.trackableObjects[trackableMarkKey]
+        print('Trackable Marks')
+        print(trackableMark.endpoint, ', ', trackableMark.poseOffset)
 
-    #     # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
-    #     obj = ArucoMarkerObject(
-    #         int(trackableMark.endpoint), trackableMark.poseOffset)
-    #     for vtc in vtcList:
-    #         vtc.arucoMarkTracker.setTrackingObject(obj)
+        if trackableMark.endpoint == 'box':
+            pass
+        else:
+            # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
+            obj = ArucoMarkerObject(
+                int(trackableMark.endpoint), trackableMark.poseOffset)
+            for vtc in vtcList:
+                vtc.arucoMarkTracker.setTrackingObject(obj)
 
     # create key handler
     keyhandler = ObjectTrackingKeyHandler()
@@ -173,35 +176,22 @@ if __name__ == '__main__':
                 # get a frame
                 (color_image, depth_image) = vcap.getFrame()
 
+                ############################################################
+                # detect objects
                 if vtc.maskdetect is not None:
                     mask_list = vtc.maskdetect.detect_object_by_data(
                         color_image)
-                    if len(mask_list) > 0:
-                        accumulated_mask = mask_list[0]
-                        for mask in mask_list:
-                            accumulated_mask = np.logical_or(
-                                mask, accumulated_mask)
 
-                        mask_image = np.where(
-                            accumulated_mask, 255, 0).astype(np.uint8)
+                    center_point_list = vtc.maskdetect.get_center_points(
+                        mask_list)
+                    print('center point: ', center_point_list)
 
-                        contours, hierarchy = cv2.findContours(
-                            mask_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-                        for contour in contours:
-                            # calculate moments for each contour
-                            M = cv2.moments(contour)
+                    mask_image = vtc.maskdetect.get_mask_image(
+                        mask_list, 848, 480)
+                    cv2.imshow('mask', mask_image)
 
-                            if M["m00"] == 0.0:
-                                continue
-
-                            # calculate x,y coordinate of center
-                            cX = int(M["m10"] / M["m00"])
-                            cY = int(M["m01"] / M["m00"])
-                            cv2.circle(mask_image, (cX, cY), 5, (0, 0, 0), -1)
-                            cv2.imshow('mask', mask_image)
-                    else:
-                        mask_image = np.zeros((480, 848))
-                        cv2.imshow('mask', mask_image)
+                    # TODO: create ObjectTracker subclass here for maskrcnn detector
+                    # ....
 
                 # # find a robot arm related with the current camera.
                 # for ra in raList:
@@ -234,6 +224,7 @@ if __name__ == '__main__':
                 #     cv2.rectangle(
                 #         color_image, (ROIRegion[0], ROIRegion[1]), (ROIRegion[2], ROIRegion[3]), (255, 0, 0), 3)
 
+                # BGR to RGB for opencv imshow function
                 color_image_view = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
                 depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(

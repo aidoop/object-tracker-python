@@ -7,8 +7,9 @@ import json
 import datetime
 import numpy as np
 import skimage.draw
-
 import time
+import cv2
+import cv2.aruco as aruco
 
 ############################################################
 #  Inference Configurations
@@ -57,6 +58,9 @@ class MaskRcnnDetect:
 
         self.model.load_weights(self.weight_file_path, by_name=True)
 
+        # mask list
+        self.mask_list = list()
+
     def detect_object_by_path(self, image_path):
         assert image_path is not None
 
@@ -73,9 +77,9 @@ class MaskRcnnDetect:
             print("MRCNN Elapsed Time: {} sec".format(edtime-sttime))
             print("Object Count: ", result['masks'].shape[-1])
 
-        mask_list = self.get_mask_list(result['masks'])
+        self.mask_list = self.get_mask_list(result['masks'])
 
-        return mask_list
+        return self.mask_list
 
         # # Color splash
         # splash = get_mask_by_index(image, result['masks'], 0)
@@ -101,9 +105,9 @@ class MaskRcnnDetect:
             print("MRCNN Elapsed Time: {} sec".format(edtime-sttime))
             print("Object Count: ", result['masks'].shape[-1])
 
-        mask_list = self.get_mask_list(result['masks'])
+        self.mask_list = self.get_mask_list(result['masks'])
 
-        return mask_list
+        return self.mask_list
 
     def get_mask_list(self, masks):
 
@@ -124,6 +128,71 @@ class MaskRcnnDetect:
             mask_list.append(mask)
 
         return mask_list
+
+    def get_center_points(self, mask_list):
+        center_point_list = list()
+
+        if len(mask_list) <= 0:
+            return center_point_list
+
+        if len(mask_list) > 0:
+            accumulated_mask = mask_list[0]
+            for mask in mask_list:
+                accumulated_mask = np.logical_or(
+                    mask, accumulated_mask)
+
+            mask_image = np.where(
+                accumulated_mask, 255, 0).astype(np.uint8)
+
+            # get the center point of mask regions
+            contours, hierarchy = cv2.findContours(
+                mask_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            for contour in contours:
+                # calculate moments for each contour
+                M = cv2.moments(contour)
+
+                if M["m00"] == 0.0:
+                    continue
+
+                # calculate x,y coordinate of center
+                cX = int(M["m10"] / M["m00"])
+                cY = int(M["m01"] / M["m00"])
+
+                center_point_list.append((cX, cY))
+
+        return (center_point_list)
+
+    def get_mask_image(self, mask_list, width, height):
+        center_point_list = list()
+        if len(mask_list) > 0:
+            accumulated_mask = mask_list[0]
+            for mask in mask_list:
+                accumulated_mask = np.logical_or(
+                    mask, accumulated_mask)
+
+            mask_image = np.where(
+                accumulated_mask, 255, 0).astype(np.uint8)
+
+            # get the center point of mask regions
+            contours, hierarchy = cv2.findContours(
+                mask_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            for contour in contours:
+                # calculate moments for each contour
+                M = cv2.moments(contour)
+
+                if M["m00"] == 0.0:
+                    continue
+
+                # calculate x,y coordinate of center
+                cX = int(M["m10"] / M["m00"])
+                cY = int(M["m01"] / M["m00"])
+
+                center_point_list.append((cX, cY))
+                cv2.circle(mask_image, (cX, cY), 5, (0, 0, 0), -1)
+        else:
+            mask_image = np.zeros((height, width))
+
+        return (mask_image)
 
     def get_splash_image_by_index(self, image, masks, mask_index):
 
