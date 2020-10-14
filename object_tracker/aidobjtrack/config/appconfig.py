@@ -10,8 +10,8 @@ class AppConfig:
 
     # realsense camera parameters
     UseRealSenseInternalMatrix = False
-    VideoFrameWidth = 1920
-    VideoFrameHeight = 1080
+    VideoFrameWidth = 848
+    VideoFrameHeight = 480
     VideoFramePerSec = 30
 
     # default aruco parameters

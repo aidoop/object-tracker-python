@@ -39,7 +39,7 @@ class InferenceConfig(Config):
 
 class MaskRcnnDetect:
 
-    PRINT_DETECTION_TIME = True
+    PRINT_DETECTION_TIME = False
 
     def __init__(self, weight_file_path, log_dir):
         assert (weight_file_path is not None) and (

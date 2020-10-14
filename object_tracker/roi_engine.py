@@ -14,7 +14,7 @@ from aidobjtrack.config.appconfig import AppConfig
 from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
 from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
 from aidobjtrack.camera.camera_videocapture import VideoCapture
-from aidobjtrack.util.util import ArucoTrackerErrMsg, PrintMsg, DisplayInfoText
+from aidobjtrack.util.util import ObjectTrackerErrMsg, PrintMsg, DisplayInfoText
 from aidobjtrack.keyhandler.roi_keyhandler import ROIKeyHandler
 from aidobjtrack.data_update.roi_update_regions import ROIUpdateRegions
 from aidobjtrack.visiongql.visiongql_client import VisonGqlDataClient
@@ -96,11 +96,11 @@ if __name__ == '__main__':
             color_image = vcap.getFrame()
 
             # check core variables are available..
-            if ArucoTrackerErrMsg.checkValueIsNone(mtx, "camera matrix") == False:
+            if ObjectTrackerErrMsg.checkValueIsNone(mtx, "camera matrix") == False:
                 break
-            if ArucoTrackerErrMsg.checkValueIsNone(dist, "distortion coeff.") == False:
+            if ObjectTrackerErrMsg.checkValueIsNone(dist, "distortion coeff.") == False:
                 break
-            if ArucoTrackerErrMsg.checkValueIsNone(color_image, "vidqeo color frame") == False:
+            if ObjectTrackerErrMsg.checkValueIsNone(color_image, "vidqeo color frame") == False:
                 break
 
             # find ROI region

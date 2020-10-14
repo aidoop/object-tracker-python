@@ -11,7 +11,7 @@ from aidobjtrack.config.appconfig import AppConfig
 from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
 from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
 from aidobjtrack.camera.camera_videocapture import VideoCapture
-from aidobjtrack.util.util import ArucoTrackerErrMsg, DisplayInfoText, PrintMsg
+from aidobjtrack.util.util import ObjectTrackerErrMsg, DisplayInfoText, PrintMsg
 from aidobjtrack.cameracalib.calibcamera import CalibrationCamera
 from aidobjtrack.cameracalib.calibcamera_aruco import CalibrationCameraAruco
 from aidobjtrack.keyhandler.calibcamera_keyhandler import CalibCameraKeyHandler
@@ -99,7 +99,7 @@ if __name__ == '__main__':
             # Wait for a coherent pair of frames: depth and color
             color_image = vcap.getFrame()
 
-            if ArucoTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
+            if ObjectTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
                 break
 
             # create info text

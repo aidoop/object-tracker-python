@@ -11,7 +11,7 @@ from aidobjtrack.config.appconfig import AppConfig
 from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
 from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
 from aidobjtrack.camera.camera_videocapture import VideoCapture
-from aidobjtrack.util.util import ArucoTrackerErrMsg, ObjectTypeCheck
+from aidobjtrack.util.util import ObjectTrackerErrMsg, ObjectTypeCheck
 from aidobjtrack.data_update.objecttracking_updatestatus import ObjectUpdateStatus
 from aidobjtrack.keyhandler.objecttracking_keyhandler import ObjectTrackingKeyHandler
 from aidobjtrack.visiongql.visiongql_client import VisonGqlDataClient
@@ -225,7 +225,8 @@ if __name__ == '__main__':
                                 else:
                                     objStatusUpdate.addObjStatus(
                                         resultObj.markerID, [None], x, y, z, u, v, w)
-                                tobjIDList.remove(resultObj.markerID)
+                                if len(tobjIDList) > 0:
+                                    tobjIDList.remove(resultObj.markerID)
 
                 # # draw ROI Region..
                 # for ROIRegion in vtc.ROIMgr.getROIList():

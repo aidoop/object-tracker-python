@@ -10,7 +10,7 @@ from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
 from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
 from aidobjtrack.camera.camera_videocapture import VideoCapture
 from aidobjtrack.robot.robot_dev_indydcp import RobotIndy7Dev
-from aidobjtrack.util.util import ArucoTrackerErrMsg, DisplayInfoText
+from aidobjtrack.util.util import ObjectTrackerErrMsg, DisplayInfoText
 from aidobjtrack.keyhandler.calibhandeye_keyhandler_test import CalibHandEyeKeyHandler
 from aidobjtrack.util.hm_util import *
 from aidobjtrack.handeye.calibhandeye_handeye import *
@@ -92,15 +92,15 @@ if __name__ == '__main__':
             color_image = vcap.getFrame()
 
             # check core variables are available..
-            if ArucoTrackerErrMsg.checkValueIsNone(mtx, "camera matrix") == False:
+            if ObjectTrackerErrMsg.checkValueIsNone(mtx, "camera matrix") == False:
                 break
-            if ArucoTrackerErrMsg.checkValueIsNone(dist, "distortion coeff.") == False:
+            if ObjectTrackerErrMsg.checkValueIsNone(dist, "distortion coeff.") == False:
                 break
-            if ArucoTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
+            if ObjectTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
                 break
-            if ArucoTrackerErrMsg.checkValueIsNone(handeye, "hand eye matrix") == False:
+            if ObjectTrackerErrMsg.checkValueIsNone(handeye, "hand eye matrix") == False:
                 break
-            if ArucoTrackerErrMsg.checkValueIsNone(indy7, "indy7 object") == False:
+            if ObjectTrackerErrMsg.checkValueIsNone(indy7, "indy7 object") == False:
                 break
 
             (flagFindMainAruco, ids, rvec, tvec) = handeyeAruco.processArucoMarker(

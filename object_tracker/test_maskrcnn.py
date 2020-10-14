@@ -34,14 +34,15 @@ def mouse_event_cb(event, x, y, flags, param):
         print('result: ', hmResult)
 
         xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
+        print('mid: ', xyzuvw)
 
-        [xn, yn, zn, un, vn, wn] = xyzuvw
-        # xyzuvw = [x, y, z, u*(-1), v+180.0, w]
-        curpos = glbData.robot.getCurrentPos()
-        [xc, yc, zc, uc, vc, wc] = curpos
-        xyzuvw = [xn, yn, zc, uc, vc, wc]
-        print('last: ', xyzuvw)
-        glbData.robot.moveTaskPos(xyzuvw)
+        # [xn, yn, zn, un, vn, wn] = xyzuvw
+        # # xyzuvw = [x, y, z, u*(-1), v+180.0, w]
+        # curpos = glbData.robot.getCurrentPos()
+        # [xc, yc, zc, uc, vc, wc] = curpos
+        # xyzuvw = [xn, yn, zc, uc, vc, wc]
+        # print('last: ', xyzuvw)
+        # glbData.robot.moveTaskPos(xyzuvw)
 
     if event == cv2.EVENT_RBUTTONDBLCLK:
         glbData.robot.home()
@@ -89,11 +90,12 @@ if __name__ == '__main__':
     gqlDataClient.fetchTrackingCamerasAll()
 
     # create an indy7 object
-    indy7 = robot_dev_indydcp.RobotIndy7Dev()
-    if(indy7.initalize("192.168.0.207", "NRMK-Indy7") == False):
-        print("Can't connect the robot and exit this process..")
-        sys.exit()
-    glbData.robot = indy7
+    # indy7 = robot_dev_indydcp.RobotIndy7Dev()
+    # if(indy7.initalize("192.168.0.207", "NRMK-Indy7") == False):
+    #     print("Can't connect the robot and exit this process..")
+    #     sys.exit()
+    # glbData.robot = indy7
+    glbData.robot = None
 
     # vistion tracking camera object list
     # vtcList = list()

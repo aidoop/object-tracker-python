@@ -10,7 +10,7 @@ class ObjectTypeCheck:
         return True
 
 
-class ArucoTrackerErrMsg:
+class ObjectTrackerErrMsg:
     @staticmethod
     def checkValueIsNone(var, varname):
         if var is None:

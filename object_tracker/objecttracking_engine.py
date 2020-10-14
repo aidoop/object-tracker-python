@@ -5,6 +5,8 @@ import sys
 import os
 import argparse
 import time
+import numpy as np
+from enum import Enum, unique
 
 from aidobjtrack.config.appconfig import AppConfig
 from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
@@ -16,17 +18,29 @@ from aidobjtrack.keyhandler.objecttracking_keyhandler import ObjectTrackingKeyHa
 from aidobjtrack.visiongql.visiongql_client import VisonGqlDataClient
 
 from objecttracking_aurco import ArucoMarkerObject, ArucoMarkerTracker
+from objecttracking_mrcnn import MrcnnObject, MrcnnObjectTracker
 from objecttracking_roimgr_retangle import ROIRetangleManager
+
+# mask rcnn detector
+from mrcnn import object_detect as mo
+
+
+@unique
+class ObjectTrackingMethod(Enum):
+    ARUCO = 1
+    MRCNN = 2
 
 
 class VisionTrackingCamera:
+    # set trakcing method
+    tracking_method = ObjectTrackingMethod.MRCNN
     name = None
     robotName = None
     vcap = None
     mtx = None
     dist = None
     ROIMgr = None
-    arucoMarkTracker = None
+    objectMarkTracker = None
     handeye = None
     camObjOffset = None
 
@@ -84,8 +98,16 @@ if __name__ == '__main__':
         # TODO: choose camera dev object based on camera type
         if trackingCamera.type == 'realsense-camera':
             rsCamDev = RealsenseCapture(trackingCamera.endpoint)
+            # set to apply post-filters
+            rsCamDev.set_flag_filters(True)
+            rsCamDev.prepare_filters()
         elif trackingCamera.type == 'camera-connector':
-            rsCamDev = OpencvCapture(int(trackingCamera.endpoint))
+            rsCamDev = OpencvCapture(int(
+                trackingCamera.endpoint)) if vtc.tracking_method == ObjectTrackingMethod.ARUCO else None
+
+        if rsCamDev is None:
+            print('camera type error')
+            continue
 
         # create a video capture object and start
         vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth,
@@ -105,10 +127,11 @@ if __name__ == '__main__':
         vtc.handeye = trackingCamera.handEyeMatrix
 
         # create aurco mark tracker object
-        objTracker = ArucoMarkerTracker()
+        objTracker = MrcnnObjectTracker()
+        # TODO: change fucntion parameters for the comparability of ArucoObjectTracker
         objTracker.initialize(
             AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist, vtc.handeye)
-        vtc.arucoMarkTracker = objTracker
+        vtc.objectMarkTracker = objTracker
 
         # initialize ROI manager
         ROIMgr = ROIRetangleManager()
@@ -142,11 +165,20 @@ if __name__ == '__main__':
         print('Trackable Marks')
         print(trackableMark.endpoint, ', ', trackableMark.poseOffset)
 
-        # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
-        obj = ArucoMarkerObject(
-            int(trackableMark.endpoint), trackableMark.poseOffset)
-        for vtc in vtcList:
-            vtc.arucoMarkTracker.setTrackingObject(obj)
+        if vtc.tracking_method == ObjectTrackingMethod.MRCNN:
+            # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
+            obj = MrcnnObject(
+                trackableMark.endpoint, trackableMark.poseOffset)
+            for vtc in vtcList:
+                vtc.objectMarkTracker.setTrackingObject(obj)
+        elif vtc.tracking_method == ObjectTrackingMethod.ARUCO:
+            # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
+            obj = ArucoMarkerObject(
+                int(trackableMark.endpoint), trackableMark.poseOffset)
+            for vtc in vtcList:
+                vtc.objectMarkTracker.setTrackingObject(obj)
+        else:
+            pass
 
     # create key handler
     keyhandler = ObjectTrackingKeyHandler()
@@ -158,16 +190,19 @@ if __name__ == '__main__':
         while(True):
 
             # get markable object
-            tobjIDList = vtc.arucoMarkTracker.getTrackingObjIDList().copy()
+            tobjIDList = vtc.objectMarkTracker.getTrackingObjIDList().copy()
 
             for vtc in vtcList:
                 # get a frame
-                color_image = vtc.vcap.getFrame()
+                if vtc.tracking_method == ObjectTrackingMethod.ARUCO:
+                    color_image = vtc.vcap.getFrame()
+                elif vtc.tracking_method == ObjectTrackingMethod.MRCNN:
+                    (color_image, depth_image) = vcap.getFrame()
 
                 # check if core variables are available..
-                if ObjectTrackerErrMsg.checkValueIsNone(vtc.mtx, "camera matrix") == False:
+                if ObjectTrackerErrMsg.checkValueIsNone(vtc.mtx, "camera matrix") == False and (vtc.tracking_method == ObjectTrackingMethod.ARUCO):
                     break
-                if ObjectTrackerErrMsg.checkValueIsNone(vtc.dist, "distortion coeff.") == False:
+                if ObjectTrackerErrMsg.checkValueIsNone(vtc.dist, "distortion coeff.") == False and (vtc.tracking_method == ObjectTrackingMethod.ARUCO):
                     break
                 if ObjectTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
                     break
@@ -178,15 +213,17 @@ if __name__ == '__main__':
                 for ra in raList:
                     if ra.name == vtc.robotName:
                         # detect markers here..
-                        resultObjs = vtc.arucoMarkTracker.findObjects(
+                        resultObjs = vtc.objectMarkTracker.findObjects(
                             color_image, vtc, ra.gripperOffset)
 
                         if(resultObjs == None):
                             continue
 
                         for resultObj in resultObjs:
-                            (found, foundRIDs) = vtc.ROIMgr.isInsideROI(
-                                resultObj.corners)
+                            # # TODO: check if rect ROI is available for the current detection
+                            # (found, foundRIDs) = vtc.ROIMgr.isInsideROI(
+                            #     resultObj.corners)
+                            found = False
 
                             if resultObj.targetPos is not None:
                                 [x, y, z, u, v, w] = resultObj.targetPos
@@ -197,16 +234,29 @@ if __name__ == '__main__':
                                 else:
                                     objStatusUpdate.addObjStatus(
                                         resultObj.markerID, [None], x, y, z, u, v, w)
-                                tobjIDList.remove(resultObj.markerID)
+                                if len(tobjIDList) > 0:
+                                    tobjIDList.remove(resultObj.markerID)
 
                 # draw ROI Region..
-                for ROIRegion in vtc.ROIMgr.getROIList():
-                    cv2.rectangle(
-                        color_image, (ROIRegion[0], ROIRegion[1]), (ROIRegion[2], ROIRegion[3]), (255, 0, 0), 3)
+                # for ROIRegion in vtc.ROIMgr.getROIList():
+                #     cv2.rectangle(
+                #         color_image, (ROIRegion[0], ROIRegion[1]), (ROIRegion[2], ROIRegion[3]), (255, 0, 0), 3)
 
                 # display a video by half of original size
-                color_image_half = cv2.resize(color_image, (960, 540))
-                cv2.imshow(vtc.name, color_image_half)
+                if vtc.tracking_method == ObjectTrackingMethod.ARUCO:
+                    color_image_half = cv2.resize(color_image, (960, 540))
+                    cv2.imshow(vtc.name, color_image_half)
+                else:
+                    # BGR to RGB for opencv imshow function
+                    color_image_view = cv2.cvtColor(
+                        color_image, cv2.COLOR_RGB2BGR)
+
+                    depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(
+                        depth_image, alpha=0.03), cv2.COLORMAP_JET)
+                    images = np.hstack((color_image_view, depth_colormap))
+
+                    # display a video by half of original size
+                    cv2.imshow(vtc.name, images)
 
             # send object information to UI and clear all
             # if objStatusUpdate.containsObjStatus() == True:
@@ -214,7 +264,8 @@ if __name__ == '__main__':
             objStatusUpdate.clearObjStatus()
 
             # sleep for the specified duration.
-            time.sleep(0.2)
+            if vtc.tracking_method == ObjectTrackingMethod.ARUCO:
+                time.sleep(0.2)
 
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)

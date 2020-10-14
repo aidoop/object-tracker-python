@@ -29,7 +29,7 @@ class MrcnnObjectTracker(ObjectTracker):
 
     # initialize parameters for any camera operation
     def initialize(self, *args):
-        self.handEyeMat = args[0]  # HandEyeCalibration.loadTransformMatrix()
+        self.handEyeMat = args[4]  # HandEyeCalibration.loadTransformMatrix()
         self.markerObjectList.clear()
         self.markerObjIDList.clear()
 
@@ -77,6 +77,12 @@ class MrcnnObjectTracker(ObjectTracker):
             for markerObject in self.markerObjectList:
                 for cpoint in center_point_list:
                     tvec = vtc.vcap.get3DPosition(cpoint[0], cpoint[1])
+                    print("---------------------------------------------")
+                    print(vtc.vcap.get3DPosition(cpoint[0], cpoint[1]))
+                    print(vtc.vcap.get3DPosition(340, 343))
+                    print(vtc.vcap.get3DPosition(560, 338))
+                    print("---------------------------------------------")
+
                     # TODO: check it using real robot data
                     rvec = np.array([0.0, 0.0, 0.0])
 
