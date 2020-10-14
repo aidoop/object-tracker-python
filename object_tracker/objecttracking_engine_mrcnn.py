@@ -17,6 +17,7 @@ from aidobjtrack.keyhandler.objecttracking_keyhandler import ObjectTrackingKeyHa
 from aidobjtrack.visiongql.visiongql_client import VisonGqlDataClient
 
 from objecttracking_aurco import ArucoMarkerObject, ArucoMarkerTracker
+from objecttracking_mrcnn import MrcnnObject, MrcnnObjectTracker
 from objecttracking_roimgr_retangle import ROIRetangleManager
 
 # mask rcnn detector
@@ -30,10 +31,10 @@ class VisionTrackingCamera:
     mtx = None
     dist = None
     ROIMgr = None
-    arucoMarkTracker = None
+    objectMarkTracker = None
     handeye = None
     camObjOffset = None
-    maskdetect = None
+    # maskdetect = None
 
 
 ###############################################################################
@@ -102,8 +103,8 @@ if __name__ == '__main__':
         vcap.start()
         vtc.vcap = vcap
 
-        vtc.maskdetect = mo.MaskRcnnDetect(
-            "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201006T1521/mask_rcnn_object-train_0047.h5", "/home/jinwon/Documents/github/object-tracker-python/logs")
+        # vtc.maskdetect = mo.MaskRcnnDetect(
+        #     "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201006T1521/mask_rcnn_object-train_0047.h5", "/home/jinwon/Documents/github/object-tracker-python/logs")
 
         # set camera matrix and distortion coefficients
         mtx = trackingCamera.cameraMatrix
@@ -115,18 +116,18 @@ if __name__ == '__main__':
         vtc.handeye = trackingCamera.handEyeMatrix
 
         # create aurco mark tracker object
-        # objTracker = ArucoMarkerTracker()
-        # objTracker.initialize(
-        #     AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist, vtc.handeye)
-        # vtc.arucoMarkTracker = objTracker
+        objTracker = MrcnnObjectTracker()
+        # TODO: change fucntion parameters for the comparability of ArucoObjectTracker
+        objTracker.initialize(vtc.handeye)
+        vtc.objectMarkTracker = objTracker
 
-        # # initialize ROI manager
-        # ROIMgr = ROIRetangleManager()
-        # for ROIData in trackingCamera.ROIs:
-        #     ROIInput = [ROIData.tl[0], ROIData.tl[1],
-        #                 ROIData.rb[0], ROIData.rb[1], ROIData.id]
-        #     ROIMgr.appendROI(ROIInput)
-        # vtc.ROIMgr = ROIMgr
+        # initialize ROI manager
+        ROIMgr = ROIRetangleManager()
+        for ROIData in trackingCamera.ROIs:
+            ROIInput = [ROIData.tl[0], ROIData.tl[1],
+                        ROIData.rb[0], ROIData.rb[1], ROIData.id]
+            ROIMgr.appendROI(ROIInput)
+        vtc.ROIMgr = ROIMgr
 
         vtc.camObjOffset = trackingCamera.camObjOffset
 
@@ -152,13 +153,17 @@ if __name__ == '__main__':
         print(trackableMark.endpoint, ', ', trackableMark.poseOffset)
 
         if trackableMark.endpoint == 'box':
-            pass
+            # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
+            obj = MrcnnObject(
+                trackableMark.endpoint, trackableMark.poseOffset)
+            for vtc in vtcList:
+                vtc.objectMarkTracker.setTrackingObject(obj)
         else:
             # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
             obj = ArucoMarkerObject(
                 int(trackableMark.endpoint), trackableMark.poseOffset)
             for vtc in vtcList:
-                vtc.arucoMarkTracker.setTrackingObject(obj)
+                vtc.objectMarkTracker.setTrackingObject(obj)
 
     # create key handler
     keyhandler = ObjectTrackingKeyHandler()
@@ -170,7 +175,7 @@ if __name__ == '__main__':
         while(True):
 
             # get markable object
-            #tobjIDList = vtc.arucoMarkTracker.getTrackingObjIDList().copy()
+            tobjIDList = vtc.objectMarkTracker.getTrackingObjIDList().copy()
 
             for vtc in vtcList:
                 # get a frame
@@ -178,46 +183,49 @@ if __name__ == '__main__':
 
                 ############################################################
                 # detect objects
-                if vtc.maskdetect is not None:
-                    mask_list = vtc.maskdetect.detect_object_by_data(
-                        color_image)
 
-                    center_point_list = vtc.maskdetect.get_center_points(
-                        mask_list)
-                    print('center point: ', center_point_list)
+                # if vtc.maskdetect is not None:
+                #     mask_list = vtc.maskdetect.detect_object_by_data(
+                #         color_image)
 
-                    mask_image = vtc.maskdetect.get_mask_image(
-                        mask_list, 848, 480)
-                    cv2.imshow('mask', mask_image)
+                #     center_point_list = vtc.maskdetect.get_center_points(
+                #         mask_list)
+                #     print('center point: ', center_point_list)
 
-                    # TODO: create ObjectTracker subclass here for maskrcnn detector
-                    # ....
+                #     mask_image = vtc.maskdetect.get_mask_image(
+                #         mask_list, 848, 480)
+                #     cv2.imshow('mask', mask_image)
 
-                # # find a robot arm related with the current camera.
-                # for ra in raList:
-                #     if ra.name == vtc.robotName:
-                #         # detect markers here..
-                #         resultObjs = vtc.arucoMarkTracker.findObjects(
-                #             color_image, vtc, ra.gripperOffset)
+                #     # TODO: create ObjectTracker subclass here for maskrcnn detector
+                #     # ....
 
-                #         if(resultObjs == None):
-                #             continue
+                # find a robot arm related with the current camera.
+                for ra in raList:
+                    if ra.name == vtc.robotName:
+                        # detect markers here..
+                        resultObjs = vtc.objectMarkTracker.findObjects(
+                            color_image, vtc, ra.gripperOffset)
 
-                #         # check rois
-                #         for resultObj in resultObjs:
-                #             (found, foundRIDs) = vtc.ROIMgr.isInsideROI(
-                #                 resultObj.corners)
+                        if(resultObjs == None):
+                            continue
 
-                #             if resultObj.targetPos is not None:
-                #                 [x, y, z, u, v, w] = resultObj.targetPos
+                        # check if rect ROI is available for the current detection
+                        for resultObj in resultObjs:
+                            # # TODO: check if rect ROI is available for the current detection
+                            # (found, foundRIDs) = vtc.ROIMgr.isInsideROI(
+                            #     resultObj.corners)
+                            found = False
 
-                #                 if found is True:
-                #                     objStatusUpdate.addObjStatus(
-                #                         resultObj.markerID, foundRIDs, x, y, z, u, v, w)
-                #                 else:
-                #                     objStatusUpdate.addObjStatus(
-                #                         resultObj.markerID, [None], x, y, z, u, v, w)
-                #                 tobjIDList.remove(resultObj.markerID)
+                            if resultObj.targetPos is not None:
+                                [x, y, z, u, v, w] = resultObj.targetPos
+
+                                if found is True:
+                                    objStatusUpdate.addObjStatus(
+                                        resultObj.markerID, foundRIDs, x, y, z, u, v, w)
+                                else:
+                                    objStatusUpdate.addObjStatus(
+                                        resultObj.markerID, [None], x, y, z, u, v, w)
+                                tobjIDList.remove(resultObj.markerID)
 
                 # # draw ROI Region..
                 # for ROIRegion in vtc.ROIMgr.getROIList():
@@ -237,8 +245,8 @@ if __name__ == '__main__':
             # send object information to UI and clear all
             # if objStatusUpdate.containsObjStatus() == True:
             # TODO: find object status update
-            # objStatusUpdate.sendObjStatus(tobjIDList)
-            # objStatusUpdate.clearObjStatus()
+            objStatusUpdate.sendObjStatus(tobjIDList)
+            objStatusUpdate.clearObjStatus()
 
             # sleep for the specified duration.
             time.sleep(0.2)

@@ -25,11 +25,13 @@ class MrcnnObjectTracker(ObjectTracker):
 
     def __init__(self):
         self.markerObjectList = []
+        self.markerObjIDList = []
 
     # initialize parameters for any camera operation
     def initialize(self, *args):
+        self.handEyeMat = args[0]  # HandEyeCalibration.loadTransformMatrix()
         self.markerObjectList.clear()
-        self.handEyeMat = args[4]  # HandEyeCalibration.loadTransformMatrix()
+        self.markerObjIDList.clear()
 
         self.maskdetect = mo.MaskRcnnDetect(
             MrcnnObjectTracker.OBJECT_WEIGHT_PATH, MrcnnObjectTracker.LOGS_PATH)
@@ -39,10 +41,14 @@ class MrcnnObjectTracker(ObjectTracker):
         assert(isinstance(object, MrcnnObject))
 
         # TODO: handles two more object here?
+        self.markerObjIDList.append(object.markerID)
         self.markerObjectList.append(object)
 
     def getTrackingObjectList(self):
         return self.markerObjectList
+
+    def getTrackingObjIDList(self):
+        return self.markerObjIDList
 
     # set detectable features and return the 2D or 3D positons in case that objects are detected..
     def findObjects(self, *args):
@@ -68,43 +74,49 @@ class MrcnnObjectTracker(ObjectTracker):
             #     mask_list, 848, 480)
             # cv2.imshow('mask', mask_image)
 
-            for cpoint in center_point_list:
-                tvec = vtc.vcap.get3DPosition(cpoint[0], cpoint[1])
-                rvec = [-180, 0, -180]  # TODO: check it using real robot data
+            for markerObject in self.markerObjectList:
+                for cpoint in center_point_list:
+                    tvec = vtc.vcap.get3DPosition(cpoint[0], cpoint[1])
+                    # TODO: check it using real robot data
+                    rvec = np.array([0.0, 0.0, 0.0])
 
-                # change a rotation vector to a rotation matrix
-                rotMatrix = np.zeros(shape=(3, 3))
-                cv2.Rodrigues(rvec, rotMatrix)
+                    # change a rotation vector to a rotation matrix
+                    rotMatrix = np.zeros(shape=(3, 3))
 
-                # make a homogeneous matrix using a rotation matrix and a translation matrix
-                hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec)
+                    cv2.Rodrigues(rvec, rotMatrix)
 
-                if vtc.camObjOffset is not None:
-                    offsetPoint = markerObject.pivotOffset + vtc.camObjOffset
-                else:
-                    offsetPoint = markerObject.pivotOffset
+                    # make a homogeneous matrix using a rotation matrix and a translation matrix
+                    hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec)
 
-                # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
-                hmWanted = HMUtil.convertXYZABCtoHMDeg(offsetPoint)
-                hmInput = np.dot(hmCal2Cam, hmWanted)
+                    if vtc.camObjOffset is not None:
+                        offsetPoint = markerObject.pivotOffset + vtc.camObjOffset
+                    else:
+                        offsetPoint = markerObject.pivotOffset
 
-                # get a final position
-                hmResult = np.dot(self.handEyeMat, hmInput)
-                xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
+                    # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
+                    hmWanted = HMUtil.convertXYZABCtoHMDeg(
+                        offsetPoint) if offsetPoint is not None else np.eye(4)
+                    hmInput = np.dot(hmCal2Cam, hmWanted)
 
-                # this conversion is moved to Operato, but come back by making robot move policy consistent
-                if xyzuvw != None:
-                    [x, y, z, u, v, w] = xyzuvw
-                    # indy7 base position to gripper position
-                    xyzuvw = [x, y, z, u*(-1), v+180.0, w]
+                    # get a final position
+                    hmResult = np.dot(self.handEyeMat, hmInput)
+                    xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
 
-                # set final target position..
-                markerObject.targetPos = xyzuvw
+                    # this conversion is moved to Operato, but come back by making robot move policy consistent
+                    if xyzuvw != None:
+                        [x, y, z, u, v, w] = xyzuvw
+                        # indy7 base position to gripper position
+                        xyzuvw = [x, y, z, u*(-1), v+180.0, w]
 
-                # append this object to the list to be returned
-                resultList.append(markerObject)
+                    # set final target position..
+                    markerObject.targetPos = xyzuvw
+
+                    # append this object to the list to be returned
+                    resultList.append(markerObject)
         else:
             pass
+
+        return resultList
 
         # gray = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)
 
@@ -184,4 +196,4 @@ class MrcnnObjectTracker(ObjectTracker):
         #     # draw a square around the markers
         #     aruco.drawDetectedMarkers(color_image, corners)
 
-        return resultList
+        # return resultList
