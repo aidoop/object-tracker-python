@@ -200,10 +200,9 @@ if __name__ == '__main__':
                     (color_image, depth_image) = vcap.getFrame()
 
                 # check if core variables are available..
-                if ObjectTrackerErrMsg.checkValueIsNone(vtc.mtx, "camera matrix") == False and (vtc.tracking_method == ObjectTrackingMethod.ARUCO):
-                    break
-                if ObjectTrackerErrMsg.checkValueIsNone(vtc.dist, "distortion coeff.") == False and (vtc.tracking_method == ObjectTrackingMethod.ARUCO):
-                    break
+                if (vtc.tracking_method == ObjectTrackingMethod.ARUCO):
+                    if (ObjectTrackerErrMsg.checkValueIsNone(vtc.mtx, "camera matrix") == False) or (ObjectTrackerErrMsg.checkValueIsNone(vtc.dist, "distortion coeff.") == False):
+                        break
                 if ObjectTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
                     break
                 if ObjectTrackerErrMsg.checkValueIsNone(vtc.handeye, "hand eye matrix") == False:
@@ -247,6 +246,7 @@ if __name__ == '__main__':
                     color_image_half = cv2.resize(color_image, (960, 540))
                     cv2.imshow(vtc.name, color_image_half)
                 else:
+                    # TODO: need to show the depth image here?
                     # BGR to RGB for opencv imshow function
                     color_image_view = cv2.cvtColor(
                         color_image, cv2.COLOR_RGB2BGR)

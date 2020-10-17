@@ -55,6 +55,8 @@ class ObjectUpdateStatus:
         }
 
         if AppConfig.ObjTrackingDebugMode == False:
+            print('-------------------')
+            print(status)
             self.gqlClient.update_tracking_workspace_status(
                 name='workspace', status=status)
         else:
