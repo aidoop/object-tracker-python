@@ -152,7 +152,7 @@ if __name__ == '__main__':
         print('Trackable Marks')
         print(trackableMark.endpoint, ', ', trackableMark.poseOffset)
 
-        if trackableMark.endpoint == 'box':
+        if trackableMark.endpoint == '100':
             # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
             obj = MrcnnObject(
                 trackableMark.endpoint, trackableMark.poseOffset)

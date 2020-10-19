@@ -31,5 +31,5 @@ class AppConfig:
     TestMarkerID = 14
     UseArucoBoard = True
 
-    # Object Tracking parameters
-    ObjTrackingDebugMode = True
+    # debug without @things-factory
+    ObjTrackingDebugMode = False

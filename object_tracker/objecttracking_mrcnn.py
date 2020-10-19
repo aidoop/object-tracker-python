@@ -22,12 +22,20 @@ class MrcnnObject:
 class MrcnnObjectTracker(ObjectTracker):
     #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201006T1521/mask_rcnn_object-train_0047.h5"
     #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201016T2305/mask_rcnn_object-train_0035.h5"
-    OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201017T1422/mask_rcnn_object-train_0043.h5"
+    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201017T1422/mask_rcnn_object-train_0043.h5"
+    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201017T1713/mask_rcnn_object-train_0094.h5"
+    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201017T2218/mask_rcnn_object-train_0150.h5"
+    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201018T1104/mask_rcnn_object-train_0200.h5"
+    OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201018T2110/mask_rcnn_object-train_0100.h5"
     LOGS_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs"
 
     def __init__(self):
         self.markerObjectList = []
         self.markerObjIDList = []
+
+        # maskrcnn addition data
+        self.center_point_list = []
+        self.scores_list = []
 
     # initialize parameters for any camera operation
     def initialize(self, *args):
@@ -67,17 +75,14 @@ class MrcnnObjectTracker(ObjectTracker):
             mask_list = self.maskdetect.detect_object_by_data(
                 color_image)
 
-            center_point_list = self.maskdetect.get_center_points(
+            self.center_point_list = self.maskdetect.get_center_points(
                 mask_list)
-            print('center point: ', center_point_list)
+            print('center point: ', self.center_point_list)
 
-            # show the mask image
-            mask_image = self.maskdetect.get_mask_image(
-                mask_list, 848, 480)
-            cv2.imshow('mask', mask_image)
+            self.scores_list = self.maskdetect.get_scores()
 
             for markerObject in self.markerObjectList:
-                for cpoint in center_point_list:
+                for cpoint in self.center_point_list:
                     tvec = vtc.vcap.get3DPosition(cpoint[0], cpoint[1])
                     # print("---------------------------------------------")
                     # print(vtc.vcap.get3DPosition(cpoint[0], cpoint[1]))
@@ -124,3 +129,26 @@ class MrcnnObjectTracker(ObjectTracker):
             pass
 
         return resultList
+
+    def getMaskImage(self, color_image, width, height):
+        assert self.maskdetect is not None
+        mask_list = self.maskdetect.detect_object_by_data(color_image)
+
+        return self.maskdetect.get_mask_image(mask_list, width, height)
+
+    def putScoreData(self, color_image):
+        assert color_image is not None
+
+        # prepare font data
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        fontScale = 0.5
+        fontColor = (255, 255, 0)
+        lineType = 1
+
+        for idx, (cpoint, score) in enumerate(zip(self.center_point_list, self.scores_list)):
+            print(idx, (cpoint, score))
+            cv2.putText(color_image, '%0.3f' % score, cpoint, font,
+                        fontScale, fontColor, lineType)
+
+    def getScoresList(self):
+        return self.scores_list

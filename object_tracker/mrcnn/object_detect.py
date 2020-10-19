@@ -61,6 +61,9 @@ class MaskRcnnDetect:
         # mask list
         self.mask_list = list()
 
+        # scores
+        self.scores = list()
+
     def detect_object_by_path(self, image_path):
         assert image_path is not None
 
@@ -78,6 +81,7 @@ class MaskRcnnDetect:
             print("Object Count: ", result['masks'].shape[-1])
 
         self.mask_list = self.get_mask_list(result['masks'])
+        self.scores = result['scores']
 
         return self.mask_list
 
@@ -106,6 +110,7 @@ class MaskRcnnDetect:
             print("Object Count: ", result['masks'].shape[-1])
 
         self.mask_list = self.get_mask_list(result['masks'])
+        self.scores = result['scores']
 
         return self.mask_list
 
@@ -192,7 +197,7 @@ class MaskRcnnDetect:
         else:
             mask_image = np.zeros((height, width))
 
-        return (mask_image)
+        return (mask_image.astype(np.uint8))
 
     def get_splash_image_by_index(self, image, masks, mask_index):
 
@@ -206,6 +211,9 @@ class MaskRcnnDetect:
         else:
             splash = gray.astype(np.uint8)
         return splash
+
+    def get_scores(self):
+        return self.scores
 
 
 ############################################################

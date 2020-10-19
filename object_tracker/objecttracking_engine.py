@@ -31,7 +31,7 @@ class ObjectTrackingMethod(Enum):
     MRCNN = 2
 
 
-class VisionTrackingCamera:
+class ObjectTrakcingData:
     # set trakcing method
     tracking_method = ObjectTrackingMethod.MRCNN
     name = None
@@ -81,7 +81,7 @@ if __name__ == '__main__':
         trackingCamera = gqlDataClient.trackingCameras[camKey]
 
         # create camera object
-        vtc = VisionTrackingCamera()
+        vtc = ObjectTrakcingData()
 
         # set camera name
         vtc.name = trackingCamera.name
@@ -251,11 +251,18 @@ if __name__ == '__main__':
                     color_image_view = cv2.cvtColor(
                         color_image, cv2.COLOR_RGB2BGR)
 
-                    depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(
-                        depth_image, alpha=0.03), cv2.COLORMAP_JET)
-                    images = np.hstack((color_image_view, depth_colormap))
+                    # create images to show
+                    # sub_image = cv2.applyColorMap(cv2.convertScaleAbs(
+                    #     depth_image, alpha=0.03), cv2.COLORMAP_JET)
+                    mask_image = vtc.objectMarkTracker.getMaskImage(
+                        color_image, AppConfig.VideoFrameWidth, AppConfig.VideoFrameHeight)
+                    sub_image = cv2.cvtColor(mask_image, cv2.COLOR_GRAY2RGB)
 
-                    # display a video by half of original size
+                    # show scores
+                    vtc.objectMarkTracker.putScoreData(color_image_view)
+
+                    # display both color image and mask image
+                    images = np.hstack((color_image_view, sub_image))
                     cv2.imshow(vtc.name, images)
 
             # send object information to UI and clear all

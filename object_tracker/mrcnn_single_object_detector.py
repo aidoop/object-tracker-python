@@ -57,12 +57,21 @@ class TrainConfig(Config):
     NUM_CLASSES = 1 + 1  # Background + balloon
 
     # Number of training steps per epoch
-    STEPS_PER_EPOCH = 382
+    # STEPS_PER_EPOCH = 529 # delbox2
+    # STEPS_PER_EPOCH = 382  # delbox2_1
+    STEPS_PER_EPOCH = 593  # delbox2_2
 
     # Skip detections with < 90% confidence
     DETECTION_MIN_CONFIDENCE = 0.9
 
+    # Maximum number of ground truth instances to use in one image
     MAX_GT_INSTANCES = 100
+
+    # Maximum number of epoch
+    MAX_EPOCH_COUNT = 100
+
+    # Train Layer
+    TRAIN_LAYER_RANGE = '3+'  # [jin] in ['all' '3+', '4+', '5+', 'heads']
 
 
 ############################################################
@@ -189,12 +198,13 @@ def train(model):
     print("Training network heads")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=50,  # 30 -> 100
-                layers='heads',
+                epochs=config.MAX_EPOCH_COUNT,      # [jin] 30 -> 100
+                layers=config.TRAIN_LAYER_RANGE,    # [jin] '3+' '4+' 'heads'
                 # [jin] add augmentation
                 augmentation=imgaug.augmenters.Sometimes(0.5, [
                     imgaug.augmenters.Fliplr(0.5),
-                    imgaug.augmenters.GaussianBlur(sigma=(0.0, 5.0))
+                    imgaug.augmenters.GaussianBlur(sigma=(0.0, 5.0)),
+                    imgaug.augmenters.Flipud(0.5)
                 ]))
 
 
