@@ -57,17 +57,10 @@ class MrcnnObjectTracker(ObjectTracker):
         self.markerObjectList.append(object)
 
     def getTrackingObjectList(self):
-        return self.markerObjectList
-
-    def getTrackingObjIDList(self):
-        return self.markerObjIDList
-
-    # set detectable features and return the 2D or 3D positons in case that objects are detected..
-    def findObjects(self, *args):
-        color_image = args[0]
-        vtc = args[1]
-        gripperOffset = args[2]
-
+        return self.markerObjectList if vtc.camObjOffset is not None:
+                    offsetPoint = markerObject.pivotOffset + vtc.camObjOffset
+                else:
+                    offsetPoint = markerObject.pivotOffset
         # prepare list to give over the result objects
         resultList = list()
 
@@ -82,6 +75,7 @@ class MrcnnObjectTracker(ObjectTracker):
             print('center point: ', self.center_point_list)
 
             self.scores_list = self.maskdetect.get_scores()
+            assert self.scores_list is not None or self.center_point_list is not None
 
             for idx, (markerObject, cpoint) in enumerate(zip(self.markerObjectList, self.center_point_list)):
                 tvec = vtc.vcap.get3DPosition(cpoint[0], cpoint[1])
@@ -99,10 +93,8 @@ class MrcnnObjectTracker(ObjectTracker):
                 # make a homogeneous matrix using a rotation matrix and a translation matrix
                 hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec)
 
-                if vtc.camObjOffset is not None:
-                    offsetPoint = markerObject.pivotOffset + vtc.camObjOffset
-                else:
-                    offsetPoint = markerObject.pivotOffset
+                offsetPoint = markerObject.pivotOffset + \
+                    vtc.camObjOffset if vtc.camObjOffset is not None else markerObject.pivotOffset
 
                 # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
                 hmWanted = HMUtil.convertXYZABCtoHMDeg(
