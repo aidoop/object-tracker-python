@@ -26,6 +26,10 @@ class CameraDev(metaclass=ABCMeta):
     def initialize(self):
         pass
 
+    # do something before starting capture
+    def prepare(self):
+        pass
+
     # start to capture frames
     @abstractmethod
     def startCapture(self):

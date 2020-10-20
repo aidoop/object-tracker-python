@@ -38,6 +38,9 @@ class OpencvCapture(CameraDev):
         self.__videoCapture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         self.__videoCapture.set(cv2.CAP_PROP_FPS, fps)
 
+    def prepare(self):
+        pass
+
     def startCapture(self):
         pass
 

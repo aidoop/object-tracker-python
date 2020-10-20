@@ -68,10 +68,10 @@ class TrainConfig(Config):
     MAX_GT_INSTANCES = 100
 
     # Maximum number of epoch
-    MAX_EPOCH_COUNT = 100
+    MAX_EPOCH_COUNT = 50
 
     # Train Layer
-    TRAIN_LAYER_RANGE = '3+'  # [jin] in ['all' '3+', '4+', '5+', 'heads']
+    TRAIN_LAYER_RANGE = '5+'  # [jin] in ['all' '3+', '4+', '5+', 'heads']
 
 
 ############################################################

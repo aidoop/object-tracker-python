@@ -73,7 +73,8 @@ if __name__ == '__main__':
     raList = list()
 
     #########################################################################
-    # intitialize tracking cameras
+    # intitialize tracking cameras & video capture object
+    # TODO: need to make these codes short and smart
     idx = 0
     camKeys = gqlDataClient.trackingCameras.keys()
     for camKey in camKeys:
@@ -93,21 +94,22 @@ if __name__ == '__main__':
         vtc.robotName = trackingCamera.baseRobotArm['name']
 
         # set camera endpoint
-        #endpoint = int(trackingCamera.endpoint)
+        # endpoint = int(trackingCamera.endpoint)
 
-        # TODO: choose camera dev object based on camera type
-        if trackingCamera.type == 'realsense-camera':
-            rsCamDev = RealsenseCapture(trackingCamera.endpoint)
-            # set to apply post-filters
-            rsCamDev.set_flag_filters(True)
-            rsCamDev.prepare_filters()
-        elif trackingCamera.type == 'camera-connector':
-            rsCamDev = OpencvCapture(int(
-                trackingCamera.endpoint)) if vtc.tracking_method == ObjectTrackingMethod.ARUCO else None
+        rsCamDev = RealsenseCapture(trackingCamera.endpoint) if trackingCamera.type == 'realsense-camera' else (OpencvCapture(int(
+            trackingCamera.endpoint)) if trackingCamera.type == 'camera-connector' else None)
+        assert rsCamDev is not None, 'camera type error'
 
-        if rsCamDev is None:
-            print('camera type error')
-            continue
+        rsCamDev.prepare()
+
+        # if trackingCamera.type == 'realsense-camera':
+        #     rsCamDev = RealsenseCapture(trackingCamera.endpoint)
+        #     # set to apply post-filters
+        #     rsCamDev.set_flag_filters(True)
+        #     rsCamDev.prepare_filters()
+        # elif trackingCamera.type == 'camera-connector':
+        #     rsCamDev = OpencvCapture(int(
+        #         trackingCamera.endpoint)) if vtc.tracking_method == ObjectTrackingMethod.ARUCO else None
 
         # create a video capture object and start
         vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth,
@@ -127,7 +129,10 @@ if __name__ == '__main__':
         vtc.handeye = trackingCamera.handEyeMatrix
 
         # create aurco mark tracker object
-        objTracker = MrcnnObjectTracker()
+        objTracker = MrcnnObjectTracker() if vtc.tracking_method == ObjectTrackingMethod.MRCNN else ArucoMarkerTracker(
+        ) if vtc.tracking_method == ObjectTrackingMethod.ARUCO else None
+        assert objTracker is not None
+
         # TODO: change fucntion parameters for the comparability of ArucoObjectTracker
         objTracker.initialize(
             AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist, vtc.handeye)
@@ -165,24 +170,19 @@ if __name__ == '__main__':
         print('Trackable Marks')
         print(trackableMark.endpoint, ', ', trackableMark.poseOffset)
 
-        if vtc.tracking_method == ObjectTrackingMethod.MRCNN:
-            # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
-            obj = MrcnnObject(
-                trackableMark.endpoint, trackableMark.poseOffset)
-            for vtc in vtcList:
-                vtc.objectMarkTracker.setTrackingObject(obj)
-        elif vtc.tracking_method == ObjectTrackingMethod.ARUCO:
-            # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
-            obj = ArucoMarkerObject(
-                int(trackableMark.endpoint), trackableMark.poseOffset)
-            for vtc in vtcList:
-                vtc.objectMarkTracker.setTrackingObject(obj)
-        else:
-            pass
+        # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
+        obj = MrcnnObject(trackableMark.endpoint, trackableMark.poseOffset) if vtc.tracking_method == ObjectTrackingMethod.MRCNN else ArucoMarkerObject(
+            int(trackableMark.endpoint), trackableMark.poseOffset) if vtc.tracking_method == ObjectTrackingMethod.ARUCO else None
+        assert obj is not None, 'trackable object not defined'
 
+        for vtc in vtcList:
+            vtc.objectMarkTracker.setTrackingObject(obj)
+
+    #########################################################################
     # create key handler
     keyhandler = ObjectTrackingKeyHandler()
 
+    #########################################################################
     # prepare object update status
     objStatusUpdate = ObjectUpdateStatus(gqlDataClient.client)
 
@@ -194,10 +194,8 @@ if __name__ == '__main__':
 
             for vtc in vtcList:
                 # get a frame
-                if vtc.tracking_method == ObjectTrackingMethod.ARUCO:
-                    color_image = vtc.vcap.getFrame()
-                elif vtc.tracking_method == ObjectTrackingMethod.MRCNN:
-                    (color_image, depth_image) = vcap.getFrame()
+                color_image = vtc.vcap.getFrame()
+                assert color_image is not None, 'no captured frame'
 
                 # check if core variables are available..
                 if (vtc.tracking_method == ObjectTrackingMethod.ARUCO):
@@ -241,12 +239,12 @@ if __name__ == '__main__':
                 #     cv2.rectangle(
                 #         color_image, (ROIRegion[0], ROIRegion[1]), (ROIRegion[2], ROIRegion[3]), (255, 0, 0), 3)
 
-                # display a video by half of original size
+                # display a frame image
                 if vtc.tracking_method == ObjectTrackingMethod.ARUCO:
-                    color_image_half = cv2.resize(color_image, (960, 540))
+                    color_image_half = cv2.resize(
+                        color_image, (AppConfig.VideoFrameWidth/2, AppConfig.VideoFrameHeight/2)) if AppConfig.VideoFrameWidth > 100 else color_image
                     cv2.imshow(vtc.name, color_image_half)
                 else:
-                    # TODO: need to show the depth image here?
                     # BGR to RGB for opencv imshow function
                     color_image_view = cv2.cvtColor(
                         color_image, cv2.COLOR_RGB2BGR)

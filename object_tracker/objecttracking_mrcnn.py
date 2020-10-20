@@ -20,13 +20,15 @@ class MrcnnObject:
 
 
 class MrcnnObjectTracker(ObjectTracker):
-    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201006T1521/mask_rcnn_object-train_0047.h5"
-    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201016T2305/mask_rcnn_object-train_0035.h5"
-    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201017T1422/mask_rcnn_object-train_0043.h5"
-    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201017T1713/mask_rcnn_object-train_0094.h5"
-    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201017T2218/mask_rcnn_object-train_0150.h5"
-    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201018T1104/mask_rcnn_object-train_0200.h5"
-    OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201018T2110/mask_rcnn_object-train_0100.h5"
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201006T1521/mask_rcnn_object-train_0047.h5"
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201016T2305/mask_rcnn_object-train_0035.h5"
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201017T1422/mask_rcnn_object-train_0043.h5"
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201017T1713/mask_rcnn_object-train_0094.h5"
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201017T2218/mask_rcnn_object-train_0150.h5"
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201018T1104/mask_rcnn_object-train_0200.h5"
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201018T2110/mask_rcnn_object-train_0100.h5"
+    OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201019T1829/mask_rcnn_object-train_0132.h5"
+
     LOGS_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs"
 
     def __init__(self):
@@ -81,50 +83,49 @@ class MrcnnObjectTracker(ObjectTracker):
 
             self.scores_list = self.maskdetect.get_scores()
 
-            for markerObject in self.markerObjectList:
-                for cpoint in self.center_point_list:
-                    tvec = vtc.vcap.get3DPosition(cpoint[0], cpoint[1])
-                    # print("---------------------------------------------")
-                    # print(vtc.vcap.get3DPosition(cpoint[0], cpoint[1]))
-                    # print("---------------------------------------------")
+            for idx, (markerObject, cpoint) in enumerate(zip(self.markerObjectList, self.center_point_list)):
+                tvec = vtc.vcap.get3DPosition(cpoint[0], cpoint[1])
+                # print("---------------------------------------------")
+                # print(vtc.vcap.get3DPosition(cpoint[0], cpoint[1]))
+                # print("---------------------------------------------")
+                # NOTE: don't need to consider rotation here. we don't have any pose inforation except translation
+                rvec = np.array([0.0, 0.0, 0.0])
 
-                    # NOTE: don't need to consider rotation here. we don't have any pose inforation except translation
-                    rvec = np.array([0.0, 0.0, 0.0])
+                # change a rotation vector to a rotation matrix
+                rotMatrix = np.zeros(shape=(3, 3))
 
-                    # change a rotation vector to a rotation matrix
-                    rotMatrix = np.zeros(shape=(3, 3))
+                cv2.Rodrigues(rvec, rotMatrix)
 
-                    cv2.Rodrigues(rvec, rotMatrix)
+                # make a homogeneous matrix using a rotation matrix and a translation matrix
+                hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec)
 
-                    # make a homogeneous matrix using a rotation matrix and a translation matrix
-                    hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec)
+                if vtc.camObjOffset is not None:
+                    offsetPoint = markerObject.pivotOffset + vtc.camObjOffset
+                else:
+                    offsetPoint = markerObject.pivotOffset
 
-                    if vtc.camObjOffset is not None:
-                        offsetPoint = markerObject.pivotOffset + vtc.camObjOffset
-                    else:
-                        offsetPoint = markerObject.pivotOffset
+                # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
+                hmWanted = HMUtil.convertXYZABCtoHMDeg(
+                    offsetPoint) if offsetPoint is not None else np.eye(4)
+                hmInput = np.dot(hmCal2Cam, hmWanted)
 
-                    # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
-                    hmWanted = HMUtil.convertXYZABCtoHMDeg(
-                        offsetPoint) if offsetPoint is not None else np.eye(4)
-                    hmInput = np.dot(hmCal2Cam, hmWanted)
+                # get a final position
+                hmResult = np.dot(self.handEyeMat, hmInput)
+                xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
 
-                    # get a final position
-                    hmResult = np.dot(self.handEyeMat, hmInput)
-                    xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
+                # this conversion is moved to Operato, but come back by making robot move policy consistent
+                if xyzuvw != None:
+                    [x, y, z, u, v, w] = xyzuvw
+                    # indy7 base position to gripper position
+                    # xyzuvw = [x, y, z, u*(-1), v+180.0, w]
+                    # NOTE: using the fixed rotation information
+                    xyzuvw = [x, y, z, 180.0, 0.0, 180.0]
 
-                    # this conversion is moved to Operato, but come back by making robot move policy consistent
-                    if xyzuvw != None:
-                        [x, y, z, u, v, w] = xyzuvw
-                        # indy7 base position to gripper position
-                        #xyzuvw = [x, y, z, u*(-1), v+180.0, w]
-                        xyzuvw = [x, y, z, 180.0, 0.0, 180.0]
+                # set final target position..
+                markerObject.targetPos = xyzuvw
 
-                    # set final target position..
-                    markerObject.targetPos = xyzuvw
-
-                    # append this object to the list to be returned
-                    resultList.append(markerObject)
+                # append this object to the list to be returned
+                resultList.append(markerObject)
         else:
             pass
 
@@ -147,7 +148,7 @@ class MrcnnObjectTracker(ObjectTracker):
 
         for idx, (cpoint, score) in enumerate(zip(self.center_point_list, self.scores_list)):
             print(idx, (cpoint, score))
-            cv2.putText(color_image, '%0.3f' % score, cpoint, font,
+            cv2.putText(color_image, '%0.8f' % score, cpoint, font,
                         fontScale, fontColor, lineType)
 
     def getScoresList(self):

@@ -64,6 +64,10 @@ class RealsenseCapture(CameraDev):
         # create an align object based on color frames
         self.__align = rs.align(rs.stream.color)
 
+    def prepare(self):
+        self.set_flag_filters(True)
+        self.prepare_filters()
+
     def startCapture(self):
         # start streaming
         self.__pipecfg = self.__pipeline.start(self.__config)
@@ -107,7 +111,8 @@ class RealsenseCapture(CameraDev):
         depth_image = np.asanyarray(self.aligned_depth_frame.get_data())
         color_image = np.asanyarray(color_frame.get_data())
 
-        return (color_image, depth_image)
+        return color_image
+        # return (color_image, depth_image)
 
         # # Remove background - Set pixels further than clipping_distance to grey
         # color_image_outofdist = None
