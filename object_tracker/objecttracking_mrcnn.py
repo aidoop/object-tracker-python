@@ -57,10 +57,16 @@ class MrcnnObjectTracker(ObjectTracker):
         self.markerObjectList.append(object)
 
     def getTrackingObjectList(self):
-        return self.markerObjectList if vtc.camObjOffset is not None:
-                    offsetPoint = markerObject.pivotOffset + vtc.camObjOffset
-                else:
-                    offsetPoint = markerObject.pivotOffset
+        return self.markerObjectList
+
+    def getTrackingObjIDList(self):
+        return self.markerObjIDList
+
+    # set detectable features and return the 2D or 3D positons in case that objects are detected..
+    def findObjects(self, *args):
+        color_image = args[0]
+        vtc = args[1]
+        gripperOffset = args[2]
         # prepare list to give over the result objects
         resultList = list()
 

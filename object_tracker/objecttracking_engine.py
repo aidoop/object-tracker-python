@@ -9,40 +9,29 @@ import numpy as np
 from enum import Enum, unique
 
 from aidobjtrack.config.appconfig import AppConfig
-from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
-from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
-from aidobjtrack.camera.camera_videocapture import VideoCapture
-from aidobjtrack.util.util import ObjectTrackerErrMsg, ObjectTypeCheck
-from aidobjtrack.data_update.objecttracking_updatestatus import ObjectUpdateStatus
+from objecttracking_app_data import ObjectTrakcingAppData, ObjectTrackingMethod
 from aidobjtrack.keyhandler.objecttracking_keyhandler import ObjectTrackingKeyHandler
-from aidobjtrack.visiongql.visiongql_client import VisonGqlDataClient
+from aidobjtrack.data_update.objecttracking_updatestatus import ObjectUpdateStatus
+from aidobjtrack.util.util import ObjectTrackerErrMsg
 
-from objecttracking_aurco import ArucoMarkerObject, ArucoMarkerTracker
-from objecttracking_mrcnn import MrcnnObject, MrcnnObjectTracker
-from objecttracking_roimgr_retangle import ROIRetangleManager
-
-# mask rcnn detector
-from mrcnn import object_detect as mo
-
-
-@unique
-class ObjectTrackingMethod(Enum):
-    ARUCO = 1
-    MRCNN = 2
+# @unique
+# class ObjectTrackingMethod(Enum):
+#     ARUCO = 1
+#     MRCNN = 2
 
 
-class ObjectTrakcingData:
-    # set trakcing method
-    tracking_method = ObjectTrackingMethod.MRCNN
-    name = None
-    robotName = None
-    vcap = None
-    mtx = None
-    dist = None
-    ROIMgr = None
-    objectMarkTracker = None
-    handeye = None
-    camObjOffset = None
+# class ObjectTrakcingData:
+#     # set trakcing method
+#     tracking_method = ObjectTrackingMethod.MRCNN
+#     name = None
+#     robotName = None
+#     vcap = None
+#     mtx = None
+#     dist = None
+#     ROIMgr = None
+#     objectMarkTracker = None
+#     handeye = None
+#     camObjOffset = None
 
 
 ###############################################################################
@@ -51,132 +40,13 @@ class ObjectTrakcingData:
 ###############################################################################
 if __name__ == '__main__':
 
-    # TODO: get object, camera workspace from gql server
-    gqlDataClient = VisonGqlDataClient()
-    if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
+    # create application data
+    app_data = ObjectTrakcingAppData()
+    if app_data.connect_server('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') == False:
         print("Can't connect operato vision server.")
         sys.exit()
 
-    # get gql data for a workspace
-    if AppConfig.ObjTrackingDebugMode == False:
-        gqlDataClient.fetchVisionWorkspace()
-    else:
-        gqlDataClient.fetchTrackingCamerasAll()
-        gqlDataClient.fetchRobotArmsAll()
-        gqlDataClient.fetchTrackableMarksAll()
-
-    #####################################
-    # application data list
-    # vistion tracking camera object list
-    vtcList = list()
-    # vision robot arm list
-    raList = list()
-
-    #########################################################################
-    # intitialize tracking cameras & video capture object
-    # TODO: need to make these codes short and smart
-    idx = 0
-    camKeys = gqlDataClient.trackingCameras.keys()
-    for camKey in camKeys:
-        # get gql camera information
-        trackingCamera = gqlDataClient.trackingCameras[camKey]
-
-        # create camera object
-        vtc = ObjectTrakcingData()
-
-        # set camera name
-        vtc.name = trackingCamera.name
-
-        # set robot name
-        if ObjectTypeCheck.checkValueIsAvail(trackingCamera.baseRobotArm) == False:
-            print("robot arm is not detected..")
-            continue
-        vtc.robotName = trackingCamera.baseRobotArm['name']
-
-        # set camera endpoint
-        # endpoint = int(trackingCamera.endpoint)
-
-        rsCamDev = RealsenseCapture(trackingCamera.endpoint) if trackingCamera.type == 'realsense-camera' else (OpencvCapture(int(
-            trackingCamera.endpoint)) if trackingCamera.type == 'camera-connector' else None)
-        assert rsCamDev is not None, 'camera type error'
-
-        rsCamDev.prepare()
-
-        # if trackingCamera.type == 'realsense-camera':
-        #     rsCamDev = RealsenseCapture(trackingCamera.endpoint)
-        #     # set to apply post-filters
-        #     rsCamDev.set_flag_filters(True)
-        #     rsCamDev.prepare_filters()
-        # elif trackingCamera.type == 'camera-connector':
-        #     rsCamDev = OpencvCapture(int(
-        #         trackingCamera.endpoint)) if vtc.tracking_method == ObjectTrackingMethod.ARUCO else None
-
-        # create a video capture object and start
-        vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth,
-                            AppConfig.VideoFrameHeight, AppConfig.VideoFramePerSec, vtc.name)
-        if vcap == None:
-            continue
-        vcap.start()
-        vtc.vcap = vcap
-
-        # set camera matrix and distortion coefficients
-        mtx = trackingCamera.cameraMatrix
-        dist = trackingCamera.distCoeff
-        vtc.mtx = mtx
-        vtc.dist = dist
-
-        # set hand eye matrix
-        vtc.handeye = trackingCamera.handEyeMatrix
-
-        # create aurco mark tracker object
-        objTracker = MrcnnObjectTracker() if vtc.tracking_method == ObjectTrackingMethod.MRCNN else ArucoMarkerTracker(
-        ) if vtc.tracking_method == ObjectTrackingMethod.ARUCO else None
-        assert objTracker is not None
-
-        # TODO: change fucntion parameters for the comparability of ArucoObjectTracker
-        objTracker.initialize(
-            AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist, vtc.handeye)
-        vtc.objectMarkTracker = objTracker
-
-        # initialize ROI manager
-        ROIMgr = ROIRetangleManager()
-        for ROIData in trackingCamera.ROIs:
-            ROIInput = [ROIData.tl[0], ROIData.tl[1],
-                        ROIData.rb[0], ROIData.rb[1], ROIData.id]
-            ROIMgr.appendROI(ROIInput)
-        vtc.ROIMgr = ROIMgr
-
-        vtc.camObjOffset = trackingCamera.camObjOffset
-
-        # setup an opencv window
-        # cv2.namedWindow(vtc.name, cv2.WINDOW_NORMAL)
-        # cv2.setWindowProperty(vtc.name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-
-        vtcList.append(vtc)
-        idx += 1
-
-    #########################################################################
-    # initialize robot arms
-    robotArmKeys = gqlDataClient.robotArms.keys()
-    for robotArmKey in robotArmKeys:
-        robotArm = gqlDataClient.robotArms[robotArmKey]
-        raList.append(robotArm)
-
-    #########################################################################
-    # intialize trackable marks.
-    trackableMarkKeys = gqlDataClient.trackableObjects.keys()
-    for trackableMarkKey in trackableMarkKeys:
-        trackableMark = gqlDataClient.trackableObjects[trackableMarkKey]
-        print('Trackable Marks')
-        print(trackableMark.endpoint, ', ', trackableMark.poseOffset)
-
-        # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
-        obj = MrcnnObject(trackableMark.endpoint, trackableMark.poseOffset) if vtc.tracking_method == ObjectTrackingMethod.MRCNN else ArucoMarkerObject(
-            int(trackableMark.endpoint), trackableMark.poseOffset) if vtc.tracking_method == ObjectTrackingMethod.ARUCO else None
-        assert obj is not None, 'trackable object not defined'
-
-        for vtc in vtcList:
-            vtc.objectMarkTracker.setTrackingObject(obj)
+    app_data.parse()
 
     #########################################################################
     # create key handler
@@ -184,21 +54,22 @@ if __name__ == '__main__':
 
     #########################################################################
     # prepare object update status
-    objStatusUpdate = ObjectUpdateStatus(gqlDataClient.client)
+    objStatusUpdate = ObjectUpdateStatus(app_data.get_gql_client())
 
     try:
         while(True):
 
             # get markable object
-            tobjIDList = vtc.objectMarkTracker.getTrackingObjIDList().copy()
+            tobjIDList = app_data.get_mark_id_list_of_camera(0).copy()
 
+            vtcList = app_data.get_camera_list()
             for vtc in vtcList:
                 # get a frame
                 color_image = vtc.vcap.getFrame()
                 assert color_image is not None, 'no captured frame'
 
                 # check if core variables are available..
-                if (vtc.tracking_method == ObjectTrackingMethod.ARUCO):
+                if (app_data.tracking_method == ObjectTrackingMethod.ARUCO):
                     if (ObjectTrackerErrMsg.checkValueIsNone(vtc.mtx, "camera matrix") == False) or (ObjectTrackerErrMsg.checkValueIsNone(vtc.dist, "distortion coeff.") == False):
                         break
                 if ObjectTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
@@ -207,8 +78,9 @@ if __name__ == '__main__':
                     break
 
                 # find a robot arm related with the current camera.
+                raList = app_data.robot_arm_list
                 for ra in raList:
-                    if ra.name == vtc.robotName:
+                    if ra.name == vtc.robot_name:
                         # detect markers here..
                         resultObjs = vtc.objectMarkTracker.findObjects(
                             color_image, vtc, ra.gripperOffset)
@@ -240,10 +112,10 @@ if __name__ == '__main__':
                 #         color_image, (ROIRegion[0], ROIRegion[1]), (ROIRegion[2], ROIRegion[3]), (255, 0, 0), 3)
 
                 # display a frame image
-                if vtc.tracking_method == ObjectTrackingMethod.ARUCO:
+                if app_data.tracking_method == ObjectTrackingMethod.ARUCO:
                     color_image_half = cv2.resize(
                         color_image, (AppConfig.VideoFrameWidth/2, AppConfig.VideoFrameHeight/2)) if AppConfig.VideoFrameWidth > 100 else color_image
-                    cv2.imshow(vtc.name, color_image_half)
+                    cv2.imshow(vtc.camera_name, color_image_half)
                 else:
                     # BGR to RGB for opencv imshow function
                     color_image_view = cv2.cvtColor(
@@ -261,7 +133,7 @@ if __name__ == '__main__':
 
                     # display both color image and mask image
                     images = np.hstack((color_image_view, sub_image))
-                    cv2.imshow(vtc.name, images)
+                    cv2.imshow(vtc.camera_name, images)
 
             # send object information to UI and clear all
             # if objStatusUpdate.containsObjStatus() == True:
@@ -269,7 +141,7 @@ if __name__ == '__main__':
             objStatusUpdate.clearObjStatus()
 
             # sleep for the specified duration.
-            if vtc.tracking_method == ObjectTrackingMethod.ARUCO:
+            if app_data.tracking_method == ObjectTrackingMethod.ARUCO:
                 time.sleep(0.2)
 
             # handle key inputs

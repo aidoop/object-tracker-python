@@ -23,6 +23,9 @@ class VisonGqlDataClient:
         self.client.signin(id, pw)
         return (self.client.access_token is not None)
 
+    def get_client(self):
+        return self.client
+
     def fetchTrackingCameras(self, cameras):
         for camera in cameras:
             name = camera['name']
