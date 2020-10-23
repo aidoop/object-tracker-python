@@ -10,7 +10,7 @@ from aidobjtrack.visiongql import visiongql_client, visiongql_data
 from aidobjtrack.robot import robot_dev_indydcp
 from aidobjtrack.util.hm_util import HMUtil
 
-from mrcnn import object_detect as mo
+from mrcnn import inference as mo
 
 
 class GlobalData:

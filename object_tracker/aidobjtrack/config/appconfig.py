@@ -1,8 +1,18 @@
 import cv2
 import cv2.aruco as aruco
+from enum import Enum, unique
+
+
+@unique
+class ObjectTrackingMethod(Enum):
+    ARUCO = 1
+    MRCNN = 2
 
 
 class AppConfig:
+
+    APP_TRACKING_METHOD = ObjectTrackingMethod.MRCNN
+
     # robot parameters
     #INDY_SERVER_IP = "192.168.0.104"
     INDY_SERVER_IP = "192.168.0.207"
@@ -10,8 +20,10 @@ class AppConfig:
 
     # realsense camera parameters
     UseRealSenseInternalMatrix = False
-    VideoFrameWidth = 848
-    VideoFrameHeight = 480
+
+    VideoFrameWidth = 1920 if APP_TRACKING_METHOD is ObjectTrackingMethod.ARUCO else 848
+    VideoFrameHeight = 1080 if APP_TRACKING_METHOD is ObjectTrackingMethod.ARUCO else 480
+
     VideoFramePerSec = 30
 
     # default aruco parameters

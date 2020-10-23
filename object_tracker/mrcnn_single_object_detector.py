@@ -57,21 +57,28 @@ class TrainConfig(Config):
     NUM_CLASSES = 1 + 1  # Background + balloon
 
     # Number of training steps per epoch
-    # STEPS_PER_EPOCH = 529 # delbox2
-    # STEPS_PER_EPOCH = 382  # delbox2_1
-    STEPS_PER_EPOCH = 593  # delbox2_2
-
-    # Skip detections with < 90% confidence
-    DETECTION_MIN_CONFIDENCE = 0.9
+    # STEPS_PER_EPOCH = 529     # delbox2
+    # STEPS_PER_EPOCH = 382     # delbox2_1
+    # STEPS_PER_EPOCH = 643       # delbox2_2
+    # STEPS_PER_EPOCH = 173       # delbox3
+    # STEPS_PER_EPOCH = 675       # delbox4
+    STEPS_PER_EPOCH = 579       # delbox5
 
     # Maximum number of ground truth instances to use in one image
     MAX_GT_INSTANCES = 100
 
     # Maximum number of epoch
-    MAX_EPOCH_COUNT = 50
+    MAX_EPOCH_COUNT = 100
 
     # Train Layer
-    TRAIN_LAYER_RANGE = '5+'  # [jin] in ['all' '3+', '4+', '5+', 'heads']
+    TRAIN_LAYER_RANGE = 'all'  # [jin] in ['all' '3+', '4+', '5+', 'heads']
+
+    # Backbone network architecture
+    # Supported values are: resnet50, resnet101.
+    # You can also provide a callable that should have the signature
+    # of model.resnet_graph. If you do so, you need to supply a callable
+    # to COMPUTE_BACKBONE_SHAPE as well
+    BACKBONE = "resnet50"  # "resnet101" or "resnet50"      # TODO: configurable parameter
 
 
 ############################################################

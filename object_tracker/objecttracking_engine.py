@@ -6,33 +6,12 @@ import os
 import argparse
 import time
 import numpy as np
-from enum import Enum, unique
 
-from aidobjtrack.config.appconfig import AppConfig
-from objecttracking_app_data import ObjectTrakcingAppData, ObjectTrackingMethod
+from aidobjtrack.config.appconfig import AppConfig, ObjectTrackingMethod
+from aidobjtrack.objtracking.objecttracking_app_data import ObjectTrakcingAppData
 from aidobjtrack.keyhandler.objecttracking_keyhandler import ObjectTrackingKeyHandler
 from aidobjtrack.data_update.objecttracking_updatestatus import ObjectUpdateStatus
 from aidobjtrack.util.util import ObjectTrackerErrMsg
-
-# @unique
-# class ObjectTrackingMethod(Enum):
-#     ARUCO = 1
-#     MRCNN = 2
-
-
-# class ObjectTrakcingData:
-#     # set trakcing method
-#     tracking_method = ObjectTrackingMethod.MRCNN
-#     name = None
-#     robotName = None
-#     vcap = None
-#     mtx = None
-#     dist = None
-#     ROIMgr = None
-#     objectMarkTracker = None
-#     handeye = None
-#     camObjOffset = None
-
 
 ###############################################################################
 # Hand-eye calibration process
@@ -114,7 +93,7 @@ if __name__ == '__main__':
                 # display a frame image
                 if app_data.tracking_method == ObjectTrackingMethod.ARUCO:
                     color_image_half = cv2.resize(
-                        color_image, (AppConfig.VideoFrameWidth/2, AppConfig.VideoFrameHeight/2)) if AppConfig.VideoFrameWidth > 100 else color_image
+                        color_image, (int(AppConfig.VideoFrameWidth/2), int(AppConfig.VideoFrameHeight/2))) if AppConfig.VideoFrameWidth > 100 else color_image
                     cv2.imshow(vtc.camera_name, color_image_half)
                 else:
                     # BGR to RGB for opencv imshow function
