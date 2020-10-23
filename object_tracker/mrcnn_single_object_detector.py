@@ -78,7 +78,7 @@ class TrainConfig(Config):
     # You can also provide a callable that should have the signature
     # of model.resnet_graph. If you do so, you need to supply a callable
     # to COMPUTE_BACKBONE_SHAPE as well
-    BACKBONE = "resnet50"  # "resnet101" or "resnet50"      # TODO: configurable parameter
+    BACKBONE = "resnet101"  # "resnet101" or "resnet50"      # TODO: configurable parameter
 
 
 ############################################################
