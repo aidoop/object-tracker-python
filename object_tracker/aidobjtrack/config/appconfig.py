@@ -44,4 +44,4 @@ class AppConfig:
     UseArucoBoard = True
 
     # debug without @things-factory
-    ObjTrackingDebugMode = True
+    ObjTrackingDebugMode = False
