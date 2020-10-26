@@ -71,7 +71,7 @@ class TrainConfig(Config):
     MAX_EPOCH_COUNT = 100
 
     # Train Layer
-    TRAIN_LAYER_RANGE = 'all'  # [jin] in ['all' '3+', '4+', '5+', 'heads']
+    TRAIN_LAYER_RANGE = '3+'  # [jin] in ['all' '3+', '4+', '5+', 'heads']
 
     # Backbone network architecture
     # Supported values are: resnet50, resnet101.

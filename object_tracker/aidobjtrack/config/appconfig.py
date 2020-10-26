@@ -11,7 +11,7 @@ class ObjectTrackingMethod(Enum):
 
 class AppConfig:
 
-    APP_TRACKING_METHOD = ObjectTrackingMethod.MRCNN
+    APP_TRACKING_METHOD = ObjectTrackingMethod.ARUCO
 
     # robot parameters
     #INDY_SERVER_IP = "192.168.0.104"

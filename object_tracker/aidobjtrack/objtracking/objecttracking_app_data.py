@@ -12,7 +12,8 @@ from aidobjtrack.camera.camera_videocapture import VideoCapture
 from aidobjtrack.util.util import ObjectTypeCheck
 from aidobjtrack.visiongql.visiongql_client import VisonGqlDataClient
 from aidobjtrack.objtracking.objecttracking_aurco import ArucoMarkerObject, ArucoMarkerTracker
-from aidobjtrack.objtracking.objecttracking_mrcnn import MrcnnObject, MrcnnObjectTracker
+if AppConfig.APP_TRACKING_METHOD is ObjectTrackingMethod.MRCNN:
+    from aidobjtrack.objtracking.objecttracking_mrcnn import MrcnnObject, MrcnnObjectTracker
 from aidobjtrack.objtracking.objecttracking_roimgr_retangle import ROIRetangleManager
 
 
