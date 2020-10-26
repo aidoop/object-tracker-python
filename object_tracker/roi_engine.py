@@ -56,6 +56,9 @@ if __name__ == '__main__':
     gqlDataClient.fetchTrackingCamerasAll()
     cameraObject = gqlDataClient.trackingCameras[cameraName]
 
+    AppConfig.VideoFrameWidth = cameraObject.width or AppConfig.VideoFrameWidth
+    AppConfig.VideoFrameHeight = cameraObject.height or AppConfig.VideoFrameHeight
+
     if cameraObject.type == 'realsense-camera':
         rsCamDev = RealsenseCapture(cameraObject.endpoint)
     elif cameraObject.type == 'camera-connector':

@@ -54,6 +54,9 @@ if __name__ == '__main__':
 
     cameraObject = gqlDataClient.trackingCameras[cameraName]
 
+    AppConfig.VideoFrameWidth = cameraObject.width
+    AppConfig.VideoFrameHeight = cameraObject.height
+
     robotName = ''
     if cameraObject.baseRobotArm is not None:
         robotName = cameraObject.baseRobotArm['name']

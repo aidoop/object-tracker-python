@@ -38,6 +38,8 @@ class TrackingCamera:
         self.cameraMatrix = None
         self.handEyeMatrix = None
         self.camObjOffset = None
+        self.width = None
+        self.height = None
 
     def setCameraMatrix(self, row, col, inputData):
         self.cameraMatrix = VisionGqlUtil.setMatrixData(row, col, inputData)

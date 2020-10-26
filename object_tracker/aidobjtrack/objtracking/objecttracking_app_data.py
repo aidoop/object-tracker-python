@@ -66,6 +66,8 @@ class ObjectTrakcingAppData:
                 rsCamDev.prepare()
 
                 # create a video capture object and start
+                AppConfig.VideoFrameWidth = trackingCamera.width or AppConfig.VideoFrameWidth
+                AppConfig.VideoFrameHeight = trackingCamera.height or AppConfig.VideoFrameHeight
                 vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth,
                                     AppConfig.VideoFrameHeight, AppConfig.VideoFramePerSec, obj_tracking_camera.camera_name)
                 if vcap == None:

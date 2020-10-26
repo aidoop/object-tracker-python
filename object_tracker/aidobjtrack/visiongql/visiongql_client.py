@@ -1,7 +1,7 @@
 import numpy as np
 
-from aidobjtrack.visiongql.visiongql_data import VisonWorkspace, RobotArm, TrackingCamera, TrackableObject, VisionGqlUtil
-from aidobjtrack.util.util import ObjectTypeCheck
+from visiongql.visiongql_data import VisonWorkspace, RobotArm, TrackingCamera, TrackableObject, VisionGqlUtil
+from etc.util import ObjectTypeCheck
 from visionclient.operato_vision import Client
 
 
@@ -22,9 +22,6 @@ class VisonGqlDataClient:
         self.client = Client(url, domain)
         self.client.signin(id, pw)
         return (self.client.access_token is not None)
-
-    def get_client(self):
-        return self.client
 
     def fetchTrackingCameras(self, cameras):
         for camera in cameras:
@@ -57,6 +54,11 @@ class VisonGqlDataClient:
 
             cameraObject.camObjOffset = VisionGqlUtil.setPoseData(
                 cameraData['camObjOffset'])
+
+            cameraObject.width = int(
+                cameraData['width']) if cameraData['width'] is not None else 1920
+            cameraObject.height = int(
+                cameraData['height']) if cameraData['height'] is not None else 1080
 
             self.trackingCameras[name] = cameraObject
 

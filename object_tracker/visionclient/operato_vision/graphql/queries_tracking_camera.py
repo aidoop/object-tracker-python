@@ -51,7 +51,9 @@ query trackingCamera($name: String!) {
             u
             v
             w
-        }        
+        }    
+        width
+        height            
         updater {
             email
         }
