@@ -72,7 +72,7 @@ if __name__ == '__main__':
     #     sys.exit()
 
     # create a window to display video frames
-    cv2.namedWindow(cameraName)
+    # cv2.namedWindow(cameraName)
 
     # create a variable for frame indexing
     flagFindMainAruco = False

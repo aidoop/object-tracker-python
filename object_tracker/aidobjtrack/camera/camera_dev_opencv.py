@@ -34,6 +34,7 @@ class OpencvCapture(CameraDev):
         self._framePerSec = fps
 
         # set opencv videocapture properties for width, height and fps
+        self.__videoCapture.set(cv2.CAP_PROP_AUTOFOCUS, 0)
         self.__videoCapture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.__videoCapture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         self.__videoCapture.set(cv2.CAP_PROP_FPS, fps)
