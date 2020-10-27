@@ -45,7 +45,9 @@ if __name__ == '__main__':
             for vtc in vtcList:
                 # get a frame
                 color_image = vtc.vcap.getFrame()
-                assert color_image is not None, 'no captured frame'
+                # assert color_image is not None, 'no captured frame'
+                if color_image is None:
+                    continue
 
                 # check if core variables are available..
                 if (app_data.tracking_method == ObjectTrackingMethod.ARUCO):
@@ -132,7 +134,8 @@ if __name__ == '__main__':
         print("Error :", ex)
 
     finally:
-        for vtc in vtcList:
-            vtc.vcap.stop()
+        if vtcList is not None:
+            for vtc in vtcList:
+                vtc.vcap.stop()
 
     cv2.destroyAllWindows()

@@ -135,8 +135,8 @@ class ObjectTrakcingAppData:
             print("application data parsing error :", ex)
 
     def get_mark_id_list_of_camera(self, cam_indx):
-        assert len(self.obj_tracking_camera_list) > 0
-        return self.obj_tracking_camera_list[cam_indx].objectMarkTracker.getTrackingObjIDList()
+        # assert len(self.obj_tracking_camera_list) > 0
+        return self.obj_tracking_camera_list[cam_indx].objectMarkTracker.getTrackingObjIDList() if len(self.obj_tracking_camera_list) > 0 else self.obj_tracking_camera_list
 
     def get_gql_client(self):
         return self.gqlDataClient.get_client()
