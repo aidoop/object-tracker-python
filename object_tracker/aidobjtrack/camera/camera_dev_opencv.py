@@ -38,6 +38,9 @@ class OpencvCapture(CameraDev):
         self.__videoCapture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.__videoCapture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         self.__videoCapture.set(cv2.CAP_PROP_FPS, fps)
+        if width > 1920:
+            fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
+            self.__videoCapture.set(cv2.CAP_PROP_FOURCC, fourcc)
 
     def prepare(self):
         pass

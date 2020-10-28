@@ -19,7 +19,7 @@ class CalibrationCamera:
         self.chessboardY = chessboardY
 
         # reprojection error criterion
-        self.REPROERR_CRITERION = 1.0
+        self.REPROERR_CRITERION = 2.0
 
     def calcuateCameraMatrix(self, images):
         # opencv algorithm termination criteria
