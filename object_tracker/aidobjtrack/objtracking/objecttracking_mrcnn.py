@@ -20,25 +20,25 @@ class MrcnnObject:
 
 
 class MrcnnObjectTracker(ObjectTracker):
-    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201017T1422/mask_rcnn_object-train_0043.h5"
-    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201017T1713/mask_rcnn_object-train_0094.h5"
-    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201017T2218/mask_rcnn_object-train_0150.h5"
-    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201018T1104/mask_rcnn_object-train_0200.h5"
-    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201018T2110/mask_rcnn_object-train_0100.h5"
-    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201019T1829/mask_rcnn_object-train_0132.h5"
-    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201022T0658/mask_rcnn_object-train_0080.h5" # bad
-    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201022T2147/mask_rcnn_object-train_0089.h5"
-    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201022T2147/mask_rcnn_object-train_0089.h5"
-    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201023T0653/mask_rcnn_object-train_0050.h5"
-    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201023T1430/mask_rcnn_object-train_0093.h5"
-    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201024T0922/mask_rcnn_object-train_0097.h5"
-    OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201024T2354/mask_rcnn_object-train_0073.h5"
-    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201025T1253/mask_rcnn_object-train_0099.h5"
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201017T1422/mask_rcnn_object-train_0043.h5"
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201017T1713/mask_rcnn_object-train_0094.h5"
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201017T2218/mask_rcnn_object-train_0150.h5"
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201018T1104/mask_rcnn_object-train_0200.h5"
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201018T2110/mask_rcnn_object-train_0100.h5"
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201019T1829/mask_rcnn_object-train_0132.h5"
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201022T0658/mask_rcnn_object-train_0080.h5" # bad
+    # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201022T2147/mask_rcnn_object-train_0089.h5"
+    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201022T2147/mask_rcnn_object-train_0089.h5"
+    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201023T0653/mask_rcnn_object-train_0050.h5"
+    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201023T1430/mask_rcnn_object-train_0093.h5"
+    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201024T0922/mask_rcnn_object-train_0097.h5"
+    OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201024T2354/mask_rcnn_object-train_0073.h5"
+    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201025T1253/mask_rcnn_object-train_0099.h5"
 
     # a candidate <-- [base: DelBox2_2] 단일 박스는 잘 인식되는 것으로 보임. 박스의 종류를 늘리면 추가적인 박스에도 적응할 것으로 예상.
-    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201020T1933/mask_rcnn_object-train_0179.h5"
+    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201020T1933/mask_rcnn_object-train_0179.h5"
 
-    LOGS_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs"
+    LOGS_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs"
 
     def __init__(self):
         self.markerObjectList = []
