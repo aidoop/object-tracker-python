@@ -16,6 +16,7 @@ query trackingWorkspace($name: String!) {
         type
         endpoint
         active
+        detectionMethod
         robotArms {
             id
             name
@@ -66,6 +67,7 @@ query {
             type
             endpoint
             active
+            detectionMethod
             robotArms {
                 id
                 name

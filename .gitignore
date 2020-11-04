@@ -136,8 +136,7 @@ dmypy.json
 .pyre/
 
 # generated files
-.vscode/launch.json
-.vscode/settings.json
+.vscode/
 CalibCamResult*.json
 HandEyeCalibResult.json
 ROIRegions*.json

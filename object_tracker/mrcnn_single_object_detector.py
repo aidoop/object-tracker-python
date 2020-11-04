@@ -62,16 +62,18 @@ class TrainConfig(Config):
     # STEPS_PER_EPOCH = 643       # delbox2_2
     # STEPS_PER_EPOCH = 173       # delbox3
     # STEPS_PER_EPOCH = 675       # delbox4
-    STEPS_PER_EPOCH = 579       # delbox5
+    # STEPS_PER_EPOCH = 511       # delbox6
+    # STEPS_PER_EPOCH = 719         # delbox7
+    STEPS_PER_EPOCH = 1634         # delbox8
 
     # Maximum number of ground truth instances to use in one image
     MAX_GT_INSTANCES = 100
 
     # Maximum number of epoch
-    MAX_EPOCH_COUNT = 100
+    MAX_EPOCH_COUNT = 200
 
     # Train Layer
-    TRAIN_LAYER_RANGE = '3+'  # [jin] in ['all' '3+', '4+', '5+', 'heads']
+    TRAIN_LAYER_RANGE = '4+'  # [jin] in ['all' '3+', '4+', '5+', 'heads']
 
     # Backbone network architecture
     # Supported values are: resnet50, resnet101.

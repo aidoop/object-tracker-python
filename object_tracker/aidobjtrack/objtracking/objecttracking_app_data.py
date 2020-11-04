@@ -12,15 +12,13 @@ from aidobjtrack.camera.camera_videocapture import VideoCapture
 from aidobjtrack.util.util import ObjectTypeCheck
 from aidobjtrack.visiongql.visiongql_client import VisonGqlDataClient
 from aidobjtrack.objtracking.objecttracking_aurco import ArucoMarkerObject, ArucoMarkerTracker
-if AppConfig.APP_TRACKING_METHOD is ObjectTrackingMethod.MRCNN:
-    from aidobjtrack.objtracking.objecttracking_mrcnn import MrcnnObject, MrcnnObjectTracker
 from aidobjtrack.objtracking.objecttracking_roimgr_retangle import ROIRetangleManager
 
 
-class ObjectTrakcingAppData:
+class ObjectTrakcingAppData(object):
 
     def __init__(self):
-        # set trakcing method
+        # set trakcing method-
         self.tracking_method = AppConfig.APP_TRACKING_METHOD
         self.gqlDataClient = VisonGqlDataClient()
 
@@ -39,6 +37,11 @@ class ObjectTrakcingAppData:
                 self.gqlDataClient.fetchTrackingCamerasAll()
                 self.gqlDataClient.fetchRobotArmsAll()
                 self.gqlDataClient.fetchTrackableMarksAll()
+
+            self.tracking_method = self.get_detection_method(
+                self.gqlDataClient.detectionMethod)
+            if self.tracking_method == ObjectTrackingMethod.MRCNN:
+                from aidobjtrack.objtracking.objecttracking_mrcnn import MrcnnObject, MrcnnObjectTracker
 
             ###############################################################################
             # most of data is based on camera connector of operato-robotics
@@ -66,8 +69,8 @@ class ObjectTrakcingAppData:
                 rsCamDev.prepare()
 
                 # create a video capture object and start
-                AppConfig.VideoFrameWidth = trackingCamera.width if AppConfig.APP_TRACKING_METHOD is ObjectTrackingMethod.ARUCO else AppConfig.VideoFrameWidth
-                AppConfig.VideoFrameHeight = trackingCamera.height if AppConfig.APP_TRACKING_METHOD is ObjectTrackingMethod.ARUCO else AppConfig.VideoFrameHeight
+                AppConfig.VideoFrameWidth = trackingCamera.width if self.tracking_method is ObjectTrackingMethod.ARUCO else AppConfig.VideoFrameWidth
+                AppConfig.VideoFrameHeight = trackingCamera.height if self.tracking_method is ObjectTrackingMethod.ARUCO else AppConfig.VideoFrameHeight
                 vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth,
                                     AppConfig.VideoFrameHeight, AppConfig.VideoFramePerSec, obj_tracking_camera.camera_name)
                 if vcap == None:
@@ -146,6 +149,13 @@ class ObjectTrakcingAppData:
 
     def get_tracking_mode(self):
         return self.tracking_method
+
+    def get_detection_method(self, input_method_string):
+        for method in ObjectTrackingMethod:
+            if method.value == input_method_string:
+                return method
+        # return default detection method
+        return AppConfig.APP_TRACKING_METHOD
 
     class ObjectTrakcingCamera:
 

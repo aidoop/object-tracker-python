@@ -5,8 +5,8 @@ from enum import Enum, unique
 
 @unique
 class ObjectTrackingMethod(Enum):
-    ARUCO = 1
-    MRCNN = 2
+    ARUCO = 'ARUCO'
+    MRCNN = 'MaskRCNN'
 
 
 class AppConfig:

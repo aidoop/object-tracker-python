@@ -9,6 +9,7 @@ class VisonGqlDataClient:
 
     def __init__(self):
         self.visonWorkspace = None
+        self.detectionMethod = None
         self.robotArms = dict()
         self.trackingCameras = dict()
         self.trackableObjects = dict()
@@ -123,6 +124,9 @@ class VisonGqlDataClient:
 
         # set the properties of vision workspace
         self.visonWorkspace.name = vision_workspace['name']
+
+        # fetch detection methond
+        self.detectionMethod = vision_workspace['detectionMethod']
 
         # fetch robot arms
         robot_arms = vision_workspace['robotArms']
