@@ -96,7 +96,7 @@ class MrcnnObjectTracker(ObjectTracker):
 
             self.center_point_list = self.maskdetect.get_center_points(
                 mask_list)
-            print('center point: ', self.center_point_list)
+            # print('center point: ', self.center_point_list)
 
             self.scores_list = self.maskdetect.get_scores()
             assert self.scores_list is not None or self.center_point_list is not None
@@ -163,7 +163,7 @@ class MrcnnObjectTracker(ObjectTracker):
         lineType = 1
 
         for idx, (cpoint, score) in enumerate(zip(self.center_point_list, self.scores_list)):
-            print(idx, (cpoint, score))
+            # print(idx, (cpoint, score))
             cv2.putText(color_image, '%0.8f' % score, cpoint, font,
                         fontScale, fontColor, lineType)
 
