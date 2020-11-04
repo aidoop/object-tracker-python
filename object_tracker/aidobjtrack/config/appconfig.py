@@ -21,8 +21,9 @@ class AppConfig:
     # realsense camera parameters
     UseRealSenseInternalMatrix = False
 
-    VideoFrameWidth = 1920 if APP_TRACKING_METHOD is ObjectTrackingMethod.ARUCO else 848
-    VideoFrameHeight = 1080 if APP_TRACKING_METHOD is ObjectTrackingMethod.ARUCO else 480
+    # default: 848x480
+    VideoFrameWidth = 848
+    VideoFrameHeight = 480
 
     VideoFramePerSec = 30
 
