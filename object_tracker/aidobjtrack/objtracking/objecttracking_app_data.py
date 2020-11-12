@@ -62,10 +62,11 @@ class ObjectTrakcingAppData(object):
                 obj_tracking_camera.camera_name = trackingCamera.name
 
                 # set robot name
-                if ObjectTypeCheck.checkValueIsAvail(trackingCamera.baseRobotArm) == False:
-                    print("robot arm is not detected..")
-                    continue
-                obj_tracking_camera.robot_name = trackingCamera.baseRobotArm['name']
+                if AppConfig.ObjTrackingDebugWoRobot == False:
+                    if ObjectTypeCheck.checkValueIsAvail(trackingCamera.baseRobotArm) == False:
+                        print("robot arm is not detected..")
+                        continue
+                    obj_tracking_camera.robot_name = trackingCamera.baseRobotArm['name']
 
                 # create a camera device object
                 rsCamDev = RealsenseCapture(trackingCamera.endpoint) if trackingCamera.type == 'realsense-camera' else (OpencvCapture(int(

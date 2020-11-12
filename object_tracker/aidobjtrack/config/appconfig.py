@@ -46,3 +46,6 @@ class AppConfig:
 
     # debug without @things-factory
     ObjTrackingDebugMode = False
+
+    # debug without robot
+    ObjTrackingDebugWoRobot = False

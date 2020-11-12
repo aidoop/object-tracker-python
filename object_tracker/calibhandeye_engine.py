@@ -131,6 +131,10 @@ if __name__ == '__main__':
             # Wait for a coherent pair of frames: depth and color
             color_image = vcap.getFrame()
 
+            # change the format to BGR format for opencv
+            if cameraObject.type == 'realsense-camera':
+                color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
+
             # check core variables are available..
             if ObjectTrackerErrMsg.checkValueIsNone(mtx, "camera matrix") == False:
                 break
