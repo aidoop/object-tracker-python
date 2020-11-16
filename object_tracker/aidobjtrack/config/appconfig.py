@@ -5,7 +5,7 @@ from enum import Enum, unique
 
 @unique
 class ObjectTrackingMethod(Enum):
-    ARUCO = 'ARUCO'
+    ARUCO = 'Aruco'
     MRCNN = 'MaskRCNN'
 
 
@@ -21,7 +21,7 @@ class AppConfig:
     # realsense camera parameters
     UseRealSenseInternalMatrix = False
 
-    # default: 848x480
+    # default: 848x480 (for realsense)
     VideoFrameWidth = 848
     VideoFrameHeight = 480
 
@@ -44,8 +44,10 @@ class AppConfig:
     TestMarkerID = 14
     UseArucoBoard = True
 
-    # debug without @things-factory
+    #################################################
+    # Debug Parameters
+    #################################################
+    # debug without @things-factory (Default = False)
     ObjTrackingDebugMode = False
-
-    # debug without robot
+    # debug without robot (Default = False)
     ObjTrackingDebugWoRobot = False

@@ -71,20 +71,24 @@ if __name__ == '__main__':
                                 continue
 
                             for resultObj in resultObjs:
-                                # # TODO: check if rect ROI is available for the current detection
+                                # # TODO: manage ROI data later
                                 # (found, foundRIDs) = vtc.ROIMgr.isInsideROI(
                                 #     resultObj.corners)
-                                found = False
+                                # found = False
 
                                 if resultObj.targetPos is not None:
                                     [x, y, z, u, v, w] = resultObj.targetPos
 
-                                    if found is True:
-                                        objStatusUpdate.addObjStatus(
-                                            resultObj.markerID, foundRIDs, x, y, z, u, v, w)
-                                    else:
-                                        objStatusUpdate.addObjStatus(
-                                            resultObj.markerID, [None], x, y, z, u, v, w)
+                                    objStatusUpdate.addObjStatus(
+                                        resultObj.markerID, [vtc.camera_name], x, y, z, u, v, w)
+
+                                    # TODO: update object status based on ROIs later
+                                    # if found is True:
+                                    #     objStatusUpdate.addObjStatus(
+                                    #         resultObj.markerID, foundRIDs, x, y, z, u, v, w)
+                                    # else:
+                                    #     objStatusUpdate.addObjStatus(
+                                    #         resultObj.markerID, [None], x, y, z, u, v, w)
                                     if len(tobjIDList) > 0:
                                         tobjIDList.remove(resultObj.markerID)
                 else:
@@ -96,20 +100,26 @@ if __name__ == '__main__':
                         continue
 
                     for resultObj in resultObjs:
-                        # # TODO: check if rect ROI is available for the current detection
+                        # # TODO: manage ROI data later
                         # (found, foundRIDs) = vtc.ROIMgr.isInsideROI(
                         #     resultObj.corners)
-                        found = False
+                        # found = False
 
                         if resultObj.targetPos is not None:
                             [x, y, z, u, v, w] = resultObj.targetPos
 
-                            if found is True:
-                                objStatusUpdate.addObjStatus(
-                                    resultObj.markerID, foundRIDs, x, y, z, u, v, w)
-                            else:
-                                objStatusUpdate.addObjStatus(
-                                    resultObj.markerID, [None], x, y, z, u, v, w)
+                            # replace roi regions to camera name
+                            objStatusUpdate.addObjStatus(
+                                resultObj.markerID, [vtc.camera_name], x, y, z, u, v, w)
+
+                            # TODO: update object status based on ROIs later
+                            # if found is True:
+                            #     objStatusUpdate.addObjStatus(
+                            #         resultObj.markerID, foundRIDs, x, y, z, u, v, w)
+                            # else:
+                            #     objStatusUpdate.addObjStatus(
+                            #         resultObj.markerID, [None], x, y, z, u, v, w)
+
                             if len(tobjIDList) > 0:
                                 tobjIDList.remove(resultObj.markerID)
 

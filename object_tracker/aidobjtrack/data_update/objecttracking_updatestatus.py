@@ -7,7 +7,7 @@ from random import choice, random
 from aidobjtrack.config.appconfig import AppConfig
 
 
-class ObjectUpdateStatus:
+class ObjectUpdateStatus(object):
     ObjStatusList = list()
     gqlClient = None
 
@@ -33,12 +33,31 @@ class ObjectUpdateStatus:
             }
             self.ObjStatusList.append(objStatus)
 
+    # don't send 'state' data for undetermined objects
+    def addNoObjStatus(self, id):
+        objStatus = {
+            "id": str(id),
+            # "state": {
+            #     "roi": roi,
+            #     "pose": {
+            #         "x": x,
+            #         "y": y,
+            #         "z": z,
+            #         "u": u,
+            #         "v": v,
+            #         "w": w
+            #     }
+            # }
+        }
+        self.ObjStatusList.append(objStatus)
+
     def sendObjStatus(self, undetectedObjectIDList):
 
         # process undetected marks
         for markerID in undetectedObjectIDList:
-            self.addObjStatus(markerID, [None],
-                              None, None, None, None, None, None)
+            # self.addObjStatus(markerID, [None],
+            #                   None, None, None, None, None, None)
+            self.addNoObjStatus(markerID)
 
         # prcess duplicated marks
         checkIDList = list()
