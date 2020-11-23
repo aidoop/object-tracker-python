@@ -92,7 +92,6 @@ if __name__ == '__main__':
 
     # create info text
     infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
-    print(infoText)
 
     try:
         while(True):
