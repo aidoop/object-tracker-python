@@ -125,23 +125,48 @@ class RealsenseCapture(CameraDev):
 
         # return (color_image_outofdist, depth_image) if self.is_clipping else (color_image, depth_image)
 
+    def getFrames(self):
+        # wait for a coherent pair of frames: depth an--d color
+        self.__frames = self.__pipeline.wait_for_frames()
+
+        # align the depth frame to color frame
+        self.__aligned_frames = self.__align.process(self.__frames)
+
+        # Get aligned frames
+        # aligned_depth_frame is a 640x480 depth image
+        self.aligned_depth_frame = self.__aligned_frames.get_depth_frame()
+        color_frame = self.__aligned_frames.get_color_frame()
+        if not self.aligned_depth_frame or not color_frame:
+            return None
+
+        self.aligned_depth_frame = self.apply_filters(self.aligned_depth_frame)
+
+        # convert images to numpy arrays
+        depth_image = np.asanyarray(self.aligned_depth_frame.get_data())
+        color_image = np.asanyarray(color_frame.get_data())
+
+        return (color_image, depth_image)
+
     # TODO: arrange parameters for each filter as the inputs of this function
     def prepare_filters(self):
         # prepare post-processing filters
-        decimate = rs.decimation_filter()
-        decimate.set_option(rs.option.filter_magnitude, 2 ** 3)
-        spatial = rs.spatial_filter()
-        spatial.set_option(rs.option.filter_magnitude, 5)
-        spatial.set_option(rs.option.filter_smooth_alpha, 1)
-        spatial.set_option(rs.option.filter_smooth_delta, 50)
-        spatial.set_option(rs.option.holes_fill, 3)
+        # decimate = rs.decimation_filter()
+        # decimate.set_option(rs.option.filter_magnitude, 2 ** 3)
+        # spatial = rs.spatial_filter()
+        # spatial.set_option(rs.option.filter_magnitude, 5)
+        # spatial.set_option(rs.option.filter_smooth_alpha, 1)
+        # spatial.set_option(rs.option.filter_smooth_delta, 50)
+        # spatial.set_option(rs.option.holes_fill, 2)
+        # hff = rs.hole_filling_filter(1)
 
-        colorizer = rs.colorizer()
-        self.filters = [rs.disparity_transform(),
-                        rs.decimation_filter(),
-                        rs.spatial_filter(),
-                        rs.temporal_filter(),
-                        rs.disparity_transform(False)]
+        #colorizer = rs.colorizer()
+        self.filters = [
+            rs.disparity_transform(),
+            rs.decimation_filter(),
+            rs.spatial_filter(),
+            rs.temporal_filter(),
+            rs.disparity_transform(False)
+        ]
 
     def set_flag_filters(self, flag):
         assert isinstance(flag, (int))

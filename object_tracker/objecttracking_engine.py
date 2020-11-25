@@ -45,6 +45,7 @@ if __name__ == '__main__':
             for vtc in vtcList:
                 # get a frame
                 color_image = vtc.vcap.getFrame()
+                #(color_image, depth_image) = vtc.vcap.getFrames()
                 # assert color_image is not None, 'no captured frame'
                 if color_image is None:
                     continue
@@ -140,7 +141,7 @@ if __name__ == '__main__':
 
                     # create images to show
                     # sub_image = cv2.applyColorMap(cv2.convertScaleAbs(
-                    #     depth_image, alpha=0.03), cv2.COLORMAP_JET)
+                    #     depth_image, alpha=0.07), cv2.COLORMAP_JET)
                     mask_image = vtc.objectMarkTracker.getMaskImage(
                         color_image, AppConfig.VideoFrameWidth, AppConfig.VideoFrameHeight)
                     sub_image = cv2.cvtColor(mask_image, cv2.COLOR_GRAY2RGB)

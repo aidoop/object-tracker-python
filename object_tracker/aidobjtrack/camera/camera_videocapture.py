@@ -39,6 +39,9 @@ class VideoCapture:
     def getFrame(self):
         return self.camDev.getFrame()
 
+    def getFrames(self):
+        return self.camDev.getFrames()
+
     def getInternalIntrinsicsMat(self):
         return self.camDev.getInternalIntrinsicsMat()
 

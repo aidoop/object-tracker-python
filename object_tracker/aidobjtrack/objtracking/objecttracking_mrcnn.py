@@ -44,8 +44,12 @@ class MrcnnObjectTracker(ObjectTracker):
     # a valualbe candidate < [base: DelBox8] Box Dataset을 대폭 추가(thanks to NamYW & his friend)
     #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201101T1825/mask_rcnn_object-train_0098.h5"
     #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201101T1825/mask_rcnn_object-train_0178.h5"
+
     # a best candidate...
-    OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201101T1825/mask_rcnn_object-train_0048.h5"
+    OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201101T1825/mask_rcnn_object-train_0098.h5"
+
+    # resnet-50 test
+    #OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201122T1517/mask_rcnn_object-train_0059.h5"
 
     LOGS_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs"
 

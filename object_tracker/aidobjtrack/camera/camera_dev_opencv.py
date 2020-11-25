@@ -59,6 +59,9 @@ class OpencvCapture(CameraDev):
             frame = None
         return frame
 
+    def getFrames(self):
+        pass
+
     # get 3D position w.r.t an image pixel based on camera-based coordination
     def get3DPosition(self, imageX, imageY):
         raise NotImplementedError

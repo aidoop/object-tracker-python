@@ -12,9 +12,9 @@ import json
 import math
 
 from aidobjtrack.config.appconfig import AppConfig
-from aidobjtrack.camera.CameraDevRealsense import RealsenseCapture
-from aidobjtrack.camera.CameraDevOpencv import OpencvCapture
-from aidobjtrack.camera.CameraVideoCapture import VideoCapture
+from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
+from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
+from aidobjtrack.camera.camera_videocapture import VideoCapture
 from aidobjtrack.aruco.aruco_detect import ArucoDetect
 from aidobjtrack.aruco.aruco_advanced_pose import ArucoAdvPose
 from aidobjtrack.util.hm_util import *
@@ -32,19 +32,20 @@ if __name__ == '__main__':
     rsCamIndex = '4'
     #rsCamDev = RealsenseCapture(rsCamIndex)
     rsCamDev = OpencvCapture(int(rsCamIndex))
-    vcap = VideoCapture(rsCamDev, config.VideoFrameWidth,
-                        config.VideoFrameHeight, config.VideoFramePerSec, 'camera02')
+    vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth,
+                        AppConfig.VideoFrameHeight, AppConfig.VideoFramePerSec, 'camera02')
 
     # Start streamingq
     vcap.start()
 
     # get instrinsics
     mtx, dist = vcap.getIntrinsicsMat(
-        int(rsCamIndex), config.UseRealSenseInternalMatrix)
+        int(rsCamIndex), AppConfig.UseRealSenseInternalMatrix)
 
     # create an aruco detect object
-    arucoDetect = ArucoDetect(config.ArucoDict, config.ArucoSize, mtx, dist)
-    #arucoDetect = ArucoDetect(config.ArucoDict, 0.075, mtx, dist)
+    arucoDetect = ArucoDetect(
+        AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist)
+    #arucoDetect = ArucoDetect(AppConfig.ArucoDict, 0.075, mtx, dist)
     #arucoDetect = ArucoDetect(aruco.DICT_7X7_250, 0.05, mtx, dist)
 
     arucoAdvPose = ArucoAdvPose()

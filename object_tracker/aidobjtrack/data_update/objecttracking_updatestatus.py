@@ -59,7 +59,7 @@ class ObjectUpdateStatus(object):
             #                   None, None, None, None, None, None)
             self.addNoObjStatus(markerID)
 
-        # prcess duplicated marks
+        # process duplicated marks
         checkIDList = list()
         for objStatus in self.ObjStatusList:
             objID = objStatus['id']

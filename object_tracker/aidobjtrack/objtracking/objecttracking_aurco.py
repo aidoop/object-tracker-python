@@ -105,6 +105,10 @@ class ArucoMarkerTracker(ObjectTracker):
                         #     hmInput = np.dot(hmCal2Cam, hmWanted)
 
                         # update a pivot offset
+                        vtc.camObjOffset = [
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0] if vtc.camObjOffset is None else vtc.camObjOffset
+                        markerObject.pivotOffset = [
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0] if markerObject.pivotOffset is None else markerObject.pivotOffset
                         if vtc.camObjOffset is not None:
                             offsetPoint = markerObject.pivotOffset + vtc.camObjOffset
                         else:

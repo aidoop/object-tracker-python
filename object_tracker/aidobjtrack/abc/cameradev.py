@@ -45,6 +45,11 @@ class CameraDev(metaclass=ABCMeta):
     def getFrame(self):
         pass
 
+    # wait for a video frame & and return color & depth frames
+    @abstractmethod
+    def getFrames(self):
+        pass
+
     # get 3D position w.r.t an image pixel based on camera-based coordination
     @abstractmethod
     def get3DPosition(self):
