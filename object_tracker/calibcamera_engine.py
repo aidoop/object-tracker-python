@@ -62,6 +62,8 @@ if __name__ == '__main__':
 
         if cameraObject.type == 'realsense-camera':
             rsCamDev = RealsenseCapture(cameraObject.endpoint)
+            AppConfig.VideoFrameWidth = 1920
+            AppConfig.VideoFrameHeight = 1080
         elif cameraObject.type == 'camera-connector':
             rsCamDev = OpencvCapture(int(cameraObject.endpoint))
 

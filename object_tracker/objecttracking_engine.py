@@ -142,9 +142,11 @@ if __name__ == '__main__':
                     # create images to show
                     # sub_image = cv2.applyColorMap(cv2.convertScaleAbs(
                     #     depth_image, alpha=0.07), cv2.COLORMAP_JET)
-                    mask_image = vtc.objectMarkTracker.getMaskImage(
+                    sub_image = vtc.objectMarkTracker.getMaskImage(
                         color_image, AppConfig.VideoFrameWidth, AppConfig.VideoFrameHeight)
-                    sub_image = cv2.cvtColor(mask_image, cv2.COLOR_GRAY2RGB)
+                    # sub_image = maskcv2.cvtColor(mask_image, cv2.COLOR_GRAY2RGB)
+
+                    # draw pose axis in the mask image
 
                     # show scores
                     vtc.objectMarkTracker.putScoreData(color_image_view)

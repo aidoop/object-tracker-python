@@ -172,7 +172,7 @@ class MaskRcnnDetect:
         return (center_point_list)
 
     def get_mask_image(self, mask_list, width, height):
-        center_point_list = list()
+        #center_point_list = list()
         if len(mask_list) > 0:
             accumulated_mask = mask_list[0]
             for mask in mask_list:
@@ -182,22 +182,24 @@ class MaskRcnnDetect:
             mask_image = np.where(
                 accumulated_mask, 255, 0).astype(np.uint8)
 
-            # get the center point of mask regions
-            contours, hierarchy = cv2.findContours(
-                mask_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-            for contour in contours:
-                # calculate moments for each contour
-                M = cv2.moments(contour)
+            # # get the center point of mask regions
+            # contours, hierarchy = cv2.findContours(
+            #     mask_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            # for contour in contours:
+            #     # calculate moments for each contour
+            #     M = cv2.moments(contour)
 
-                if M["m00"] == 0.0:
-                    continue
+            #     if M["m00"] == 0.0:
+            #         continue
 
-                # calculate x,y coordinate of center
-                cX = int(M["m10"] / M["m00"])
-                cY = int(M["m01"] / M["m00"])
+            #     # calculate x,y coordinate of center
+            #     cX = int(M["m10"] / M["m00"])
+            #     cY = int(M["m01"] / M["m00"])
 
-                center_point_list.append((cX, cY))
-                cv2.circle(mask_image, (cX, cY), 5, (0, 0, 0), -1)
+            #     center_point_list.append((cX, cY))
+
+            # skip to draw the ceter point
+            # cv2.circle(mask_image, (cX, cY), 5, (0, 0, 0), -1)
         else:
             mask_image = np.zeros((height, width))
 

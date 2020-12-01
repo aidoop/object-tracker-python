@@ -3,6 +3,7 @@ import cv2.aruco as aruco
 import numpy as np
 import sys
 import os
+import math
 
 from aidobjtrack.abc.objecttracking_base import ObjectTracker
 from aidobjtrack.handeye.calibhandeye_handeye import HandEyeCalibration
@@ -12,14 +13,18 @@ from aidobjtrack.util.hm_util import HMUtil
 from mrcnn import inference as mo
 
 
-class MrcnnObject:
+def get_line_length(x1, y1, x2, y2):
+    return math.sqrt((x2-x1)**2+(y2-y1)**2)
+
+
+class BoxObject:
     def __init__(self, markerID, pivotOffset):
         self.markerID = markerID
         self.pivotOffset = pivotOffset
         self.targetPos = None
 
 
-class MrcnnObjectTracker(ObjectTracker):
+class BoxObjectTracker(ObjectTracker):
     # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201017T1422/mask_rcnn_object-train_0043.h5"
     # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201017T1713/mask_rcnn_object-train_0094.h5"
     # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python-data/logs/object-train20201017T2218/mask_rcnn_object-train_0150.h5"
@@ -60,19 +65,25 @@ class MrcnnObjectTracker(ObjectTracker):
         # maskrcnn addition data
         self.center_point_list = []
         self.scores_list = []
+        self.mask_list = []
+
+        # pose information
+        self.mask_rect_list = []
+        self.mask_angle_list = []
 
     # initialize parameters for any camera operation
+
     def initialize(self, *args):
         self.handEyeMat = args[4]  # HandEyeCalibration.loadTransformMatrix()
         self.markerObjectList.clear()
         self.markerObjIDList.clear()
 
         self.maskdetect = mo.MaskRcnnDetect(
-            MrcnnObjectTracker.OBJECT_WEIGHT_PATH, MrcnnObjectTracker.LOGS_PATH)
+            BoxObjectTracker.OBJECT_WEIGHT_PATH, BoxObjectTracker.LOGS_PATH)
 
     # set detectable features like marker id of aruco marker
     def setTrackingObject(self, object):
-        assert(isinstance(object, MrcnnObject))
+        assert(isinstance(object, BoxObject))
 
         # TODO: handles two more object here?
         self.markerObjIDList.append(object.markerID)
@@ -97,6 +108,12 @@ class MrcnnObjectTracker(ObjectTracker):
         if self.maskdetect is not None:
             mask_list = self.maskdetect.detect_object_by_data(
                 color_image)
+            self.mask_list = mask_list
+
+            # get the minArearect and angle for each mask
+            (self.mask_rect_list, self.mask_angle_list) = self.estimatePose(mask_list)
+            # print(self.mask_rect_list)
+            # print(self.mask_angle_list)
 
             self.center_point_list = self.maskdetect.get_center_points(
                 mask_list)
@@ -105,7 +122,7 @@ class MrcnnObjectTracker(ObjectTracker):
             self.scores_list = self.maskdetect.get_scores()
             assert self.scores_list is not None or self.center_point_list is not None
 
-            for idx, (markerObject, cpoint) in enumerate(zip(self.markerObjectList, self.center_point_list)):
+            for idx, (markerObject, cpoint, angle) in enumerate(zip(self.markerObjectList, self.center_point_list, self.mask_angle_list)):
                 tvec = vtc.vcap.get3DPosition(cpoint[0], cpoint[1])
                 # print("---------------------------------------------")
                 # print(vtc.vcap.get3DPosition(cpoint[0], cpoint[1]))
@@ -121,17 +138,21 @@ class MrcnnObjectTracker(ObjectTracker):
                 # make a homogeneous matrix using a rotation matrix and a translation matrix
                 hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec)
 
+                # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
+                # hmWanted = HMUtil.convertXYZABCtoHMDeg(
+                #     offsetPoint) if offsetPoint is not None else np.eye(4)
+                # hmInput = np.dot(hmCal2Cam, hmWanted)
+
+                # get a final position
+                hmResult = np.dot(self.handEyeMat, hmCal2Cam)
+                xyzuvw_list = HMUtil.convertHMtoXYZABCDeg(hmResult)
+                xyzuvw_arr = np.array(xyzuvw_list)
+
                 offsetPoint = markerObject.pivotOffset + \
                     vtc.camObjOffset if vtc.camObjOffset is not None else markerObject.pivotOffset
 
-                # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
-                hmWanted = HMUtil.convertXYZABCtoHMDeg(
-                    offsetPoint) if offsetPoint is not None else np.eye(4)
-                hmInput = np.dot(hmCal2Cam, hmWanted)
-
-                # get a final position
-                hmResult = np.dot(self.handEyeMat, hmInput)
-                xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
+                xyzuvw_arr += offsetPoint.tolist()
+                xyzuvw = xyzuvw_arr.tolist()
 
                 # this conversion is moved to Operato, but come back by making robot move policy consistent
                 if xyzuvw != None:
@@ -139,6 +160,7 @@ class MrcnnObjectTracker(ObjectTracker):
                     # indy7 base position to gripper position
                     # xyzuvw = [x, y, z, u*(-1), v+180.0, w]
                     # NOTE: using the fixed rotation information
+                    # TODO: adjust 'w' value by input angle value
                     xyzuvw = [x, y, z, 180.0, 0.0, 180.0]
 
                 # set final target position..
@@ -153,9 +175,48 @@ class MrcnnObjectTracker(ObjectTracker):
 
     def getMaskImage(self, color_image, width, height):
         assert self.maskdetect is not None
-        mask_list = self.maskdetect.detect_object_by_data(color_image)
 
-        return self.maskdetect.get_mask_image(mask_list, width, height)
+        # mask_list = self.maskdetect.detect_object_by_data(color_image)
+        # get mask_list
+        mask_list = self.mask_list
+
+        # get mask image
+        mask_gray_image = self.maskdetect.get_mask_image(
+            mask_list, width, height)
+        mask_image = cv2.cvtColor(mask_gray_image, cv2.COLOR_GRAY2RGB)
+
+        for mask_rect in self.mask_rect_list:
+            mask_rect = np.int0(mask_rect)
+
+            # draw box
+            cv2.drawContours(mask_image, [mask_rect], 0, (255, 0, 0), 2)
+
+            # draw center line
+            xx1 = np.int0((mask_rect[0][0] + mask_rect[1][0])/2)
+            yy1 = np.int0((mask_rect[0][1] + mask_rect[1][1])/2)
+            xx2 = np.int0((mask_rect[2][0] + mask_rect[3][0])/2)
+            yy2 = np.int0((mask_rect[2][1] + mask_rect[3][1])/2)
+
+            len1 = get_line_length(xx1, yy1, xx2, yy2)
+
+            xx3 = np.int0((mask_rect[0][0] + mask_rect[3][0])/2)
+            yy3 = np.int0((mask_rect[0][1] + mask_rect[3][1])/2)
+            xx4 = np.int0((mask_rect[2][0] + mask_rect[1][0])/2)
+            yy4 = np.int0((mask_rect[2][1] + mask_rect[1][1])/2)
+
+            len2 = get_line_length(xx3, yy3, xx4, yy4)
+
+            if(len1 >= len2):
+                color1 = (0, 0, 255)
+                color2 = (0, 255, 0)
+            else:
+                color1 = (0, 255, 0)
+                color2 = (0, 0, 255)
+
+            cv2.line(mask_image, (xx1, yy1), (xx2, yy2), color1, 2)
+            cv2.line(mask_image, (xx3, yy3), (xx4, yy4), color2, 2)
+
+        return mask_image
 
     def putScoreData(self, color_image):
         assert color_image is not None
@@ -173,3 +234,34 @@ class MrcnnObjectTracker(ObjectTracker):
 
     def getScoresList(self):
         return self.scores_list
+
+    def estimatePose(self, mask_list):
+        box_list = list()
+        angle_list = list()
+
+        if len(mask_list) > 0:
+            for mask in mask_list:
+                mask_image = np.where(mask, 255, 0).astype(np.uint8)
+                contours, hierarchy = cv2.findContours(
+                    mask_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
+                if len(contours) > 0:
+                    for contour in contours:
+                        # get minimum-area rect of each contour
+                        areaRect = cv2.minAreaRect(contour)
+
+                        # get rotation angle and push into the list
+                        angle_list.append(areaRect[2])
+
+                        # get the rectangle coordinates of RotateRect
+                        box = cv2.boxPoints(areaRect)
+
+                        # push into the list
+                        box_list.append(box)
+
+                else:
+                    print('find mask but can not get any contour', file=sys.stderr)
+        else:
+            print('find mask in mask_list', file=sys.stderr)
+
+        return (box_list, angle_list)

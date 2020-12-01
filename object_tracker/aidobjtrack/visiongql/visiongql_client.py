@@ -42,7 +42,7 @@ class VisonGqlDataClient:
             if tempList is not None:    # check if gql data is not set yet..
                 if len(tempList) > 5:
                     tempList.remove(tempList[5])
-                    cameraObject.distCoeff = np.array(tempList)
+                cameraObject.distCoeff = np.array(tempList)
 
             # check if gql data is not set yet..
             if ObjectTypeCheck.checkValueIsAvail(cameraData['cameraMatrix']):
