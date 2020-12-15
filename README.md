@@ -12,7 +12,9 @@
     - pip install gql
 
 - Module Installation
-  - pip install -r requirements.txt
+  - pip install -r requirements.txt (Aruco)
+  - pip install -r requirements_mrcnn.txt (Box based on Mask-RCNN)
+  
 
 
 - Operato-Robotics (https://github.com/things-factory/things-factory/tree/master/packages/operato-robotics)
