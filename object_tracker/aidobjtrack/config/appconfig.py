@@ -6,7 +6,7 @@ from enum import Enum, unique
 @unique
 class ObjectTrackingMethod(Enum):
     ARUCO = 'Aruco'
-    MRCNN = 'Box'
+    BOX = 'Box'
 
 
 class AppConfig:

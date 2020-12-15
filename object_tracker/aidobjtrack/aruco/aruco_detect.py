@@ -11,8 +11,8 @@ class ArucoDetect:
 
         # set aruco detection parameters (see 'https://docs.opencv.org/trunk/d5/dae/tutorial_aruco_detection.html')
         # create aruco board
-        markerLength = 0.0375  # Here, measurement unit is centimetre.
-        markerSeparation = 0.005   # Here, measurement unit is centimetre.
+        markerLength = 0.0375  # Here, measurement unit is meter
+        markerSeparation = 0.005   # Here, measurement unit is meter
         self.arucoBoard = aruco.GridBoard_create(
             4, 5, markerLength, markerSeparation, self.arucoDict)
 

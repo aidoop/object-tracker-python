@@ -30,7 +30,7 @@ class InferenceConfig(Config):
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # Background + balloon
 
-    # Skip detections with < 90% confidence
+    # Skip detections with < 70% confidence
     DETECTION_MIN_CONFIDENCE = 0.7
 
     # Backbone network architecture

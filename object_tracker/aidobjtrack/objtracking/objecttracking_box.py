@@ -17,6 +17,30 @@ def get_line_length(x1, y1, x2, y2):
     return math.sqrt((x2-x1)**2+(y2-y1)**2)
 
 
+def get_line_cross(x11, y11, x12, y12, x21, y21, x22, y22):
+    if x12 == x11 or x22 == x21:
+        if x12 == x11:
+            cx = x12
+            m2 = (y22 - y21) / (x22 - x21)
+            cy = m2 * (cx - x21) + y21
+            return cx, cy
+        if x22 == x21:
+            cx = x22
+            m1 = (y12 - y11) / (x12 - x11)
+            cy = m1 * (cx - x11) + y11
+            return cx, cy
+
+    m1 = (y12 - y11) / (x12 - x11)
+    m2 = (y22 - y21) / (x22 - x21)
+    if m1 == m2:
+        return None
+
+    cx = (x11 * m1 - y11 - x21 * m2 + y21) / (m1 - m2)
+    cy = m1 * (cx - x11) + y11
+
+    return cx, cy
+
+
 class BoxObject:
     def __init__(self, markerID, pivotOffset):
         self.markerID = markerID
@@ -112,11 +136,15 @@ class BoxObjectTracker(ObjectTracker):
 
             # get the minArearect and angle for each mask
             (self.mask_rect_list, self.mask_angle_list) = self.estimatePose(mask_list)
-            # print(self.mask_rect_list)
-            # print(self.mask_angle_list)
+            print(self.mask_rect_list)
+            print(self.mask_angle_list)
 
-            self.center_point_list = self.maskdetect.get_center_points(
-                mask_list)
+            self.center_point_list = self.findBoxCenterList(
+                self.mask_rect_list)
+            print(self.center_point_list)
+
+            # self.center_point_list = self.maskdetect.get_center_points(
+            #     mask_list)
             # print('center point: ', self.center_point_list)
 
             self.scores_list = self.maskdetect.get_scores()
@@ -161,7 +189,8 @@ class BoxObjectTracker(ObjectTracker):
                     # xyzuvw = [x, y, z, u*(-1), v+180.0, w]
                     # NOTE: using the fixed rotation information
                     # TODO: adjust 'w' value by input angle value
-                    xyzuvw = [x, y, z, 180.0, 0.0, 180.0]
+                    angle = angle + 180.0 if angle <= -90.0 else angle     # TEST
+                    xyzuvw = [x, y, z, 180.0, 0.0, 180.0-angle]
 
                 # set final target position..
                 markerObject.targetPos = xyzuvw
@@ -218,19 +247,23 @@ class BoxObjectTracker(ObjectTracker):
 
         return mask_image
 
-    def putScoreData(self, color_image):
+    def putTextData(self, color_image):
         assert color_image is not None
 
         # prepare font data
         font = cv2.FONT_HERSHEY_SIMPLEX
         fontScale = 0.5
         fontColor = (255, 255, 0)
+        fontColor2 = (0, 0, 255)
         lineType = 1
 
-        for idx, (cpoint, score) in enumerate(zip(self.center_point_list, self.scores_list)):
+        for idx, (cpoint, score, angle) in enumerate(zip(self.center_point_list, self.scores_list, self.mask_angle_list)):
             # print(idx, (cpoint, score))
             cv2.putText(color_image, '%0.8f' % score, cpoint, font,
                         fontScale, fontColor, lineType)
+            (xx, yy) = cpoint
+            cv2.putText(color_image, '%0.2f' % angle, (xx, yy+15), font,
+                        fontScale, fontColor2, lineType)
 
     def getScoresList(self):
         return self.scores_list
@@ -251,7 +284,10 @@ class BoxObjectTracker(ObjectTracker):
                         areaRect = cv2.minAreaRect(contour)
 
                         # get rotation angle and push into the list
-                        angle_list.append(areaRect[2])
+                        (rectWidth, rectHeight) = areaRect[1]
+                        angle = (areaRect[2] - 90) if(rectWidth <
+                                                      rectHeight) else areaRect[2]
+                        angle_list.append(angle)
 
                         # get the rectangle coordinates of RotateRect
                         box = cv2.boxPoints(areaRect)
@@ -265,3 +301,27 @@ class BoxObjectTracker(ObjectTracker):
             print('find mask in mask_list', file=sys.stderr)
 
         return (box_list, angle_list)
+
+    def findBoxCenterList(self, rect_list):
+        assert self.maskdetect is not None
+
+        center_point_list = []
+
+        for mask_rect in self.mask_rect_list:
+            mask_rect = np.int0(mask_rect)
+
+            # get the points of two lines
+            xx1 = np.int0((mask_rect[0][0] + mask_rect[1][0])/2)
+            yy1 = np.int0((mask_rect[0][1] + mask_rect[1][1])/2)
+            xx2 = np.int0((mask_rect[2][0] + mask_rect[3][0])/2)
+            yy2 = np.int0((mask_rect[2][1] + mask_rect[3][1])/2)
+
+            xx3 = np.int0((mask_rect[0][0] + mask_rect[3][0])/2)
+            yy3 = np.int0((mask_rect[0][1] + mask_rect[3][1])/2)
+            xx4 = np.int0((mask_rect[2][0] + mask_rect[1][0])/2)
+            yy4 = np.int0((mask_rect[2][1] + mask_rect[1][1])/2)
+
+            (cx, cy) = get_line_cross(xx1, yy1, xx2, yy2, xx3, yy3, xx4, yy4)
+            center_point_list.append((np.int0(cx), np.int0(cy)))
+
+        return center_point_list

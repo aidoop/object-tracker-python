@@ -149,7 +149,7 @@ if __name__ == '__main__':
                     # draw pose axis in the mask image
 
                     # show scores
-                    vtc.objectMarkTracker.putScoreData(color_image_view)
+                    vtc.objectMarkTracker.putTextData(color_image_view)
 
                     # display both color image and mask image
                     images = np.hstack((color_image_view, sub_image))

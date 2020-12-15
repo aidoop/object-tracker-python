@@ -45,7 +45,7 @@ class ObjectTrakcingAppData(object):
                 self.gqlDataClient.detectionMethod)
             # print('self.tracking_method: ',
             #       self.tracking_method)
-            if self.tracking_method == ObjectTrackingMethod.MRCNN:
+            if self.tracking_method == ObjectTrackingMethod.BOX:
                 from aidobjtrack.objtracking.objecttracking_box import BoxObject, BoxObjectTracker
 
             ###############################################################################
@@ -94,7 +94,7 @@ class ObjectTrakcingAppData(object):
                 obj_tracking_camera.handeye = trackingCamera.handEyeMatrix
 
                 # create an object tracker
-                objTracker = BoxObjectTracker() if self.tracking_method == ObjectTrackingMethod.MRCNN else ArucoMarkerTracker(
+                objTracker = BoxObjectTracker() if self.tracking_method == ObjectTrackingMethod.BOX else ArucoMarkerTracker(
                 ) if self.tracking_method == ObjectTrackingMethod.ARUCO else None
                 assert objTracker is not None
 
@@ -133,7 +133,7 @@ class ObjectTrakcingAppData(object):
                 print(trackableMark.endpoint, ', ', trackableMark.poseOffset)
 
                 # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
-                obj = BoxObject(trackableMark.endpoint, trackableMark.poseOffset) if self.tracking_method == ObjectTrackingMethod.MRCNN else ArucoMarkerObject(
+                obj = BoxObject(trackableMark.endpoint, trackableMark.poseOffset) if self.tracking_method == ObjectTrackingMethod.BOX else ArucoMarkerObject(
                     int(trackableMark.endpoint), trackableMark.poseOffset) if self.tracking_method == ObjectTrackingMethod.ARUCO else None
                 assert obj is not None, 'trackable object not defined'
 

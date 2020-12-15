@@ -6,7 +6,7 @@ import glob
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 #cap = cv2.VideoCapture(cv2.CAP_DSHOW)
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(4)
 
 # set opencv videocapture properties for width, height and fps
 cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)
