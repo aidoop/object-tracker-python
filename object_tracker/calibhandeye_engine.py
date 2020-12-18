@@ -16,6 +16,7 @@ from aidobjtrack.util.hm_util import *
 from aidobjtrack.handeye.calibhandeye_handeye import *
 
 from aidobjtrack.visiongql.visiongql_client import VisonGqlDataClient
+from aidobjtrack.handeye.calibhandeye_auto_move import HandEyeAutoMove
 
 
 #####################################################################################
@@ -66,10 +67,11 @@ if __name__ == '__main__':
         robotIP = AppConfig.INDY_SERVER_IP
 
     # create an indy7 object
-    # indy7 = RobotIndy7Dev()
-    # if(indy7.initalize(robotIP, AppConfig.INDY_SERVER_NAME) == False):
-    #     print("Can't connect the robot and exit this process..")
-    #     sys.exit()
+    # TODO: should check here if auto-mode will be used..
+    indy7 = RobotIndy7Dev()
+    if(indy7.initalize(robotIP, AppConfig.INDY_SERVER_NAME) == False):
+        # print("Can't connect the robot and exit this process..")
+        sys.exit()
 
     # create a window to display video frames
     # cv2.namedWindow(cameraName)
@@ -79,6 +81,11 @@ if __name__ == '__main__':
 
     # create a handeye calib. object
     handeye = HandEyeCalibration()
+
+    # auto handeye calibration mode
+    handeye_automove = HandEyeAutoMove()
+    handeye_automove.initialize()
+    robot_ready_count = 0
 
     # # create the camera device object
     # if(args.camType == 'rs'):
@@ -113,7 +120,7 @@ if __name__ == '__main__':
 
     # create handeye object
     handeyeAruco = HandEyeAruco(
-        AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist)
+        AppConfig.HandEyeArucoDict, AppConfig.HandEyeArucoSize, mtx, dist)
     handeyeAruco.setCalibMarkerID(AppConfig.CalibMarkerID)
 
     # start indy7 as a direct-teaching mode as default
@@ -155,12 +162,37 @@ if __name__ == '__main__':
             # draw info. text
             infoText.draw(color_image)
 
+            ###########################################################################
+            # automated handeye calibration...
+            if handeye_automove.isStarted():
+                if handeye_automove.get_stage() == HandEyeAutoMove.STAGE_GONEXT:
+                    next_move = handeye_automove.get_next()
+                    if next_move:
+                        indy7.moveTaskByAsync(next_move)
+                    handeye_automove.set_stage(HandEyeAutoMove.STAGE_CAPTURE)
+                    robot_ready_count = 0
+                elif handeye_automove.get_stage() == HandEyeAutoMove.STAGE_CAPTURE:
+                    robot_status = indy7.getRobotStatus()
+                    if not robot_status['busy'] and robot_status['movedone']:
+                        robot_ready_count += 1
+
+                        if robot_ready_count > 30:
+                            # process the position capture operation(= keypress 'c')
+                            keyhandler.processKeyHandler(
+                                114, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, infoText, gqlDataClient, robotName, handeye_automove, indy7)
+                            handeye_automove.set_stage(
+                                HandEyeAutoMove.STAGE_GONEXT)
+                            robot_ready_count = 0
+                else:
+                    #print('unknown stage..')
+                    pass
+
             # display the captured image
             cv2.imshow(cameraName, color_image)
 
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
-            if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, infoText, gqlDataClient, robotName):
+            if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, infoText, gqlDataClient, robotName, handeye_automove, indy7):
                 break
 
             # have a delay to make CPU usage lower...

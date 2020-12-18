@@ -213,6 +213,8 @@ class HandEyeCalibration:
 
     def calculateHandEyeMatrix(self):
         methodHE = [cv2.CALIB_HAND_EYE_HORAUD]
+        # methodHE = [cv2.CALIB_HAND_EYE_TSAI, cv2.CALIB_HAND_EYE_PARK,
+        #             cv2.CALIB_HAND_EYE_HORAUD, cv2.CALIB_HAND_EYE_ANDREFF, cv2.CALIB_HAND_EYE_DANIILIDIS]
 
         for mth in methodHE:
             self.R_cam2gripper, self.t_cam2gripper = cv2.calibrateHandEye(
@@ -232,7 +234,7 @@ class HandEyeCalibration:
         hmTemp = HMUtil.makeHM(self.R_cam2gripper, self.t_cam2gripper.T)
 
         xyzabc_temp = HMUtil.convertHMtoXYZABCDeg(hmTemp)
-        print(xyzabc_temp)
+        # print(xyzabc_temp)
 
     def getPredefinedHandeye(self):
 
@@ -294,7 +296,7 @@ class HandEyeCalibration:
         hmC2T = HMUtil.inverseHM(hmT2C)
 
         xyzuvwC2T = HMUtil.convertHMtoXYZABCDeg(hmC2T)
-        print('camera position: ', xyzuvwC2T)
+        #print('camera position: ', xyzuvwC2T)
 
         # Final HM(Camera to Robot Base)
         # H(C2B) = H(G2B)H(T2G)H(C2T)

@@ -15,7 +15,7 @@ class AppConfig:
 
     # robot parameters
     #INDY_SERVER_IP = "192.168.0.104"
-    INDY_SERVER_IP = "192.168.0.207"
+    INDY_SERVER_IP = "192.168.0.25"
     INDY_SERVER_NAME = "NRMK-Indy7"
 
     # realsense camera parameters
@@ -40,9 +40,11 @@ class AppConfig:
     UseHandEyePrecisionTest = False
     UseNewCameraMatrix = False
     HandEyeTargetZ = 0.20
-    CalibMarkerID = 2
+    CalibMarkerID = 19
     TestMarkerID = 14
-    UseArucoBoard = True
+    UseArucoBoard = False
+    HandEyeArucoDict = aruco.DICT_7X7_1000
+    HandEyeArucoSize = 0.075
 
     #################################################
     # Debug Parameters

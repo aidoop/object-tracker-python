@@ -54,7 +54,6 @@ if __name__ == '__main__':
     handeye = HandEyeCalibration()
 
     # auto handeye calibration mode
-    flag_auto_handeye = False
     handeye_automove = HandEyeAutoMove()
     handeye_automove.initialize()
     robot_ready_count = 0
@@ -84,7 +83,7 @@ if __name__ == '__main__':
 
     # create handeye object
     handeyeAruco = HandEyeAruco(
-        aruco.DICT_7X7_1000, 0.075, mtx, dist)
+        AppConfig.HandEyeArucoDict, AppConfig.HandEyeArucoSize, mtx, dist)
     handeyeAruco.setCalibMarkerID(19)
 
     # start indy7 as a direct-teaching mode as default
@@ -135,9 +134,6 @@ if __name__ == '__main__':
                         robot_ready_count += 1
 
                         if robot_ready_count > 30:
-                            # test codes
-                            print('robot pose: ', indy7.getCurrentPos())
-
                             # process the position capture operation(= keypress 'c')
                             keyhandler.processKeyHandler(
                                 99, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, indy7, infoText, handeye_automove)
