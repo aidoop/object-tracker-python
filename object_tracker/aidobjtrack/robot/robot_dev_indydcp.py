@@ -46,6 +46,20 @@ class RobotIndy7Dev(RobotDev):
         self.indy.task_move_to(xyzuvw)
         self.indy.wait_for_move_finish()
 
+    def moveTaskBy(self, xyzuvw):
+        self.indy.task_move_by(xyzuvw)
+        self.indy.wait_for_move_finish()
+
+    def moveTaskByAsync(self, xyzuvw):
+        self.indy.task_move_by(xyzuvw)
+
+    def getRobotStatus(self):
+        return self.indy.get_robot_status()
+        # while self.get_robot_status()['busy']:
+        #     pass
+        # while self.get_robot_status()['movedone']:
+        #     print("Move finished!")
+
     # go to home
     def home(self):
         self.indy.go_home()

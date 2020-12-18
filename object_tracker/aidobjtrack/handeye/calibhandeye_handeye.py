@@ -109,6 +109,9 @@ class HandEyeCalibration:
         self.R_cam2gripper = []
         self.t_cam2gripper = []
 
+        # predefined hm
+        self.predefined_hm = np.eye(4)
+
         # enable/disable algorthm test
         self.AlgorithmTest = True
 
@@ -225,6 +228,24 @@ class HandEyeCalibration:
             PrintMsg.printStdErr("Distance: %f" % self.distance)
             PrintMsg.printStdErr("--------------------------------------")
 
+        # verify handeye calculation results
+        hmTemp = HMUtil.makeHM(self.R_cam2gripper, self.t_cam2gripper.T)
+
+        xyzabc_temp = HMUtil.convertHMtoXYZABCDeg(hmTemp)
+        print(xyzabc_temp)
+
+    def getPredefinedHandeye(self):
+
+        ############################################################
+        # TODO: get predefined data from server
+        prdefined_matrix = [0.000, 0.102, 0.0000, 180, 0, 180]
+        # prdefined_matrix = [0.00165360882730919, 0.10332931833889342,
+        #                     0.001752356149939573, -179.52921594383568, 0.24227911479934125, 179.77335961667296]
+
+        self.predefined_hm = HMUtil.convertXYZABCtoHMDeg(prdefined_matrix)
+
+        return self.predefined_hm
+
     def getHandEyeResultMatrixUsingOpenCV(self):
 
         if(self.AlgorithmTest == True):
@@ -258,6 +279,29 @@ class HandEyeCalibration:
         PrintMsg.printStdErr("Result Transform: ")
         PrintMsg.printStdErr(hmResultTransform)
         return hmResultTransform
+
+    def getHandEyeMatUsingMarker(self, robotXYZABC, camRVec, camTVec):
+        # get the predefined handeye matrix
+        hmPredefined = self.getPredefinedHandeye()
+
+        # prepare Gripper2Base inputs
+        hmG2B = HMUtil.convertXYZABCtoHMDeg(robotXYZABC)
+
+        # prepare Target2Cam inputs
+        camRMatrix = np.zeros(shape=(3, 3))
+        cv2.Rodrigues(camRVec, camRMatrix)
+        hmT2C = HMUtil.makeHM(camRMatrix, camTVec)
+        hmC2T = HMUtil.inverseHM(hmT2C)
+
+        xyzuvwC2T = HMUtil.convertHMtoXYZABCDeg(hmC2T)
+        print('camera position: ', xyzuvwC2T)
+
+        # Final HM(Camera to Robot Base)
+        # H(C2B) = H(G2B)H(T2G)H(C2T)
+        hmFinal = np.dot(hmG2B, hmPredefined)
+        hmFinal = np.dot(hmFinal, hmC2T)
+
+        return hmFinal
 
     # save a transform matrix to xml data as a file
     @staticmethod
