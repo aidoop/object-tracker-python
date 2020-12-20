@@ -68,10 +68,11 @@ if __name__ == '__main__':
 
     # create an indy7 object
     # TODO: should check here if auto-mode will be used..
-    indy7 = RobotIndy7Dev()
-    if(indy7.initalize(robotIP, AppConfig.INDY_SERVER_NAME) == False):
-        # print("Can't connect the robot and exit this process..")
-        sys.exit()
+    if cameraObject.handEyeAutoMode == True:
+        indy7 = RobotIndy7Dev()
+        if(indy7.initalize(robotIP, AppConfig.INDY_SERVER_NAME) == False):
+            # print("Can't connect the robot and exit this process..")
+            sys.exit()
 
     # create a window to display video frames
     # cv2.namedWindow(cameraName)
