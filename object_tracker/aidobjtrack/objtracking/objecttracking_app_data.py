@@ -90,7 +90,10 @@ class ObjectTrakcingAppData(object):
                 obj_tracking_camera.mtx = mtx
                 obj_tracking_camera.dist = dist
 
-                # set hand eye matrix
+                # set handeye automode flag
+                obj_tracking_camera.handeyeAutoMode = trackingCamera.handEyeAutoMode
+
+                # set handeye matrix
                 obj_tracking_camera.handeye = trackingCamera.handEyeMatrix
 
                 # create an object tracker
@@ -173,5 +176,6 @@ class ObjectTrakcingAppData(object):
             self.robot_name = None
             self.ROIMgr = None
             self.objectMarkTracker = None
+            self.handeyeAutoMode = True
             self.handeye = None
             self.camObjOffset = None

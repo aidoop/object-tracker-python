@@ -7,6 +7,7 @@ class HandEyeAutoMove:
     STAGE_CAPTURE = 2
 
     def __init__(self):
+        self.initialized = False
         self.automove_on = False
 
         self.trans_move_x = 0.05
@@ -57,6 +58,8 @@ class HandEyeAutoMove:
             self.auto_move_rel_poses += ([trans_pose] +
                                          self.auto_move_rotation_poses)
 
+        self.initialized = True
+
     def get_move_list(self):
         return self.auto_move_rel_poses
 
@@ -81,6 +84,9 @@ class HandEyeAutoMove:
 
     def isStarted(self):
         return self.automove_on
+
+    def isInitialized(self):
+        return self.initialized
 
     def get_stage(self):
         return self.stage

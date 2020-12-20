@@ -84,8 +84,11 @@ if __name__ == '__main__':
 
     # auto handeye calibration mode
     handeye_automove = HandEyeAutoMove()
-    handeye_automove.initialize()
-    robot_ready_count = 0
+    if cameraObject.handEyeAutoMode == True:
+        handeye_automove.initialize()
+        robot_ready_count = 0
+    else:
+        pass
 
     # # create the camera device object
     # if(args.camType == 'rs'):
@@ -164,28 +167,30 @@ if __name__ == '__main__':
 
             ###########################################################################
             # automated handeye calibration...
-            if handeye_automove.isStarted():
-                if handeye_automove.get_stage() == HandEyeAutoMove.STAGE_GONEXT:
-                    next_move = handeye_automove.get_next()
-                    if next_move:
-                        indy7.moveTaskByAsync(next_move)
-                    handeye_automove.set_stage(HandEyeAutoMove.STAGE_CAPTURE)
-                    robot_ready_count = 0
-                elif handeye_automove.get_stage() == HandEyeAutoMove.STAGE_CAPTURE:
-                    robot_status = indy7.getRobotStatus()
-                    if not robot_status['busy'] and robot_status['movedone']:
-                        robot_ready_count += 1
+            if cameraObject.handEyeAutoMode == True:
+                if handeye_automove.isStarted():
+                    if handeye_automove.get_stage() == HandEyeAutoMove.STAGE_GONEXT:
+                        next_move = handeye_automove.get_next()
+                        if next_move:
+                            indy7.moveTaskByAsync(next_move)
+                        handeye_automove.set_stage(
+                            HandEyeAutoMove.STAGE_CAPTURE)
+                        robot_ready_count = 0
+                    elif handeye_automove.get_stage() == HandEyeAutoMove.STAGE_CAPTURE:
+                        robot_status = indy7.getRobotStatus()
+                        if not robot_status['busy'] and robot_status['movedone']:
+                            robot_ready_count += 1
 
-                        if robot_ready_count > 30:
-                            # process the position capture operation(= keypress 'c')
-                            keyhandler.processKeyHandler(
-                                114, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, infoText, gqlDataClient, robotName, handeye_automove, indy7)
-                            handeye_automove.set_stage(
-                                HandEyeAutoMove.STAGE_GONEXT)
-                            robot_ready_count = 0
-                else:
-                    #print('unknown stage..')
-                    pass
+                            if robot_ready_count > 30:
+                                # process the position capture operation(= keypress 'c')
+                                keyhandler.processKeyHandler(
+                                    114, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, infoText, gqlDataClient, robotName, handeye_automove, indy7)
+                                handeye_automove.set_stage(
+                                    HandEyeAutoMove.STAGE_GONEXT)
+                                robot_ready_count = 0
+                    else:
+                        #print('unknown stage..')
+                        pass
 
             # display the captured image
             cv2.imshow(cameraName, color_image)

@@ -36,6 +36,7 @@ class TrackingCamera:
         self.baseRobotArm = None
         self.distCoeff = None
         self.cameraMatrix = None
+        self.handEyeAutoMode = True
         self.handEyeMatrix = None
         self.camObjOffset = None
         self.width = None

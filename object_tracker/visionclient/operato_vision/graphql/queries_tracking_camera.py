@@ -26,6 +26,7 @@ query trackingCamera($name: String!) {
             data
         }
         distortionCoefficient
+        handEyeAutoMode
         handEyeMatrix {
             rows
             columns
@@ -89,6 +90,7 @@ query {
                 columns
                 data
             }
+            handEyeAutoMode
             handEyeMatrix {
                 rows
                 columns

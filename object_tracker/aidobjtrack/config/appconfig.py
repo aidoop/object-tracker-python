@@ -50,6 +50,6 @@ class AppConfig:
     # Debug Parameters
     #################################################
     # debug without @things-factory (Default = False)
-    ObjTrackingDebugMode = False
+    ObjTrackingDebugMode = True
     # debug without robot (Default = False)
-    ObjTrackingDebugWoRobot = False
+    ObjTrackingDebugWoRobot = True

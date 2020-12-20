@@ -22,6 +22,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         super().setKeyHandler('g', self.processG)
         super().setKeyHandler('r', self.processR)
         super().setKeyHandler('a', self.processA)
+        super().setKeyHandler('s', self.processS)
 
         # option: task move test..
         # super().setKeyHandler('n', self.processN)
@@ -187,5 +188,10 @@ class CalibHandEyeKeyHandler(KeyHandler):
 
     def processA(self, *args):
         handeye_automove = args[11]
+        if handeye_automove.isInitialized():
+            handeye_automove.start()
 
-        handeye_automove.start()
+    def processS(self, *args):
+        handeye_automove = args[11]
+        if handeye_automove.isInitialized():
+            handeye_automove.stop()
