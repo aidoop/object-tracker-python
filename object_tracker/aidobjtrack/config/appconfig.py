@@ -42,7 +42,7 @@ class AppConfig:
     HandEyeTargetZ = 0.20
     CalibMarkerID = 19
     TestMarkerID = 14
-    UseArucoBoard = False
+    UseArucoBoard = True
     HandEyeArucoDict = aruco.DICT_7X7_1000
     HandEyeArucoSize = 0.075
 
@@ -50,6 +50,6 @@ class AppConfig:
     # Debug Parameters
     #################################################
     # debug without @things-factory (Default = False)
-    ObjTrackingDebugMode = True
+    ObjTrackingDebugMode = False
     # debug without robot (Default = False)
-    ObjTrackingDebugWoRobot = True
+    ObjTrackingDebugWoRobot = False
