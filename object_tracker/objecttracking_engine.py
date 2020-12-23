@@ -35,6 +35,13 @@ if __name__ == '__main__':
     # prepare object update status
     objStatusUpdate = ObjectUpdateStatus(app_data.get_gql_client())
 
+    if (app_data.tracking_method == ObjectTrackingMethod.BOX):
+        cams = app_data.get_camera_list()
+        for cam in cams:
+            cv2.namedWindow(cam.camera_name, cv2.WINDOW_NORMAL)
+            cv2.setWindowProperty(
+                cam.camera_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+
     try:
         while(True):
 
@@ -152,7 +159,8 @@ if __name__ == '__main__':
                     vtc.objectMarkTracker.putTextData(color_image_view)
 
                     # display both color image and mask image
-                    images = np.hstack((color_image_view, sub_image))
+                    images = np.vstack((color_image_view, sub_image))
+
                     cv2.imshow(vtc.camera_name, images)
 
             # send object information to UI and clear all

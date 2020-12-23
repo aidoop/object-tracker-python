@@ -20,7 +20,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         super().setKeyHandler('c', self.processC)
         super().setKeyHandler('z', self.processZ)
         super().setKeyHandler('g', self.processG)
-        super().setKeyHandler('r', self.processR)
+        #super().setKeyHandler('r', self.processR)
         super().setKeyHandler('a', self.processA)
         super().setKeyHandler('s', self.processS)
 
@@ -95,69 +95,69 @@ class CalibHandEyeKeyHandler(KeyHandler):
                     "(" + str(handeye.distance) + ")"
                 infoText.setText(strText)
 
-    def processR(self, *args):
-        findAruco = args[0]
-        colorImage = args[1]
-        tvec = args[3]
-        rvec = args[4]
-        ids = args[2]
-        handeye = args[7]
-        infoText = args[8]
-        gqlDataClient = args[9]
-        robotName = args[10]
-        indy = args[12]
+    # def processR(self, *args):
+    #     findAruco = args[0]
+    #     colorImage = args[1]
+    #     tvec = args[3]
+    #     rvec = args[4]
+    #     ids = args[2]
+    #     handeye = args[7]
+    #     infoText = args[8]
+    #     gqlDataClient = args[9]
+    #     robotName = args[10]
+    #     indy = args[12]
 
-        PrintMsg.printStdErr(
-            "---------------------------------------------------------------")
-        if ids is None:
-            return
+    #     PrintMsg.printStdErr(
+    #         "---------------------------------------------------------------")
+    #     if ids is None:
+    #         return
 
-        if AppConfig.UseArucoBoard == False:
-            for idx in range(0, ids.size):
-                if(ids[idx] == AppConfig.CalibMarkerID):
-                    # get the current robot position
-                    currTPList = indy.getCurrentPos()
-                    # currTaskPose = gqlDataClient.getRobotPose(robotName)
+    #     if AppConfig.UseArucoBoard == False:
+    #         for idx in range(0, ids.size):
+    #             if(ids[idx] == AppConfig.CalibMarkerID):
+    #                 # get the current robot position
+    #                 currTPList = indy.getCurrentPos()
+    #                 # currTaskPose = gqlDataClient.getRobotPose(robotName)
 
-                    # # convert dict. to list
-                    # currTPList = [currTaskPose['x'], currTaskPose['y'], currTaskPose['z'],
-                    #               currTaskPose['u'], currTaskPose['v'], currTaskPose['w']]
+    #                 # # convert dict. to list
+    #                 # currTPList = [currTaskPose['x'], currTaskPose['y'], currTaskPose['z'],
+    #                 #               currTaskPose['u'], currTaskPose['v'], currTaskPose['w']]
 
-                    # capture additional matrices here
-                    handeye.captureHandEyeInputs(
-                        currTPList, rvec[idx], tvec[idx])
+    #                 # capture additional matrices here
+    #                 handeye.captureHandEyeInputs(
+    #                     currTPList, rvec[idx], tvec[idx])
 
-                    if handeye.cntInputData >= 3:
-                        handeye.calculateHandEyeMatrix()
+    #                 if handeye.cntInputData >= 3:
+    #                     handeye.calculateHandEyeMatrix()
 
-                    PrintMsg.printStdErr(
-                        "Input Data Count: " + str(handeye.cntInputData))
-                    strText = "Input Data Count: " + \
-                        str(handeye.cntInputData) + \
-                        "(" + str(handeye.distance) + ")"
-                    infoText.setText(strText)
-        else:
-            if findAruco is True:
-                # get the current robot position
-                currTPList = indy.getCurrentPos()
-                # currTaskPose = gqlDataClient.getRobotPose(robotName)
+    #                 PrintMsg.printStdErr(
+    #                     "Input Data Count: " + str(handeye.cntInputData))
+    #                 strText = "Input Data Count: " + \
+    #                     str(handeye.cntInputData) + \
+    #                     "(" + str(handeye.distance) + ")"
+    #                 infoText.setText(strText)
+    #     else:
+    #         if findAruco is True:
+    #             # get the current robot position
+    #             currTPList = indy.getCurrentPos()
+    #             # currTaskPose = gqlDataClient.getRobotPose(robotName)
 
-                # # convert dict. to list
-                # currTPList = [currTaskPose['x'], currTaskPose['y'], currTaskPose['z'],
-                #               currTaskPose['u'], currTaskPose['v'], currTaskPose['w']]
+    #             # # convert dict. to list
+    #             # currTPList = [currTaskPose['x'], currTaskPose['y'], currTaskPose['z'],
+    #             #               currTaskPose['u'], currTaskPose['v'], currTaskPose['w']]
 
-                # capture additional matrices here
-                handeye.captureHandEyeInputs(currTPList, rvec.T, tvec.T)
+    #             # capture additional matrices here
+    #             handeye.captureHandEyeInputs(currTPList, rvec.T, tvec.T)
 
-                if handeye.cntInputData >= 3:
-                    handeye.calculateHandEyeMatrix()
+    #             if handeye.cntInputData >= 3:
+    #                 handeye.calculateHandEyeMatrix()
 
-                PrintMsg.printStdErr(
-                    "Input Data Count: " + str(handeye.cntInputData))
-                strText = "Input Data Count: " + \
-                    str(handeye.cntInputData) + \
-                    "(" + str(handeye.distance) + ")"
-                infoText.setText(strText)
+    #             PrintMsg.printStdErr(
+    #                 "Input Data Count: " + str(handeye.cntInputData))
+    #             strText = "Input Data Count: " + \
+    #                 str(handeye.cntInputData) + \
+    #                 "(" + str(handeye.distance) + ")"
+    #             infoText.setText(strText)
 
     def processZ(self, *args):
         handeye = args[7]

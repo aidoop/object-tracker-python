@@ -68,11 +68,11 @@ if __name__ == '__main__':
 
     # create an indy7 object
     # TODO: should check here if auto-mode will be used..
-    if cameraObject.handEyeAutoMode == True:
-        indy7 = RobotIndy7Dev()
-        if(indy7.initalize(robotIP, AppConfig.INDY_SERVER_NAME) == False):
-            # print("Can't connect the robot and exit this process..")
-            sys.exit()
+    # if cameraObject.handEyeAutoMode == True:
+    #     indy7 = RobotIndy7Dev()
+    #     if(indy7.initalize(robotIP, AppConfig.INDY_SERVER_NAME) == False):
+    #         # print("Can't connect the robot and exit this process..")
+    #         sys.exit()
 
     # create a window to display video frames
     # cv2.namedWindow(cameraName)
@@ -173,19 +173,23 @@ if __name__ == '__main__':
                     if handeye_automove.get_stage() == HandEyeAutoMove.STAGE_GONEXT:
                         next_move = handeye_automove.get_next()
                         if next_move:
-                            indy7.moveTaskByAsync(next_move)
+                            # indy7.moveTaskByAsync(next_move)
+                            gqlDataClient.moveRobotTaskByNoWait(robotName, {
+                                'x': next_move[0], 'y': next_move[1], 'z': next_move[2], 'u': next_move[3], 'v': next_move[4], 'w': next_move[5]})
                         handeye_automove.set_stage(
                             HandEyeAutoMove.STAGE_CAPTURE)
                         robot_ready_count = 0
                     elif handeye_automove.get_stage() == HandEyeAutoMove.STAGE_CAPTURE:
-                        robot_status = indy7.getRobotStatus()
-                        if not robot_status['busy'] and robot_status['movedone']:
+                        # robot_status = indy7.getRobotStatus()
+                        robot_status = gqlDataClient.getRobotStatus(robotName)
+                        # if not robot_status['busy'] and robot_status['movedone']:
+                        if not robot_status['busy'] and robot_status['moveFinished']:
                             robot_ready_count += 1
 
                             if robot_ready_count > 30:
                                 # process the position capture operation(= keypress 'c')
                                 keyhandler.processKeyHandler(
-                                    114, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, infoText, gqlDataClient, robotName, handeye_automove, indy7)
+                                    99, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, infoText, gqlDataClient, robotName, handeye_automove)
                                 handeye_automove.set_stage(
                                     HandEyeAutoMove.STAGE_GONEXT)
                                 robot_ready_count = 0
@@ -198,7 +202,7 @@ if __name__ == '__main__':
 
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
-            if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, infoText, gqlDataClient, robotName, handeye_automove, indy7):
+            if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, infoText, gqlDataClient, robotName, handeye_automove):
                 break
 
             # have a delay to make CPU usage lower...

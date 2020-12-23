@@ -144,3 +144,12 @@ class VisonGqlDataClient:
 
     def getRobotPose(self, name):
         return self.client.get_robot_arm_pose(name=name)
+
+    def moveRobotTaskBy(self, name, pose):
+        return self.client.robot_task_moveby(name=name, pose=pose)
+
+    def moveRobotTaskByNoWait(self, name, pose):
+        return self.client.robot_task_moveby_nowait(name=name, pose=pose)
+
+    def getRobotStatus(self, name):
+        return self.client.get_robot_status(name=name)

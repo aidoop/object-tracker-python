@@ -10,7 +10,7 @@ from .graphql import graphql_query, graphql_mutation
 from .graphql import QUERY_TRACKING_WORKSPACE, QUERY_TRACKING_WORKSPACES, QUERY_TRACKING_CAMERA, QUERY_TRACKING_CAMERAS
 from .graphql import MUTATION_UPDATE_WORKSPACE_STATUS
 from .graphql import QUERY_TRACKABLE_OBJECT, QUERY_TRACKABLE_OBJECTS, QUERY_ROBOT_ARM, QUERY_ROBOT_ARMS, QUERY_ROBOT_ARM_POSE, MUTATION_ROBOT_ARM_POSE
-from .graphql import MUTATION_ROBOTAPI_GOHOME
+from .graphql import MUTATION_ROBOTAPI_GOHOME, MUTATION_ROBOTAPI_TASKMOVEBY, QUERY_ROBOTAPI_GET_STATUS, MUTATION_ROBOTAPI_TASKMOVEBYNOWAIT
 
 
 class Client:
@@ -104,6 +104,21 @@ class Client:
     def update_tracking_workspace_status(self, name, status):
         pass
 
+    #####################################
+    # Robot API
+
     @graphql_mutation(MUTATION_ROBOTAPI_GOHOME, ['name'])
     def robot_go_home(self, name):
+        pass
+
+    @graphql_mutation(MUTATION_ROBOTAPI_TASKMOVEBY, ['name', 'pose'])
+    def robot_task_moveby(self, name, pose):
+        pass
+
+    @graphql_mutation(MUTATION_ROBOTAPI_TASKMOVEBYNOWAIT, ['name', 'pose'])
+    def robot_task_moveby_nowait(self, name, pose):
+        pass
+
+    @graphql_query(QUERY_ROBOTAPI_GET_STATUS, ['name'])
+    def get_robot_status(self, name):
         pass
