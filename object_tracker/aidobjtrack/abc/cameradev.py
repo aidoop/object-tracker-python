@@ -32,25 +32,25 @@ class CameraDev(metaclass=ABCMeta):
 
     # start to capture frames
     @abstractmethod
-    def startCapture(self):
+    def start_capture(self):
         pass
 
     # stop to capture frames
     @abstractmethod
-    def stopCapture(self):
+    def stop_capture(self):
         pass
 
     # wait for a video color frame and return the frame
     @abstractmethod
-    def getFrame(self):
+    def get_video_frame(self):
         pass
 
     # wait for a video frame & and return color & depth frames
     @abstractmethod
-    def getFrames(self):
+    def get_frames(self):
         pass
 
     # get 3D position w.r.t an image pixel based on camera-based coordination
     @abstractmethod
-    def get3DPosition(self):
+    def get_3D_pos(self):
         pass

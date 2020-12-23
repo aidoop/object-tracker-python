@@ -151,9 +151,9 @@ class BoxObjectTracker(ObjectTracker):
             assert self.scores_list is not None or self.center_point_list is not None
 
             for idx, (markerObject, cpoint, angle) in enumerate(zip(self.markerObjectList, self.center_point_list, self.mask_angle_list)):
-                tvec = vtc.vcap.get3DPosition(cpoint[0], cpoint[1])
+                tvec = vtc.vcap.get_3D_pos(cpoint[0], cpoint[1])
                 # print("---------------------------------------------")
-                # print(vtc.vcap.get3DPosition(cpoint[0], cpoint[1]))
+                # print(vtc.vcap.get_3D_pos(cpoint[0], cpoint[1]))
                 # print("---------------------------------------------")
                 # NOTE: don't need to consider rotation here. we don't have any pose inforation except translation
                 rvec = np.array([0.0, 0.0, 0.0])

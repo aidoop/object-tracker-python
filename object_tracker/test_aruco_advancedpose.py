@@ -53,7 +53,7 @@ if __name__ == '__main__':
     try:
         while(True):
             # Wait for a coherent pair of frames: depth and color
-            color_image = vcap.getFrame()
+            color_image = vcap.get_video_frame()
 
             # operations on the frame
             gray = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)

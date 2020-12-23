@@ -51,8 +51,8 @@ if __name__ == '__main__':
             vtcList = app_data.get_camera_list()
             for vtc in vtcList:
                 # get a frame
-                color_image = vtc.vcap.getFrame()
-                #(color_image, depth_image) = vtc.vcap.getFrames()
+                color_image = vtc.vcap.get_video_frame()
+                #(color_image, depth_image) = vtc.vcap.get_frames()
                 # assert color_image is not None, 'no captured frame'
                 if color_image is None:
                     continue

@@ -102,7 +102,7 @@ if __name__ == '__main__':
     try:
         while(True):
             # Wait for a coherent pair of frames: depth and color
-            color_image = vcap.getFrame()
+            color_image = vcap.get_video_frame()
 
             # change the format to BGR format for opencv
             if cameraObject.type == 'realsense-camera':

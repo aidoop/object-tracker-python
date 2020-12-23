@@ -45,25 +45,25 @@ class OpencvCapture(CameraDev):
     def prepare(self):
         pass
 
-    def startCapture(self):
+    def start_capture(self):
         pass
 
-    def stopCapture(self):
+    def stop_capture(self):
         pass
 
     # wait for a video color frame and return the frame
-    def getFrame(self):
+    def get_video_frame(self):
         # get a frame
         ret, frame = self.__videoCapture.read()
         if not ret:
             frame = None
         return frame
 
-    def getFrames(self):
+    def get_frames(self):
         pass
 
     # get 3D position w.r.t an image pixel based on camera-based coordination
-    def get3DPosition(self, imageX, imageY):
+    def get_3D_pos(self, imageX, imageY):
         raise NotImplementedError
 
 
@@ -80,12 +80,12 @@ if __name__ == '__main__':
 
     rsCamDev.initialize(640, 480, 30)
 
-    rsCamDev.startCapture()
+    rsCamDev.start_capture()
 
     frameIdx = 0
     for frmIdx in range(0, 10):
-        rsCamDev.getFrame()
+        rsCamDev.get_video_frame()
         print(frameIdx)
         frameIdx += 1
 
-    rsCamDev.stopCapture()
+    rsCamDev.stop_capture()

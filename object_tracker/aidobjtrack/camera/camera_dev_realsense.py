@@ -68,7 +68,7 @@ class RealsenseCapture(CameraDev):
         self.set_flag_filters(True)
         self.prepare_filters()
 
-    def startCapture(self):
+    def start_capture(self):
         # start streaming
         self.__pipecfg = self.__pipeline.start(self.__config)
         depth_sensor = self.__pipecfg.get_device().first_depth_sensor()
@@ -83,7 +83,7 @@ class RealsenseCapture(CameraDev):
         if self.is_clipping == True:
             self.clipping_distance = self.clipping_distance / self.depth_scale
 
-    def stopCapture(self):
+    def stop_capture(self):
         # stop streaming
         self.__pipeline.stop()
 
@@ -91,7 +91,7 @@ class RealsenseCapture(CameraDev):
         self.is_clipping = True if clipping_distance > 0.0 else False
         self.clipping_distance = clipping_distance
 
-    def getFrame(self):
+    def get_video_frame(self):
         # wait for a coherent pair of frames: depth an--d color
         self.__frames = self.__pipeline.wait_for_frames()
 
@@ -125,7 +125,7 @@ class RealsenseCapture(CameraDev):
 
         # return (color_image_outofdist, depth_image) if self.is_clipping else (color_image, depth_image)
 
-    def getFrames(self):
+    def get_frames(self):
         # wait for a coherent pair of frames: depth an--d color
         self.__frames = self.__pipeline.wait_for_frames()
 
@@ -180,7 +180,7 @@ class RealsenseCapture(CameraDev):
         return arg_depth_frame
 
     # get 3D position w.r.t an image pixel based on camera-based coordination
-    def get3DPosition(self, imageX, imageY):
+    def get_3D_pos(self, imageX, imageY):
         aligned_depth_frame = self.__aligned_frames.get_depth_frame()
         depth = aligned_depth_frame.get_distance(imageX, imageY)
 
@@ -212,12 +212,12 @@ if __name__ == '__main__':
 
     rsCamDev.initialize(640, 480, 30)
 
-    rsCamDev.startCapture()
+    rsCamDev.start_capture()
 
     frameIdx = 0
     for frmIdx in range(0, 10):
-        rsCamDev.getFrame()
+        rsCamDev.get_video_frame()
         print(frameIdx)
         frameIdx += 1
 
-    rsCamDev.stopCapture()
+    rsCamDev.stop_capture()

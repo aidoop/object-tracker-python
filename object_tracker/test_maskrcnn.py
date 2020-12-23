@@ -24,7 +24,7 @@ def mouse_event_cb(event, x, y, flags, param):
 
     if event == cv2.EVENT_LBUTTONDBLCLK:
         print('click: ', x, y)
-        camera_coord = globalData.vcap.get3DPosition(x, y)
+        camera_coord = globalData.vcap.get_3D_pos(x, y)
         print(camera_coord)
 
         hmTarget = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [
@@ -50,7 +50,7 @@ def mouse_event_cb(event, x, y, flags, param):
 
 def move_to_poistion(glbData, x, y):
     print('click: ', x, y)
-    camera_coord = glbData.vcap.get3DPosition(x, y)
+    camera_coord = glbData.vcap.get_3D_pos(x, y)
     print(camera_coord)
 
     hmTarget = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [
@@ -156,7 +156,7 @@ if __name__ == '__main__':
             # start: measure fps
             dt0 = datetime.now()
 
-            (color_image, depth_image) = vcap.getFrame()
+            (color_image, depth_image) = vcap.get_video_frame()
 
             if (color_image is None) or (depth_image is None):
                 continue

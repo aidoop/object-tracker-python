@@ -28,19 +28,19 @@ class VideoCapture:
         self.name = name
 
     def start(self):
-        return self.camDev.startCapture()
+        return self.camDev.start_capture()
 
     def stop(self):
-        return self.camDev.stopCapture()
+        return self.camDev.stop_capture()
 
     def getName(self):
         return self.name
 
-    def getFrame(self):
-        return self.camDev.getFrame()
+    def get_video_frame(self):
+        return self.camDev.get_video_frame()
 
-    def getFrames(self):
-        return self.camDev.getFrames()
+    def get_frames(self):
+        return self.camDev.get_frames()
 
     def getInternalIntrinsicsMat(self):
         return self.camDev.getInternalIntrinsicsMat()
@@ -58,8 +58,8 @@ class VideoCapture:
             dist = dcnode.mat()
         return(mtx, dist)
 
-    def get3DPosition(self, imageX, imageY):
-        return self.camDev.get3DPosition(imageX, imageY)
+    def get_3D_pos(self, imageX, imageY):
+        return self.camDev.get_3D_pos(imageX, imageY)
 
 
 ###############################################################################
@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
     frameIdx = 0
     for frmIdx in range(0, 10):
-        vcap.getFrame()
+        vcap.get_video_frame()
         print(frameIdx)
         frameIdx += 1
 

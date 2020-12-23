@@ -84,7 +84,7 @@ if __name__ == '__main__':
     try:
         while(True):
             # Wait for a coherent pair of frames: depth and color
-            (color_image, depth_image) = vcap.getFrame()
+            (color_image, depth_image) = vcap.get_video_frame()
 
             # check core variables are available..
             if ObjectTrackerErrMsg.checkValueIsNone(mtx, "camera matrix") == False:
@@ -122,7 +122,7 @@ if __name__ == '__main__':
                         inputObjPts, rvec[idx], tvec[idx], mtx, dist)
                     centerPoints.append(tuple(imgpts[0][0]))
 
-            tvec2 = np.array(vcap.get3DPosition(
+            tvec2 = np.array(vcap.get_3D_pos(
                 centerPoints[0][0], centerPoints[0][1]))
             print(tvec2)
             # tvec2.reshape(1,1,3)
@@ -132,7 +132,7 @@ if __name__ == '__main__':
             # tvec[0][0][2] = tvec2[2]
 
             # print(centerPoints[0])
-            # print(vcap.get3DPosition(centerPoints[0][0], centerPoints[0][1]))
+            # print(vcap.get_3D_pos(centerPoints[0][0], centerPoints[0][1]))
             # print('-------------------------------------')
 
             infoText.draw(color_image)
