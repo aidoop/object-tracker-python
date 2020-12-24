@@ -12,6 +12,7 @@ from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
 from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
 from aidobjtrack.camera.camera_videocapture import VideoCapture
 from aidobjtrack.robot.robot_dev_indydcp import RobotIndy7Dev
+from aidobjtrack.robot.robot_arm import RobotArm
 from aidobjtrack.util.util import ObjectTrackerErrMsg, DisplayInfoText
 from aidobjtrack.keyhandler.calibhandeye_keyhandler_test import CalibHandEyeKeyHandler
 from aidobjtrack.util.hm_util import *
@@ -43,7 +44,11 @@ if __name__ == '__main__':
 
     # create an indy7 object
     indy7 = RobotIndy7Dev()
-    if(indy7.initalize(AppConfig.INDY_SERVER_IP, AppConfig.INDY_SERVER_NAME) == False):
+
+    # create an robot arm object
+    robot_arm = RobotArm(indy7, 'indy7')
+
+    if(robot_arm.start(AppConfig.INDY_SERVER_IP) == False):
         print("Can't connect the robot and exit this process..")
         sys.exit()
 
@@ -86,8 +91,8 @@ if __name__ == '__main__':
         AppConfig.HandEyeArucoDict, AppConfig.HandEyeArucoSize, mtx, dist)
     handeyeAruco.setCalibMarkerID(19)
 
-    # start indy7 as a direct-teaching mode as default
-    # indy7.setDirectTeachingMode(True)
+    # start robot_arm as a direct-teaching mode as default
+    # robot_arm.set_teaching_mode(True)
 
     # create info text
     infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
@@ -111,7 +116,7 @@ if __name__ == '__main__':
                 break
             if ObjectTrackerErrMsg.checkValueIsNone(handeye, "hand eye matrix") == False:
                 break
-            if ObjectTrackerErrMsg.checkValueIsNone(indy7, "indy7 object") == False:
+            if ObjectTrackerErrMsg.checkValueIsNone(robot_arm, "robot_arm object") == False:
                 break
 
             (flagFindMainAruco, ids, rvec, tvec) = handeyeAruco.processArucoMarker(
@@ -125,18 +130,18 @@ if __name__ == '__main__':
                 if handeye_automove.get_stage() == HandEyeAutoMove.STAGE_GONEXT:
                     next_move = handeye_automove.get_next()
                     if next_move:
-                        indy7.moveTaskByAsync(next_move)
+                        robot_arm.move_task_by_async(next_move)
                     handeye_automove.set_stage(HandEyeAutoMove.STAGE_CAPTURE)
                     robot_ready_count = 0
                 elif handeye_automove.get_stage() == HandEyeAutoMove.STAGE_CAPTURE:
-                    robot_status = indy7.getRobotStatus()
+                    robot_status = robot_arm.get_robot_status()
                     if not robot_status['busy'] and robot_status['movedone']:
                         robot_ready_count += 1
 
                         if robot_ready_count > 30:
                             # process the position capture operation(= keypress 'c')
                             keyhandler.processKeyHandler(
-                                99, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, indy7, infoText, handeye_automove)
+                                99, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, robot_arm, infoText, handeye_automove)
                             handeye_automove.set_stage(
                                 HandEyeAutoMove.STAGE_GONEXT)
                             robot_ready_count = 0
@@ -148,7 +153,7 @@ if __name__ == '__main__':
 
             # handle key inputs
             pressedKey = (cv2.waitKey(1) & 0xFF)
-            if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, indy7, infoText, handeye_automove):
+            if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, robot_arm, infoText, handeye_automove):
                 break
 
             # have a delay to make CPU usage lower...
@@ -159,10 +164,10 @@ if __name__ == '__main__':
 
     finally:
         # direct teaching mode is disalbe before exit-
-        indy7.setDirectTeachingMode(False)
+        robot_arm.set_teaching_mode(False)
         # Stop streaming
         vcap.stop()
 
         # arrange all to finitsh this application here
         cv2.destroyAllWindows()
-        indy7.finalize()
+        robot_arm.stop()

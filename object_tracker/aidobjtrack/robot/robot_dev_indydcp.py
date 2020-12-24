@@ -1,20 +1,20 @@
 
 from time import sleep
 
-from aidobjtrack.abc.robot_dev import RobotDev
-import aidobjtrack.robot.indydcp_client as indycli
+from aidobjtrack.abc.robot_arm_dev import RobotArmDev
+import aidobjtrack.robot.provider.neuromeka.indydcp_client as indycli
 from aidobjtrack.util.util import PrintMsg
 
 
 # Neuromeka Indy7
 
-
-class RobotIndy7Dev(RobotDev):
+class RobotIndy7Dev(RobotArmDev):
 
     # initialize parameters for robot operations
-    def initalize(self, servIP, connName):
-        # Connect
-        self.indy = indycli.IndyDCPClient(servIP, connName)
+    # TODO: manage robot parameters varied by robot manufacturer to connect a robot
+    def start(self, connect_ip):
+        # connect to indy7 using fixed string "NRMK-Indy7"
+        self.indy = indycli.IndyDCPClient(connect_ip, "NRMK-Indy7")
         conResult = self.indy.connect()
         if conResult == False:
             print("Connection Failed")
@@ -38,58 +38,67 @@ class RobotIndy7Dev(RobotDev):
         return True
 
     # finalize this object
-    def finalize(self):
+    def stop(self):
         self.indy.disconnect()
 
-    # start to move TCP
-    def moveTaskPos(self, xyzuvw):
+    # move to based on task coordinate system
+    def move_task_to(self, xyzuvw):
         self.indy.task_move_to(xyzuvw)
         self.indy.wait_for_move_finish()
 
-    def moveTaskBy(self, xyzuvw):
+    # move by based on task coordinate system
+    def move_task_by(self, xyzuvw):
         self.indy.task_move_by(xyzuvw)
         self.indy.wait_for_move_finish()
 
-    def moveTaskByAsync(self, xyzuvw):
+    # joint-to on task cooridnate system
+    def joint_task_to(self, jointpos):
+        self.indy.joint_move_to(jointpos)
+        self.indy.wait_for_move_finish()
+
+    # joint-by on task cooridnate system
+    def joint_task_by(self, jointpos):
+        self.indy.joint_move_by(jointpos)
+        self.indy.wait_for_move_finish()
+
+    # move by based on task coordinate system (no wait to finish moving)
+    def move_task_by_async(self, xyzuvw):
         self.indy.task_move_by(xyzuvw)
 
-    def getRobotStatus(self):
+    # get robot status
+    def get_robot_status(self):
         return self.indy.get_robot_status()
-        # while self.get_robot_status()['busy']:
-        #     pass
-        # while self.get_robot_status()['movedone']:
-        #     print("Move finished!")
 
     # go to home
-    def home(self):
+    def move_to_home(self):
         self.indy.go_home()
         self.indy.wait_for_move_finish()
 
     # go to zero
-    def zero(self):
+    def move_to_zero(self):
         self.indy.go_zero()
         self.indy.wait_for_move_finish()
 
     # get the current hand position
-    def getCurrentPos(self):
+    def get_task_pos(self):
         return self.indy.get_task_pos()
 
-    def checkNextMove(self, next_task_pos, curr_joint_pos):
+    def check_next_move(self, next_task_pos, curr_joint_pos):
         return self.indy.get_inv_kin(next_task_pos, curr_joint_pos)
 
     # get the current joint position
-    def getCurrentJointPos(self):
+    def get_joint_pos(self):
         return self.indy.get_joint_pos()
 
     # set direct-teaching mode
-    def setDirectTeachingMode(self, flag):
+    def set_teaching_mode(self, flag):
         self.indy.direct_teaching(flag)
 
     # get the direct-teaching mode
-    def getDirectTeachingMode(self):
+    def get_teaching_mode(self):
         robotStatus = self.indy.get_robot_status()
         return robotStatus['direct_teaching']
 
-    # reset
-    def resetRobot(self):
+    # reset the robot
+    def reset_robot(self):
         self.indy.reset_robot()

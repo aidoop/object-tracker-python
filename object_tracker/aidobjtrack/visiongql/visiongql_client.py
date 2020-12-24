@@ -151,5 +151,5 @@ class VisonGqlDataClient:
     def moveRobotTaskByNoWait(self, name, pose):
         return self.client.robot_task_moveby_nowait(name=name, pose=pose)
 
-    def getRobotStatus(self, name):
+    def get_robot_status(self, name):
         return self.client.get_robot_status(name=name)

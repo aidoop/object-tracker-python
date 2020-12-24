@@ -9,7 +9,7 @@ from aidobjtrack.config.appconfig import AppConfig
 from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
 from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
 from aidobjtrack.camera.camera_videocapture import VideoCapture
-from aidobjtrack.robot.robot_dev_indydcp import RobotIndy7Dev
+#from aidobjtrack.robot.robot_dev_indydcp import RobotIndy7Dev
 from aidobjtrack.util.util import ObjectTrackerErrMsg, DisplayInfoText
 from aidobjtrack.keyhandler.calibhandeye_keyhandler import CalibHandEyeKeyHandler
 from aidobjtrack.util.hm_util import *
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     handeyeAruco.setCalibMarkerID(AppConfig.CalibMarkerID)
 
     # start indy7 as a direct-teaching mode as default
-    # indy7.setDirectTeachingMode(True)
+    # indy7.set_teaching_mode(True)
 
     # create info text
     infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
@@ -173,15 +173,16 @@ if __name__ == '__main__':
                     if handeye_automove.get_stage() == HandEyeAutoMove.STAGE_GONEXT:
                         next_move = handeye_automove.get_next()
                         if next_move:
-                            # indy7.moveTaskByAsync(next_move)
+                            # indy7.move_task_by_async(next_move)
                             gqlDataClient.moveRobotTaskByNoWait(robotName, {
                                 'x': next_move[0], 'y': next_move[1], 'z': next_move[2], 'u': next_move[3], 'v': next_move[4], 'w': next_move[5]})
                         handeye_automove.set_stage(
                             HandEyeAutoMove.STAGE_CAPTURE)
                         robot_ready_count = 0
                     elif handeye_automove.get_stage() == HandEyeAutoMove.STAGE_CAPTURE:
-                        # robot_status = indy7.getRobotStatus()
-                        robot_status = gqlDataClient.getRobotStatus(robotName)
+                        # robot_status = indy7.get_robot_status()
+                        robot_status = gqlDataClient.get_robot_status(
+                            robotName)
                         # if not robot_status['busy'] and robot_status['movedone']:
                         if not robot_status['busy'] and robot_status['moveFinished']:
                             robot_ready_count += 1
@@ -213,8 +214,8 @@ if __name__ == '__main__':
 
     finally:
         # direct teaching mode is disalbe before exit
-        # if( 1.getDirectTeachingMode() == True):
-        #     indy7.setDirectTeachingMode(False)
+        # if( 1.get_teaching_mode() == True):
+        #     indy7.set_teaching_mode(False)
         # Stop streaming
         vcap.stop()
 

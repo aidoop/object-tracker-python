@@ -38,14 +38,14 @@ def mouse_event_cb(event, x, y, flags, param):
 
         # [xn, yn, zn, un, vn, wn] = xyzuvw
         # # xyzuvw = [x, y, z, u*(-1), v+180.0, w]
-        # curpos = glbData.robot.getCurrentPos()
+        # curpos = glbData.robot.get_task_pos()
         # [xc, yc, zc, uc, vc, wc] = curpos
         # xyzuvw = [xn, yn, zc, uc, vc, wc]
         # print('last: ', xyzuvw)
-        # glbData.robot.moveTaskPos(xyzuvw)
+        # glbData.robot.move_task_to(xyzuvw)
 
     if event == cv2.EVENT_RBUTTONDBLCLK:
-        glbData.robot.home()
+        glbData.robot.move_to_home()
 
 
 def move_to_poistion(glbData, x, y):
@@ -63,11 +63,10 @@ def move_to_poistion(glbData, x, y):
 
     [xn, yn, zn, un, vn, wn] = xyzuvw
     # xyzuvw = [x, y, z, u*(-1), v+180.0, w]
-    curpos = glbData.robot.getCurrentPos()
+    curpos = glbData.robot.get_task_pos()
     [xc, yc, zc, uc, vc, wc] = curpos
     xyzuvw = [xn, yn, zc, uc, vc, wc]
     print('last: ', xyzuvw)
-    glbData.robot.moveTaskPos(xyzuvw)
 
 
 if __name__ == '__main__':

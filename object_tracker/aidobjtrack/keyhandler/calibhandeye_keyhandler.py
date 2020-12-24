@@ -2,7 +2,6 @@ import cv2
 
 from aidobjtrack.config.appconfig import AppConfig
 from aidobjtrack.abc.keyhandlerdev import KeyHandler
-from aidobjtrack.robot.robot_dev_indydcp import RobotIndy7Dev
 from aidobjtrack.util.util import PrintMsg
 from aidobjtrack.util.hm_util import *
 from aidobjtrack.handeye.calibhandeye_handeye import *
@@ -52,7 +51,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
             for idx in range(0, ids.size):
                 if(ids[idx] == AppConfig.CalibMarkerID):
                     # get the current robot position
-                    # currTaskPose = indy.getCurrentPos()
+                    # currTaskPose = indy.get_task_pos()
                     currTaskPose = gqlDataClient.getRobotPose(robotName)
 
                     # convert dict. to list
@@ -75,7 +74,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         else:
             if findAruco is True:
                 # get the current robot position
-                # currTaskPose = indy.getCurrentPos()
+                # currTaskPose = indy.get_task_pos()
                 currTaskPose = gqlDataClient.getRobotPose(robotName)
 
                 # convert dict. to list
@@ -116,7 +115,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
     #         for idx in range(0, ids.size):
     #             if(ids[idx] == AppConfig.CalibMarkerID):
     #                 # get the current robot position
-    #                 currTPList = indy.getCurrentPos()
+    #                 currTPList = indy.get_task_pos()
     #                 # currTaskPose = gqlDataClient.getRobotPose(robotName)
 
     #                 # # convert dict. to list
@@ -139,7 +138,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
     #     else:
     #         if findAruco is True:
     #             # get the current robot position
-    #             currTPList = indy.getCurrentPos()
+    #             currTPList = indy.get_task_pos()
     #             # currTaskPose = gqlDataClient.getRobotPose(robotName)
 
     #             # # convert dict. to list

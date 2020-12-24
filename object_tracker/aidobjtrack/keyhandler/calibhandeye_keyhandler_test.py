@@ -4,6 +4,7 @@ from time import sleep
 from aidobjtrack.config.appconfig import AppConfig
 from aidobjtrack.abc.keyhandlerdev import KeyHandler
 from aidobjtrack.robot.robot_dev_indydcp import RobotIndy7Dev
+from aidobjtrack.robot.robot_arm import RobotArm
 from aidobjtrack.util.util import PrintMsg
 from aidobjtrack.util.hm_util import *
 from aidobjtrack.handeye.calibhandeye_handeye import *
@@ -38,20 +39,20 @@ class CalibHandEyeKeyHandler(KeyHandler):
         super().enableExitFlag()
 
     def processD(self, *args):
-        indy = args[8]
+        robot_arm = args[8]
         # set direct-teaching mode on
         PrintMsg.printStdErr("direct teaching mode: On")
-        indy.setDirectTeachingMode(True)
+        robot_arm.set_teaching_mode(True)
 
     def processF(self, *args):
-        indy = args[8]
+        robot_arm = args[8]
         # set direct-teaching mode off
         PrintMsg.printStdErr("direct teaching mode: Off")
-        indy.setDirectTeachingMode(False)
+        robot_arm.set_teaching_mode(False)
 
     def processR(self, *args):
-        indy = args[8]
-        indy.resetRobot()
+        robot_arm = args[8]
+        robot_arm.reset_robot()
         PrintMsg.printStdErr("resetting the robot")
 
     def processC(self, *args):
@@ -61,7 +62,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         rvec = args[4]
         ids = args[2]
         handeye = args[7]
-        indy = args[8]
+        robot_arm = args[8]
         infoText = args[9]
 
         PrintMsg.printStdErr(
@@ -73,7 +74,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
             for idx in range(0, ids.size):
                 if(ids[idx] == AppConfig.CalibMarkerID):
                     # get the current robot position
-                    currTaskPose = indy.getCurrentPos()
+                    currTaskPose = robot_arm.get_task_pos()
 
                     # capture additional matrices here
                     handeye.captureHandEyeInputs(
@@ -91,7 +92,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         else:
             if findAruco is True:
                 # get the current robot position
-                currTaskPose = indy.getCurrentPos()
+                currTaskPose = robot_arm.get_task_pos()
 
                 # capture additional matrices here
                 handeye.captureHandEyeInputs(currTaskPose, rvec.T, tvec.T)
@@ -135,7 +136,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         rvec = args[4]
         ids = args[2]
         handeye = args[7]
-        indy = args[8]
+        robot_arm = args[8]
         infoText = args[9]
 
         PrintMsg.printStdErr(
@@ -177,19 +178,19 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 xyzuvw = [x, y, z, u*(-1), v+180.0, w]  # test w+180
                 PrintMsg.printStdErr("Modifed TCP XYZUVW: ")
                 PrintMsg.printStdErr(xyzuvw)
-                # indy.moveTaskPos(xyzuvw)
+                # robot_arm.move_task_to(xyzuvw)
 
-                curjpos = indy.getCurrentJointPos()
-                nextMoveAvail = indy.checkNextMove(xyzuvw, curjpos)
+                curjpos = robot_arm.get_joint_pos()
+                nextMoveAvail = robot_arm.check_next_move(xyzuvw, curjpos)
                 print('nextMoveAvail: ', nextMoveAvail)
-                print('currentTaskPos: ', indy.getCurrentPos())
+                print('currentTaskPos: ', robot_arm.get_task_pos())
                 print('nextTaskMove: ', xyzuvw)
 
                 if(nextMoveAvail != [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]):
-                    indy.moveTaskPos(xyzuvw)
+                    robot_arm.move_task_to(xyzuvw)
                 else:
                     xyzuvw = [x, y, z, u*(-1), v+180.0, w+180]
-                    indy.moveTaskPos(xyzuvw)
+                    robot_arm.move_task_to(xyzuvw)
 
                 # # get a HM from TCP to Base
                 # hmRecal = HMUtil.convertXYZABCtoHMDeg(xyzuvw)
@@ -199,21 +200,20 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 # xyzuvw2 = HMUtil.convertHMtoXYZABCDeg(hmResult2)
                 # PrintMsg.printStdErr("Recalculated XYZUVW: ")
                 # PrintMsg.printStdErr(xyzuvw2)
-                # #indy.moveTaskPos(xyzuvw2)
 
     def processF(self, *args):
         tvec = args[3]
         rvec = args[4]
         ids = args[2]
         handeye = args[7]
-        indy = args[8]
+        robot_arm = args[8]
 
         for idx in range(0, ids.size):
             if ids[idx] == AppConfig.CalibMarkerID:
                 print('---------------------------------------')
 
                 # get the current robot position
-                robot_curr_pos = indy.getCurrentPos()
+                robot_curr_pos = robot_arm.get_task_pos()
                 print('current robot position: ', robot_curr_pos)
 
                 # get the current camera-based matrix
@@ -236,14 +236,14 @@ class CalibHandEyeKeyHandler(KeyHandler):
         rvec = args[4]
         ids = args[2]
         handeye = args[7]
-        indy = args[8]
+        robot_arm = args[8]
 
         for idx in range(0, ids.size):
             if ids[idx] == AppConfig.CalibMarkerID:
                 print('---------------------------------------')
 
                 # get the current robot position
-                robot_curr_pos = indy.getCurrentPos()
+                robot_curr_pos = robot_arm.get_task_pos()
                 print('robot position: ', robot_curr_pos)
 
                 # get the predefined handeye matrix
@@ -260,7 +260,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         rvec = args[4]
         ids = args[2]
         handeye = args[7]
-        indy = args[8]
+        robot_arm = args[8]
         handeye_automove = args[10]
 
         handeye_automove.start()

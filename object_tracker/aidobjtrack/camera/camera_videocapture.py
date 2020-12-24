@@ -33,7 +33,7 @@ class VideoCapture:
     def stop(self):
         return self.camDev.stop_capture()
 
-    def getName(self):
+    def get_name(self):
         return self.name
 
     def get_video_frame(self):
