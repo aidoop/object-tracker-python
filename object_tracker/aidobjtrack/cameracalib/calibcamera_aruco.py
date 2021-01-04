@@ -6,7 +6,7 @@ import datetime
 import glob
 import sys
 
-import aidobjtrack.config.appconfig
+from aidobjtrack.config.appconfig import AppConfig
 from aidobjtrack.aruco.aruco_detect import ArucoDetect
 
 
@@ -52,7 +52,7 @@ class CalibrationCameraAruco:
         # start camera calibartion
         if (len(id_list) > 0):
             ret, mtx, dist = self.arucoDetect.calibrateCamera(
-                corners_list, id_list, counter, (config.VideoFrameHeight, config.VideoFrameWidth))
+                corners_list, id_list, counter, (AppConfig.VideoFrameHeight, AppConfig.VideoFrameWidth))
             print("Reprojection Error: " + str(ret), file=sys.stderr)
 
             # TODO: should check this reprojection eror is available...

@@ -32,7 +32,7 @@ class AppConfig:
     ArucoSize = 0.05
 
     # camera calibration parameters
-    UseCalibChessBoard = True
+    UseCalibChessBoard = False
     ChessWidth = 10
     ChessHeight = 7
 
