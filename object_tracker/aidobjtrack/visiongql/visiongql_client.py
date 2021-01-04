@@ -49,7 +49,8 @@ class VisonGqlDataClient:
                 cameraObject.setCameraMatrix(
                     cameraData['cameraMatrix']['rows'], cameraData['cameraMatrix']['columns'], cameraData['cameraMatrix']['data'])
 
-            cameraObject.handEyeAutoMode = cameraData['handEyeAutoMode']
+            # deleted handEyeAutoMode
+            # cameraObject.handEyeAutoMode = cameraData['handEyeAutoMode']
 
             if ObjectTypeCheck.checkValueIsAvail(cameraData['handEyeMatrix']):
                 cameraObject.setHandeyeMatrix(

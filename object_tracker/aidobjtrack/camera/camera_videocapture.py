@@ -5,7 +5,7 @@ import cv2
 from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture  # for an example
 
 
-class VideoCapture:
+class VideoCapture(object):
 
     def __new__(cls, camDev, width, height, fps, name):
         if camDev == None:
