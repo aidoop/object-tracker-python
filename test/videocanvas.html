@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello</title>
+  </head>
+  <body>
+    <video id="videoInput" style="display: none"></video>
+    <canvas id="videoOutput"></canvas>
+    <button onclick="stream()">Send</button>
+  </body>
+  <script>
+    var w = 640,
+      h = 480;
+    var url = "ws://localhost:3088";
+
+    var canvas = document.getElementById("videoOutput");
+    var context = canvas.getContext('2d')
+    canvas.width = w;
+    canvas.height = h;
+
+    var ws = new WebSocket(url);
+    ws.onopen = function () {
+      console.log("Websocket is connected.");
+    };
+    ws.onmessage = function (msg) {
+      //console.log(msg.data);
+      var image = new Image()
+      image.src = 'data:image/jpeg;base64,' + data
+      image.onload = () => {
+        context.drawImage(image, 0, 0)
+        URL.revokeObjectURL(data)
+      }
+    };
+
+    // set canvas to draw a frame
+    function processImage() {
+      ctx.drawImage(video, 0, 0, w, h);
+      setTimeout(processImage, 1);
+    }
+    processImage();
+
+    function stream() {
+      setInterval(sendImage, 30);
+    }
+
+    function sendImage() {
+      var rawData = canvas.toDataURL("image/jpeg", 0.5);
+      ws.send(rawData);
+    }
+  </script>
+</html>

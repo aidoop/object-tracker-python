@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html  lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <!-- <script src="js/jquery-2.1.0.js" type="text/javascript" charset="utf-8"></script> -->
+       <title>websocket communication client</title>
+       <script type="text/javascript">
+         function WebSocketTest()
+         {
+            if ("WebSocket" in window)
+            {
+                // Open a web socket
+               var ws = new WebSocket("ws://192.168.101.95:5678");
+               
+               // Callback function after connection establishment
+               ws.onopen = function()
+               {
+                               // Web Socket is connected, use send() method to send data
+                  ws.send("begin");
+               };
+               
+                               // Callback function after receiving server message
+               ws.onmessage = function (evt) 
+               { 
+                  var received_msg = evt.data;
+                  
+				 // alert("Received message:"+received_msg);
+                             console.log("Content to be output" + received_msg);
+                             blobToDataURI(received_msg,function(result){ //blob format and then converted to base64 format
+                  document.getElementById('img').src = result;
+         })
+				  var imgUrl=tobase(received_msg)
+//				  $('#img').html('<img src="'+imgUrl+'" />')
+               };
+               
+                               // Callback function after the connection is closed
+               ws.onclose = function()
+               { 
+                                     // Close websocket
+                                     alert("The connection is closed..."); 
+               };
+            }
+            else
+            {
+                               // The browser does not support WebSocket
+                               alert("Your browser does not support WebSocket!");
+            }
+         }
+        
+         function blobToDataURI(blob, callback) {
+            var reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onload = function (e) {
+               callback(e.target.result);
+            }
+         }
+    
+      </script>
+   </head>
+   <body οnlοad="WebSocketTest()">
+	<div><img src="" id="img" alt=""></div>
+   </body>
+</html>
