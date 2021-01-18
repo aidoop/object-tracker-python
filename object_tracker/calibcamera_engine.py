@@ -7,6 +7,8 @@ import datetime
 import argparse
 import time
 
+import multiprocessing as mp
+
 from aidobjtrack.config.appconfig import AppConfig
 from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
 from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
@@ -37,13 +39,9 @@ def makeFrameImageDirectory():
 ###############################################################################
 
 
-if __name__ == '__main__':
+def calibcamera_engine(camera_name, img_dict):
 
-    if len(sys.argv) < 2:
-        PrintMsg.printStdErr("Invalid paramters..")
-        sys.exit()
-
-    cameraName = sys.argv[1]
+    cameraName = camera_name
     if cameraName is '':
         PrintMsg.printStdErr("Input camera name is not available.")
         sys.exit()
@@ -130,3 +128,12 @@ if __name__ == '__main__':
         # Stop streaming
         vcap.stop()
         cv2.destroyAllWindows()
+
+
+if __name__ == '__main__':
+
+    if len(sys.argv) < 2:
+        PrintMsg.printStdErr("Invalid paramters..")
+        sys.exit()
+
+    calibcamera_engine(sys.argv[1])

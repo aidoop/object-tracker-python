@@ -17,8 +17,9 @@ from aidobjtrack.util.util import ObjectTrackerErrMsg
 # Hand-eye calibration process
 #   -
 ###############################################################################
-if __name__ == '__main__':
 
+
+def objecttracking_engine():
     # create application data
     app_data = ObjectTrakcingAppData()
     if app_data.connect_server('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') == False:
@@ -186,3 +187,8 @@ if __name__ == '__main__':
                 vtc.vcap.stop()
 
     cv2.destroyAllWindows()
+
+
+if __name__ == '__main__':
+
+    objecttracking_engine()
