@@ -19,12 +19,22 @@ from objtracking_select import objtracking_select_start, ObjectTrackingAppType
 from aidobjtrack.util.util import PrintMsg
 
 
+'''
+Bridge Data Type
+{
+    type: bridge data type
+    app: application type
+    name: the specific application name
+    message: json-style body data
+}
+'''
+
+
 class BridgeDataType:
     VIDEO = 'video'
     REQ = 'req'
     RES = 'res'
     DATA = 'data'
-
 
 # class BridgeDataCreate:
 #     @staticmethod
@@ -33,19 +43,38 @@ class BridgeDataType:
 
 
 class BridgeData:
-    def __init__(self, type, name, message, width=0, height=0):
-        self.json_data = dict()
-        self.json_data['type'] = type
-        self.json_data['name'] = name
-        self.json_data['message'] = message
-        self.json_data['width'] = width
-        self.json_data['height'] = height
+    BRIDGE_DATA = dict()
+
+
+class VideoBridgeData(BridgeData):
+    def __init__(self, type, name, frame, width=0, height=0):
+        self.type = type
+        self.name = name
+        self.frame = frame
+        self.width = width
+        self.height = height
 
     def dumps(self):
-        return json.dumps(self.json_data)
+        BridgeData.BRIDGE_DATA = {}
+        BridgeData.BRIDGE_DATA['type'] = self.type
+        BridgeData.BRIDGE_DATA['name'] = self.name
+        BridgeData.BRIDGE_DATA['message'] = json.dumps(
+            {"frame": self.frame, "width": self.width, "height": self.height})
+        return json.dumps(BridgeData.BRIDGE_DATA)
 
     def reset(self):
-        self.json_data = {}
+        BridgeData.BRIDGE_DATA = {}
+
+    # @property
+    # def type(self):
+    #     return self.type
+
+    # @property
+    # def name(self):
+    #     return self.name
+
+    # def frame(self):
+    #     return BridgeData.BRIDGE_DATA['name']
 
 
 # IMPROVE-ME: check if you need any modification of frame level..
@@ -89,7 +118,7 @@ def proc_video_stream(interproc_dict, ve, dq):
             jpg_image = cv2.imencode('.jpg', frame)[1]
             base64_encoded = base64.b64encode(jpg_image)
 
-            bridge_data = BridgeData(
+            bridge_data = VideoBridgeData(
                 BridgeDataType.VIDEO, 'camera01', base64_encoded.decode('utf8'), width, height)
 
             try:
