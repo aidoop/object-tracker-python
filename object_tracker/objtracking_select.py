@@ -16,49 +16,40 @@ class ObjectTrackingAppType(Enum):
     OBJTRACKING = 'OBJTRACKING'
 
 
-class ObjectTrackingAppData(SingletonInstane):
-    def __init__(self):
-        self.global_dict = None
+class ObjectTrackingAppData:
 
-    def set_dict(self, dict):
-        self.global_dict = dict
+    @staticmethod
+    def set(interproc_dict, app_type, app_args):
+        if interproc_dict is not None:
+            interproc_dict['app_type'] = app_type
+            interproc_dict['app_args'] = app_args
 
-    def set(self, app_type, app_args):
-        if global_dict is not None:
-            self.global_dict['app_type'] = app_type
-            self.global_dict['app_args'] = app_args
+    @staticmethod
+    def get(interproc_dict):
+        return (interproc_dict['app_type'], interproc_dict['app_args'])
 
-    def get(self):
-        return (self.object_tracking_app_type, self.object_tracking_app_args)
-
-    def reset(self):
-        if global_dict is not None:
-            self.global_dict['app_type'] = ObjectTrackingAppType.NOSELECTED
-            self.global_dict['app_args'] = None
+    @staticmethod
+    def reset(interproc_dict):
+        if interproc_dict is not None:
+            interproc_dict['app_type'] = ObjectTrackingAppType.NOSELECTED
+            interproc_dict['app_args'] = None
 
 
-app_tracking_data = ObjectTrackingAppData.instance()
-
-
-def objtracking_select(app_type, args):
-    if isinstance(app_type, ObjectTrackingAppType):
-        object_tracking_app_type = app_type
-        object_tracking_app_args = args
-
-
-def objtracking_select_start(share_dict):
+def objtracking_select_start(interproc_dict, ve, dq):
     while True:
-        if share_dict['app_type'] == ObjectTrackingAppType.NOSELECTED:
+        if interproc_dict['app_type'] == ObjectTrackingAppType.NOSELECTED:
             sleep(1)
             continue
 
-        if share_dict['app_type'] == ObjectTrackingAppType.CAMERACALIB:
-            calibcamera_engine(share_dict['app_args'], share_dict)
-        elif share_dict['app_type'] == ObjectTrackingAppType.HANDEYECALIB:
-            calibhandeye_engine(share_dict['app_args'], share_dict)
-        elif share_dict['app_type'] == ObjectTrackingAppType.OBJTRACKING:
-            objecttracking_engine(share_dict['app_args'])
+        if interproc_dict['app_type'] == ObjectTrackingAppType.CAMERACALIB.value:
+            calibcamera_engine(
+                interproc_dict['app_args'], interproc_dict, ve, dq)
+        elif interproc_dict['app_type'] == ObjectTrackingAppType.HANDEYECALIB.value:
+            calibhandeye_engine(interproc_dict['app_args'], interproc_dict)
+        elif interproc_dict['app_type'] == ObjectTrackingAppType.OBJTRACKING.value:
+            objecttracking_engine(interproc_dict['app_args'])
         else:
             pass
 
-        app_tracking_data.reset()
+        ObjectTrackingAppData.reset(interproc_dict)
+        break
