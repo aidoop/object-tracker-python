@@ -39,12 +39,15 @@ def makeFrameImageDirectory():
 ###############################################################################
 
 
-def calibcamera_engine(camera_name, img_dict):
+def calibcamera_engine(app_args, interproc_dict, ve=None, dq=None):
 
-    cameraName = camera_name
+    cameraName = app_args
     if cameraName is '':
         PrintMsg.printStdErr("Input camera name is not available.")
         sys.exit()
+
+    video_interproc_e = ve
+    data_interproc_q = dq
 
     try:
         gqlDataClient = VisonGqlDataClient()
@@ -53,7 +56,7 @@ def calibcamera_engine(camera_name, img_dict):
 
         # get camera data from operato
         gqlDataClient.fetchTrackingCamerasAll()
-        cameraObject = gqlDataClient.trackingCameras[sys.argv[1]]
+        cameraObject = gqlDataClient.trackingCameras[cameraName]
 
         AppConfig.VideoFrameWidth = cameraObject.width or AppConfig.VideoFrameWidth
         AppConfig.VideoFrameHeight = cameraObject.height or AppConfig.VideoFrameHeight
@@ -92,9 +95,9 @@ def calibcamera_engine(camera_name, img_dict):
         sys.exit(0)
 
     # setup an opencv window
-    cv2.namedWindow(cameraName, cv2.WINDOW_NORMAL)
-    cv2.setWindowProperty(
-        cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    # cv2.namedWindow(cameraName, cv2.WINDOW_NORMAL)
+    # cv2.setWindowProperty(
+    #     cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     iteration = 0
     try:
@@ -114,6 +117,12 @@ def calibcamera_engine(camera_name, img_dict):
 
             # display the captured image
             cv2.imshow(cameraName, color_image)
+            if video_interproc_e is not None:
+                color_image_resized = cv2.resize(color_image, dsize=(
+                    640, 480), interpolation=cv2.INTER_AREA)
+                interproc_dict['video'] = {
+                    'width': 640, 'height': 480, 'frame': color_image}
+                video_interproc_e.set()
 
             # TODO: arrange these opencv key events based on other key event handler class
             # handle key inputs
@@ -128,6 +137,9 @@ def calibcamera_engine(camera_name, img_dict):
         # Stop streaming
         vcap.stop()
         cv2.destroyAllWindows()
+
+        interproc_dict['app_exit'] = True
+        video_interproc_e.set()
 
 
 if __name__ == '__main__':
