@@ -19,26 +19,46 @@ from objtracking_select import objtracking_select_start, ObjectTrackingAppType
 from aidobjtrack.util.util import PrintMsg
 
 
-'''
+"""
 Bridge Data Type
 {
     type: bridge data type
-    app: application type
     name: the specific application name
-    message: json-style body data
+    body: json-style body data
 }
-'''
+"""
+
+
+"""
+Bridge Data Type
+ - object
+    name: object name
+    body: varialbe json data
+ - video
+    name: camera name
+    body: {frame: ..., width: xxx, height: yyy}
+ - cmd
+    name: command name
+    body: {args: ...} (optional)
+"""
 
 
 class BridgeDataType:
-    VIDEO = 'video'
-    REQ = 'req'
-    RES = 'res'
-    DATA = 'data'
+    OBJECT = "object"
+    VIDEO = "video"
+    CMD = "cmd"
+
+
+# class BridgeDataFactory:
+#     @staticmethod
+#     def create(type, name, body):
 
 
 class BridgeData:
     BRIDGE_DATA = dict()
+
+    def reset(self):
+        BridgeData.BRIDGE_DATA = {}
 
 
 class VideoBridgeData(BridgeData):
@@ -51,25 +71,17 @@ class VideoBridgeData(BridgeData):
 
     def dumps(self):
         BridgeData.BRIDGE_DATA = {}
-        BridgeData.BRIDGE_DATA['type'] = self.type
-        BridgeData.BRIDGE_DATA['name'] = self.name
-        BridgeData.BRIDGE_DATA['message'] = {
-            "frame": self.frame, "width": self.width, "height": self.height}
+        BridgeData.BRIDGE_DATA["type"] = self.type
+        BridgeData.BRIDGE_DATA["name"] = self.name
+        BridgeData.BRIDGE_DATA["body"] = {
+            "frame": self.frame,
+            "width": self.width,
+            "height": self.height,
+        }
         return json.dumps(BridgeData.BRIDGE_DATA)
 
     def reset(self):
-        BridgeData.BRIDGE_DATA = {}
-
-    # @property
-    # def type(self):
-    #     return self.type
-
-    # @property
-    # def name(self):
-    #     return self.name
-
-    # def frame(self):
-    #     return BridgeData.BRIDGE_DATA['name']
+        super.reset()
 
 
 # IMPROVE-ME: check if you need any modification of frame level..
@@ -80,25 +92,36 @@ class VideoBridgeData(BridgeData):
 #         return frame
 
 
-def thread_data_receive(sock):
+def thread_data_receive(sock, interproc_dict, command_queue):
     curr_thread = threading.currentThread()
     while getattr(curr_thread, "do_run", True):
         try:
             recv_message = sock.recv()
             recv_obj = json.loads(recv_message)
-            (type, cmd) = (recv_obj['type'], recv_obj['cmd'])
+            (type, name, cmd) = (recv_obj["type"], recv_obj["name"], recv_obj["body"])
             PrintMsg.printStdErr(type, cmd)
+            if type == BridgeDataType.CMD:
+                command_queue.put((name, cmd))
+
         except Exception as ex:
             PrintMsg.printStdErr(ex)
 
-    PrintMsg.printStdErr('thread_data_receive ended')
+    PrintMsg.printStdErr("thread_data_receive ended")
 
 
-def proc_video_stream(interproc_dict, ve, dq):
-    ws = create_connection("ws://localhost:34000",
-                           sockopt=((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),))
+def proc_video_stream(interproc_dict, ve, cq):
+    ws = create_connection(
+        "ws://localhost:34000", sockopt=((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),)
+    )
 
-    ws_recv_thread = threading.Thread(target=thread_data_receive, args=(ws,))
+    ws_recv_thread = threading.Thread(
+        target=thread_data_receive,
+        args=(
+            ws,
+            interproc_dict,
+            cq,
+        ),
+    )
     ws_recv_thread.start()
 
     while True:
@@ -106,20 +129,25 @@ def proc_video_stream(interproc_dict, ve, dq):
         ve.wait()
 
         # exit if 'app_exit' flast is set
-        if interproc_dict['app_exit'] == True:
+        if interproc_dict["app_exit"] == True:
             break
 
         # get width & height of the current frame
-        width = interproc_dict['video']['width']
-        height = interproc_dict['video']['height']
-        frame = interproc_dict['video']['frame']
+        width = interproc_dict["video"]["width"]
+        height = interproc_dict["video"]["height"]
+        frame = interproc_dict["video"]["frame"]
 
         if isinstance(frame, np.ndarray):
-            jpg_image = cv2.imencode('.jpg', frame)[1]
+            jpg_image = cv2.imencode(".jpg", frame)[1]
             base64_encoded = base64.b64encode(jpg_image)
 
             bridge_data = VideoBridgeData(
-                BridgeDataType.VIDEO, 'camera01', base64_encoded.decode('utf8'), width, height)
+                BridgeDataType.VIDEO,
+                "camera01",
+                base64_encoded.decode("utf8"),
+                width,
+                height,
+            )
 
             try:
                 ws.send(bridge_data.dumps())
@@ -132,51 +160,48 @@ def proc_video_stream(interproc_dict, ve, dq):
     ws.close()
 
 
-async def recv_msg(websocket, interproc_dict):
-    recv_text = await websocket.recv()
-    if recv_text == 'begin':
-        while True:
-            frame = interproc_dict['img']
-            if isinstance(frame, np.ndarray):
-                enconde_data = cv2.imencode('.jpg', frame)[1]
-                enconde_str = enconde_data.tostring()
-                try:
-                    await websocket.send(enconde_str)
-                except Exception as e:
-                    PrintMsg.printStdErr(e)
-                    return True
-
-
 def run_objtracking_engine(app_type, app_args):
 
     # TODO: check start method for multiprocessing spawn or ?
-    mp.set_start_method(method='spawn')
+    mp.set_start_method(method="spawn")
 
     # TODO: check if event is a useful tool.
     video_sync = mp.Event()
 
-    data_queue = mp.Queue(maxsize=10)
+    cmd_queue = mp.Queue(maxsize=3)
 
     mp_manager = mp.Manager()
     mp_global_dict = mp_manager.dict()
 
     # TODO: node calls the select funciton with both application type and arguments
-    mp_global_dict['app_type'] = app_type
-    mp_global_dict['app_args'] = app_args
-    mp_global_dict['app_exit'] = False
+    mp_global_dict["app_type"] = app_type
+    mp_global_dict["app_args"] = app_args
+    mp_global_dict["app_exit"] = False
 
     Processes = [
-        mp.Process(target=objtracking_select_start,
-                   args=(mp_global_dict, video_sync, data_queue, )),
-        mp.Process(target=proc_video_stream,
-                   args=(mp_global_dict, video_sync, data_queue, )),
+        mp.Process(
+            target=objtracking_select_start,
+            args=(
+                mp_global_dict,
+                video_sync,
+                cmd_queue,
+            ),
+        ),
+        mp.Process(
+            target=proc_video_stream,
+            args=(
+                mp_global_dict,
+                video_sync,
+                cmd_queue,
+            ),
+        ),
     ]
 
     [process.start() for process in Processes]
     [process.join() for process in Processes]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     if len(sys.argv) != 3:
         PrintMsg.printStdErr("Invalid paramters..")
