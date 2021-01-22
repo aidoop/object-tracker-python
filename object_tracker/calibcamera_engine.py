@@ -121,7 +121,7 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, dq=None):
                 color_image_resized = cv2.resize(color_image, dsize=(
                     640, 480), interpolation=cv2.INTER_AREA)
                 interproc_dict['video'] = {
-                    'width': 640, 'height': 480, 'frame': color_image}
+                    'width': 640, 'height': 480, 'frame': color_image_resized}
                 video_interproc_e.set()
 
             # TODO: arrange these opencv key events based on other key event handler class

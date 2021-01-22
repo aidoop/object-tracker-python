@@ -36,18 +36,13 @@ class BridgeDataType:
     RES = 'res'
     DATA = 'data'
 
-# class BridgeDataCreate:
-#     @staticmethod
-#     def create(type):
-#         return VideoData()
-
 
 class BridgeData:
     BRIDGE_DATA = dict()
 
 
 class VideoBridgeData(BridgeData):
-    def __init__(self, type, name, frame, width=0, height=0):
+    def __init__(self, type, name, frame, width, height):
         self.type = type
         self.name = name
         self.frame = frame
@@ -58,8 +53,8 @@ class VideoBridgeData(BridgeData):
         BridgeData.BRIDGE_DATA = {}
         BridgeData.BRIDGE_DATA['type'] = self.type
         BridgeData.BRIDGE_DATA['name'] = self.name
-        BridgeData.BRIDGE_DATA['message'] = json.dumps(
-            {"frame": self.frame, "width": self.width, "height": self.height})
+        BridgeData.BRIDGE_DATA['message'] = {
+            "frame": self.frame, "width": self.width, "height": self.height}
         return json.dumps(BridgeData.BRIDGE_DATA)
 
     def reset(self):
@@ -88,10 +83,15 @@ class VideoBridgeData(BridgeData):
 def thread_data_receive(sock):
     curr_thread = threading.currentThread()
     while getattr(curr_thread, "do_run", True):
-        recv_message = sock.recv()
-        recv_obj = json.loads(recv_message)
-        (type, cmd) = (recv_obj['type'], recv_obj['cmd'])
-        print(type, cmd)
+        try:
+            recv_message = sock.recv()
+            recv_obj = json.loads(recv_message)
+            (type, cmd) = (recv_obj['type'], recv_obj['cmd'])
+            PrintMsg.printStdErr(type, cmd)
+        except Exception as ex:
+            PrintMsg.printStdErr(ex)
+
+    PrintMsg.printStdErr('thread_data_receive ended')
 
 
 def proc_video_stream(interproc_dict, ve, dq):
@@ -125,9 +125,11 @@ def proc_video_stream(interproc_dict, ve, dq):
                 ws.send(bridge_data.dumps())
             except Exception as e:
                 PrintMsg.printStdErr(e)
+                break
 
-    # make child thread finished
+    # close socket and terminate the recv thread
     ws_recv_thread.do_run = False
+    ws.close()
 
 
 async def recv_msg(websocket, interproc_dict):
@@ -143,30 +145,6 @@ async def recv_msg(websocket, interproc_dict):
                 except Exception as e:
                     PrintMsg.printStdErr(e)
                     return True
-
-
-def image_put(q, camnum):
-    cap = cv2.VideoCapture(camnum)
-    i = 0
-    while True:
-        ret, frame = cap.read()
-        if ret:
-            frame = cv2.resize(frame, (500, 500))
-            q.put(frame)
-            # q.get() if q.qsize() > 1 else time.sleep(0.01)
-
-
-def image_get(q, interproc_dict):
-    while True:
-        frame = q.get()
-        if isinstance(frame, np.ndarray):
-            interproc_dict['img'] = frame
-
-
-def check_process_alive(mp_manager):
-    pass
-    # while True:
-    #     PrintMsg.printStdErr(process.is_alive for process in)
 
 
 def run_objtracking_engine(app_type, app_args):
