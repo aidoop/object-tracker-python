@@ -107,7 +107,6 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
     # cv2.setWindowProperty(
     #     cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-    iteration = 0
     try:
         while True:
             # Wait for a coherent pair of frames: depth and color
@@ -127,7 +126,7 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
             infoText.draw(color_image)
 
             # display the captured image
-            cv2.imshow(cameraName, color_image)
+            # cv2.imshow(cameraName, color_image)
             if video_interproc_e is not None:
                 color_image_resized = cv2.resize(
                     color_image, dsize=(640, 480), interpolation=cv2.INTER_AREA
