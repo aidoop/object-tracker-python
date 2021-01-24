@@ -20,6 +20,8 @@ from aidobjtrack.keyhandler.calibcamera_keyhandler import CalibCameraKeyHandler
 from aidobjtrack.visiongql.visiongql_client import VisonGqlDataClient
 
 # create a directory to save captured images
+
+
 def makeFrameImageDirectory():
     now = datetime.datetime.now()
     dirString = now.strftime("%Y%m%d%H%M%S")
@@ -86,7 +88,8 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
 
         # create a camera calqibration object
         if AppConfig.UseCalibChessBoard == True:
-            calibcam = CalibrationCamera(AppConfig.ChessWidth, AppConfig.ChessHeight)
+            calibcam = CalibrationCamera(
+                AppConfig.ChessWidth, AppConfig.ChessHeight)
         else:
             calibcam = CalibrationCameraAruco()
 
@@ -117,7 +120,8 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
                 color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
             if (
-                ObjectTrackerErrMsg.checkValueIsNone(color_image, "video color frame")
+                ObjectTrackerErrMsg.checkValueIsNone(
+                    color_image, "video color frame")
                 == False
             ):
                 break
@@ -132,10 +136,12 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
                     color_image, dsize=(640, 480), interpolation=cv2.INTER_AREA
                 )
                 interproc_dict["video"] = {
+                    "device": cameraName,
                     "width": 640,
                     "height": 480,
                     "frame": color_image_resized,
                 }
+                interproc_dict["object"] = {}
                 video_interproc_e.set()
 
             # TODO: arrange these opencv key events based on other key event handler class
@@ -147,7 +153,11 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
                     continue
 
                 if cmd == "snapshot":
-                    pressedKey = 0x63
+                    pressedKey = 0x63   # 'c' key
+                elif cmd == "result":
+                    pressedKey = 0x67   # 'g' key
+                elif cmd == "exit":
+                    pressedKey = 0x71   # 'q' key
             except queue.Empty:
                 continue
 
@@ -167,7 +177,7 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
     finally:
         # Stop streaming
         vcap.stop()
-        cv2.destroyAllWindows()
+        # cv2.destroyAllWindows()
 
         interproc_dict["app_exit"] = True
         video_interproc_e.set()

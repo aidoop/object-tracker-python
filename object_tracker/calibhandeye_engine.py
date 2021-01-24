@@ -5,6 +5,9 @@ import os
 import argparse
 import sys
 
+import multiprocessing as mp
+import queue
+
 from aidobjtrack.config.appconfig import AppConfig
 from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
 from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
@@ -32,9 +35,16 @@ def drawText(img, text, imgpt):
 ###############################################################################
 
 
-def calibhandeye_engine(camera_name, img_dict=None):
+def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
 
-    cameraName = camera_name
+    cameraName = app_args
+    if cameraName is "":
+        PrintMsg.printStdErr("Input camera name is not available.")
+        sys.exit()
+
+    video_interproc_e = ve
+    cmd_interproc_q = cq
+
     gqlDataClient = VisonGqlDataClient()
     if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
         #print("Can't connect operato vision server.")
@@ -124,9 +134,9 @@ def calibhandeye_engine(camera_name, img_dict=None):
     infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
 
     # setup an opencv window
-    cv2.namedWindow(cameraName, cv2.WINDOW_NORMAL)
-    cv2.setWindowProperty(
-        cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    # cv2.namedWindow(cameraName, cv2.WINDOW_NORMAL)
+    # cv2.setWindowProperty(
+    #     cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     # get frames and process a key event
     try:
@@ -189,10 +199,35 @@ def calibhandeye_engine(camera_name, img_dict=None):
                         pass
 
             # display the captured image
-            cv2.imshow(cameraName, color_image)
+            # cv2.imshow(cameraName, color_image)
+            if video_interproc_e is not None:
+                color_image_resized = cv2.resize(
+                    color_image, dsize=(640, 480), interpolation=cv2.INTER_AREA
+                )
+                interproc_dict["video"] = {
+                    "device": cameraName,
+                    "width": 640,
+                    "height": 480,
+                    "frame": color_image_resized,
+                }
+                video_interproc_e.set()
 
             # handle key inputs
-            pressedKey = (cv2.waitKey(1) & 0xFF)
+            # pressedKey = (cv2.waitKey(1) & 0xFF)
+            try:
+                (name, cmd) = cmd_interproc_q.get_nowait()
+                if name != "handeyecalib":
+                    continue
+
+                if cmd == "snapshot":
+                    pressedKey = 0x63   # 'c' key
+                elif cmd == "result":
+                    pressedKey = 0x67   # 'g' key
+                elif cmd == "exit":
+                    pressedKey = 0x71   # 'q' key
+            except queue.Empty:
+                continue
+
             if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, infoText, gqlDataClient, robotName, handeye_automove):
                 break
 
@@ -209,8 +244,11 @@ def calibhandeye_engine(camera_name, img_dict=None):
         # Stop streaming
         vcap.stop()
 
+        interproc_dict["app_exit"] = True
+        video_interproc_e.set()
+
     # arrange all to finitsh this application here
-    cv2.destroyAllWindows()
+    # cv2.destroyAllWindows()
     # indy7.finalize()
 
 

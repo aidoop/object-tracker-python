@@ -62,8 +62,8 @@ class BridgeData:
 
 
 class VideoBridgeData(BridgeData):
-    def __init__(self, type, name, frame, width, height):
-        self.type = type
+    def __init__(self, name, frame, width, height):
+        self.type = BridgeDataType.VIDEO
         self.name = name
         self.frame = frame
         self.width = width
@@ -84,7 +84,26 @@ class VideoBridgeData(BridgeData):
         super.reset()
 
 
-# IMPROVE-ME: check if you need any modification of frame level..
+class ObjectBridgeData(BridgeData):
+    def __init__(self, name, object):
+        self.type = BridgeDataType.OBJECT
+        self.name = name
+        self.object = object
+
+    def dumps(self):
+        BridgeData.BRIDGE_DATA = {}
+        BridgeData.BRIDGE_DATA["type"] = self.type
+        BridgeData.BRIDGE_DATA["name"] = self.name
+        BridgeData.BRIDGE_DATA["body"] = {
+            "object": self.object,
+        }
+        return json.dumps(BridgeData.BRIDGE_DATA)
+
+    def reset(self):
+        super.reset()
+
+
+# TODO: check if you need any modification of frame level..
 # class DataBridgeSocket(WebSocket):
 #     def recv_frame(self):
 #         recv_data = super().recv()
@@ -97,12 +116,13 @@ def thread_data_receive(sock, interproc_dict, command_queue):
     while getattr(curr_thread, "do_run", True):
         try:
             recv_message = sock.recv()
-            recv_obj = json.loads(recv_message)
-            (type, name, cmd) = (recv_obj["type"], recv_obj["name"], recv_obj["body"])
-            PrintMsg.printStdErr(type, cmd)
-            if type == BridgeDataType.CMD:
-                command_queue.put((name, cmd))
-
+            if len(recv_message) > 0:
+                recv_obj = json.loads(recv_message)
+                (type, name, cmd) = (recv_obj["type"],
+                                     recv_obj["name"], recv_obj["body"])
+                PrintMsg.printStdErr(type, cmd)
+                if type == BridgeDataType.CMD:
+                    command_queue.put((name, cmd))
         except Exception as ex:
             PrintMsg.printStdErr(ex)
 
@@ -132,28 +152,38 @@ def proc_video_stream(interproc_dict, ve, cq):
         if interproc_dict["app_exit"] == True:
             break
 
-        # get width & height of the current frame
-        width = interproc_dict["video"]["width"]
-        height = interproc_dict["video"]["height"]
-        frame = interproc_dict["video"]["frame"]
-
-        if isinstance(frame, np.ndarray):
-            jpg_image = cv2.imencode(".jpg", frame)[1]
-            base64_encoded = base64.b64encode(jpg_image)
-
-            bridge_data = VideoBridgeData(
-                BridgeDataType.VIDEO,
-                "camera01",
-                base64_encoded.decode("utf8"),
-                width,
-                height,
-            )
-
-            try:
+        try:
+            if interproc_dict["object"] != {}:
+                object_name = interproc_dict["object"]["name"]
+                object_data = interproc_dict["object"]["data"]
+                bridge_data = ObjectBridgeData(name, object_data)
                 ws.send(bridge_data.dumps())
-            except Exception as e:
-                PrintMsg.printStdErr(e)
-                break
+
+            if interproc_dict["video"] != {}:
+                # get width & height of the current frame
+                device = interproc_dict["video"]["device"]
+                width = interproc_dict["video"]["width"]
+                height = interproc_dict["video"]["height"]
+                frame = interproc_dict["video"]["frame"]
+
+                if isinstance(frame, np.ndarray):
+                    jpg_image = cv2.imencode(".jpg", frame)[1]
+                    base64_encoded = base64.b64encode(jpg_image)
+
+                    bridge_data = VideoBridgeData(
+                        device,
+                        base64_encoded.decode("utf8"),
+                        width,
+                        height,
+                    )
+                ws.send(bridge_data.dumps())
+
+        except Exception as e:
+            PrintMsg.printStdErr(e)
+            break
+
+        interproc_dict["object"] = {}
+        interproc_dict["video"] = {}
 
     # close socket and terminate the recv thread
     ws_recv_thread.do_run = False
@@ -177,6 +207,8 @@ def run_objtracking_engine(app_type, app_args):
     mp_global_dict["app_type"] = app_type
     mp_global_dict["app_args"] = app_args
     mp_global_dict["app_exit"] = False
+    mp_global_dict["video"] = {}
+    mp_global_dict["object"] = {}
 
     Processes = [
         mp.Process(

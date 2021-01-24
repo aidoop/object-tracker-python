@@ -41,11 +41,14 @@ def objtracking_select_start(interproc_dict, ve, cq):
             continue
 
         if interproc_dict["app_type"] == ObjectTrackingAppType.CAMERACALIB.value:
-            calibcamera_engine(interproc_dict["app_args"], interproc_dict, ve, cq)
+            calibcamera_engine(
+                interproc_dict["app_args"], interproc_dict, ve, cq)
         elif interproc_dict["app_type"] == ObjectTrackingAppType.HANDEYECALIB.value:
-            calibhandeye_engine(interproc_dict["app_args"], interproc_dict)
+            calibhandeye_engine(
+                interproc_dict["app_args"], interproc_dict, ve, cq)
         elif interproc_dict["app_type"] == ObjectTrackingAppType.OBJTRACKING.value:
-            objecttracking_engine(interproc_dict["app_args"])
+            objecttracking_engine(
+                interproc_dict["app_args"], interproc_dict, ve, cq)
         else:
             pass
 
