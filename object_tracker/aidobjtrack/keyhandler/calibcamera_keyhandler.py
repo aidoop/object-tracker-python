@@ -59,6 +59,9 @@ class CalibCameraKeyHandler(KeyHandler):
         calibcam = args[2]
         camIndex = args[3]
         infoText = args[4]
+        cameraName = args[5]
+        interproc_dict = args[6]
+        video_interproc_e = args[7]
 
         # get image file names
         images = glob.glob(dirFrameImage + '/*.jpg')
@@ -76,8 +79,16 @@ class CalibCameraKeyHandler(KeyHandler):
             calibcam.saveResults(savedFileName, cammtx, distcoeff)
 
             # update the result data
-            updateUI = CalibCameraUpdate()
-            updateUI.updateData(distcoeff[0], cammtx.reshape(1, 9)[0])
+            calibResult = CalibCameraUpdate.updateData(
+                distcoeff[0], cammtx.reshape(1, 9)[0])
+
+            # get the result data and throw into the websocket process
+            interproc_dict['object'] = {
+                'name': 'cameracalib:'+cameraName,
+                'object_type': 'result',
+                'object_data': calibResult,
+            }
+            video_interproc_e.set()
 
         else:
             strInfoText = 'Calibration failed. - ' + str(reproerr)

@@ -136,12 +136,11 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
                     color_image, dsize=(640, 480), interpolation=cv2.INTER_AREA
                 )
                 interproc_dict["video"] = {
-                    "device": "cameracalib",
+                    "name": "cameracalib:"+cameraName,
                     "width": 640,
                     "height": 480,
                     "frame": color_image_resized,
                 }
-                interproc_dict["object"] = {}
                 video_interproc_e.set()
 
             # TODO: arrange these opencv key events based on other key event handler class
@@ -149,7 +148,7 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
             # pressedKey = (cv2.waitKey(1) & 0xFF)
             try:
                 (name, cmd) = cmd_interproc_q.get_nowait()
-                if name != "cameracalib":
+                if name != "cameracalib:"+cameraName:
                     continue
 
                 if cmd == "snapshot":
@@ -168,6 +167,9 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
                 calibcam,
                 cameraObject.endpoint,
                 infoText,
+                cameraName,
+                interproc_dict,
+                video_interproc_e
             ):
                 break
 

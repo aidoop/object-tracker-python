@@ -2,9 +2,9 @@ import json
 
 
 class CalibCameraUpdate:
-    def __init__(self):
-        pass
+    CALIB_CAMERA_RESULT = ""
 
+    @staticmethod
     def updateData(self, dist, cammtx):
 
         jsonData = {
@@ -16,4 +16,9 @@ class CalibCameraUpdate:
             }
         }
 
-        print(json.dumps(jsonData))
+        CALIB_CAMERA_RESULT = json.dumps(jsonData)
+        return CALIB_CAMERA_RESULT
+
+    @staticmethod
+    def getData(self):
+        return CalibCameraUpdate.CALIB_CAMERA_RESULT

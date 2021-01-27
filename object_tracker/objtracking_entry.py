@@ -85,17 +85,19 @@ class VideoBridgeData(BridgeData):
 
 
 class ObjectBridgeData(BridgeData):
-    def __init__(self, name, object):
+    def __init__(self, name, object_type, object_data):
         self.type = BridgeDataType.OBJECT
         self.name = name
-        self.object = object
+        self.object_type = object_type
+        self.object_data = object_data
 
     def dumps(self):
         BridgeData.BRIDGE_DATA = {}
         BridgeData.BRIDGE_DATA["type"] = self.type
         BridgeData.BRIDGE_DATA["name"] = self.name
         BridgeData.BRIDGE_DATA["body"] = {
-            "object": self.object,
+            "object_type": self.object_type,
+            "object_data": self.object_data,
         }
         return json.dumps(BridgeData.BRIDGE_DATA)
 
@@ -154,14 +156,16 @@ def proc_video_stream(interproc_dict, ve, cq):
 
         try:
             if interproc_dict["object"] != {}:
-                object_name = interproc_dict["object"]["name"]
-                object_data = interproc_dict["object"]["data"]
-                bridge_data = ObjectBridgeData(name, object_data)
+                name = interproc_dict["object"]["name"]
+                object_type = interproc_dict["object"]["object_type"]
+                object_data = interproc_dict["object"]["object_data"]
+                bridge_data = ObjectBridgeData(
+                    name, object_type, object_data)
                 ws.send(bridge_data.dumps())
 
             if interproc_dict["video"] != {}:
                 # get width & height of the current frame
-                device = interproc_dict["video"]["device"]
+                name = interproc_dict["video"]["name"]
                 width = interproc_dict["video"]["width"]
                 height = interproc_dict["video"]["height"]
                 frame = interproc_dict["video"]["frame"]
@@ -171,7 +175,7 @@ def proc_video_stream(interproc_dict, ve, cq):
                     base64_encoded = base64.b64encode(jpg_image)
 
                     bridge_data = VideoBridgeData(
-                        device,
+                        name,
                         base64_encoded.decode("utf8"),
                         width,
                         height,
@@ -199,6 +203,7 @@ def run_objtracking_engine(app_type, app_args):
     video_sync = mp.Event()
 
     cmd_queue = mp.Queue(maxsize=3)
+    result_queue = mp.Queue(maxsize=3)
 
     mp_manager = mp.Manager()
     mp_global_dict = mp_manager.dict()
