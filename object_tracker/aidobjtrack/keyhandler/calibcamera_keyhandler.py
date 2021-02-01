@@ -10,13 +10,12 @@ from aidobjtrack.abc.keyhandlerdev import KeyHandler
 
 
 class CalibCameraKeyHandler(KeyHandler):
-
     def __init__(self):
         super().__init__()
-        super().setKeyHandler('q', self.processQ)
-        super().setKeyHandler('c', self.processC)
-        super().setKeyHandler('z', self.processZ)
-        super().setKeyHandler('g', self.processG)
+        super().setKeyHandler("q", self.processQ)
+        super().setKeyHandler("c", self.processC)
+        super().setKeyHandler("z", self.processZ)
+        super().setKeyHandler("g", self.processG)
         self.interation = 0
 
     def processQ(self, *args):
@@ -27,14 +26,21 @@ class CalibCameraKeyHandler(KeyHandler):
         dirFrameImage = args[1]
         infoText = args[4]
 
-        cv2.imwrite(os.path.join(dirFrameImage, str(
-            self.interation) + '.jpg'), color_image)
+        cv2.imwrite(
+            os.path.join(dirFrameImage, str(self.interation) + ".jpg"), color_image
+        )
         PrintMsg.printStdErr(
-            'Image caputured - ' + os.path.join(dirFrameImage, str(self.interation) + '.jpg'))
+            "Image caputured - "
+            + os.path.join(dirFrameImage, str(self.interation) + ".jpg")
+        )
         self.interation += 1
 
-        strInfoText = 'Image Captured(' + str(self.interation) + ') - ' + \
-            os.path.join(dirFrameImage, str(self.interation) + '.jpg')
+        strInfoText = (
+            "Image Captured("
+            + str(self.interation)
+            + ") - "
+            + os.path.join(dirFrameImage, str(self.interation) + ".jpg")
+        )
         infoText.setText(strInfoText)
 
     def processZ(self, *args):
@@ -64,34 +70,35 @@ class CalibCameraKeyHandler(KeyHandler):
         video_interproc_e = args[7]
 
         # get image file names
-        images = glob.glob(dirFrameImage + '/*.jpg')
-        ret, cammtx, distcoeff, reproerr = calibcam.calcuateCameraMatrix(
-            images)
+        images = glob.glob(dirFrameImage + "/*.jpg")
+        ret, cammtx, distcoeff, reproerr = calibcam.calcuateCameraMatrix(images)
 
-        strInfoText = ''
+        strInfoText = ""
 
         if ret == True:
-            strInfoText = 'Calibration completed successfully... - ' + \
-                str(reproerr)
+            strInfoText = "Calibration completed successfully... - " + str(reproerr)
 
             # save calibration data to the specific xml file
-            savedFileName = "CalibCamResult"+str(camIndex)+".json"
+            savedFileName = "CalibCamResult" + str(camIndex) + ".json"
             calibcam.saveResults(savedFileName, cammtx, distcoeff)
 
             # update the result data
             calibResult = CalibCameraUpdate.updateData(
-                distcoeff[0], cammtx.reshape(1, 9)[0])
+                distcoeff[0], cammtx.reshape(1, 9)[0]
+            )
 
             # get the result data and throw into the websocket process
-            interproc_dict['object'] = {
-                'name': 'cameracalib:'+cameraName,
-                'object_type': 'result',
-                'object_data': calibResult,
+            interproc_dict["object"] = {
+                "name": "cameracalib:" + cameraName,
+                "object_type": "result",
+                "object_data": calibResult,
             }
             video_interproc_e.set()
 
         else:
-            strInfoText = 'Calibration failed. - ' + str(reproerr)
+            strInfoText = "Calibration failed. - " + str(reproerr)
 
         PrintMsg.printStdErr(strInfoText)
         infoText.setText(strInfoText)
+
+        super().enableExitFlag()
