@@ -258,8 +258,8 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
                 if name != "handeyecalib" + ":" + cameraName:
                     continue
 
-                if cmd == "snapshot":
-                    pressedKey = 0x63  # 'c' key
+                if cmd == "start":
+                    pressedKey = 0x61  # 'a' key
                 elif cmd == "result":
                     pressedKey = 0x67  # 'g' key
                 elif cmd == "exit":

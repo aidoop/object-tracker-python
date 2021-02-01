@@ -9,19 +9,18 @@ from aidobjtrack.data_update.calibhandeye_update import CalibHandeyeUpdate
 
 
 class CalibHandEyeKeyHandler(KeyHandler):
-
     def __init__(self):
         super().__init__()
-        super().setKeyHandler('q', self.processQ)
+        super().setKeyHandler("q", self.processQ)
         # super().setKeyHandler('d', self.processD)
         # super().setKeyHandler('f', self.processF)
         # super().setKeyHandler('r', self.processR)
-        super().setKeyHandler('c', self.processC)
-        super().setKeyHandler('z', self.processZ)
-        super().setKeyHandler('g', self.processG)
-        #super().setKeyHandler('r', self.processR)
-        super().setKeyHandler('a', self.processA)
-        super().setKeyHandler('s', self.processS)
+        super().setKeyHandler("c", self.processC)
+        super().setKeyHandler("z", self.processZ)
+        super().setKeyHandler("g", self.processG)
+        # super().setKeyHandler('r', self.processR)
+        super().setKeyHandler("a", self.processA)
+        super().setKeyHandler("s", self.processS)
 
         # option: task move test..
         # super().setKeyHandler('n', self.processN)
@@ -43,33 +42,44 @@ class CalibHandEyeKeyHandler(KeyHandler):
         robotName = args[10]
 
         PrintMsg.printStdErr(
-            "---------------------------------------------------------------")
+            "---------------------------------------------------------------"
+        )
         if ids is None:
             return
 
         if AppConfig.UseArucoBoard == False:
             for idx in range(0, ids.size):
-                if(ids[idx] == AppConfig.CalibMarkerID):
+                if ids[idx] == AppConfig.CalibMarkerID:
                     # get the current robot position
                     # currTaskPose = indy.get_task_pos()
                     currTaskPose = gqlDataClient.getRobotPose(robotName)
 
                     # convert dict. to list
-                    currTPList = [currTaskPose['x'], currTaskPose['y'], currTaskPose['z'],
-                                  currTaskPose['u'], currTaskPose['v'], currTaskPose['w']]
+                    currTPList = [
+                        currTaskPose["x"],
+                        currTaskPose["y"],
+                        currTaskPose["z"],
+                        currTaskPose["u"],
+                        currTaskPose["v"],
+                        currTaskPose["w"],
+                    ]
 
                     # capture additional matrices here
-                    handeye.captureHandEyeInputs(
-                        currTPList, rvec[idx], tvec[idx])
+                    handeye.captureHandEyeInputs(currTPList, rvec[idx], tvec[idx])
 
                     if handeye.cntInputData >= 3:
                         handeye.calculateHandEyeMatrix()
 
                     PrintMsg.printStdErr(
-                        "Input Data Count: " + str(handeye.cntInputData))
-                    strText = "Input Data Count: " + \
-                        str(handeye.cntInputData) + \
-                        "(" + str(handeye.distance) + ")"
+                        "Input Data Count: " + str(handeye.cntInputData)
+                    )
+                    strText = (
+                        "Input Data Count: "
+                        + str(handeye.cntInputData)
+                        + "("
+                        + str(handeye.distance)
+                        + ")"
+                    )
                     infoText.setText(strText)
         else:
             if findAruco is True:
@@ -78,8 +88,14 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 currTaskPose = gqlDataClient.getRobotPose(robotName)
 
                 # convert dict. to list
-                currTPList = [currTaskPose['x'], currTaskPose['y'], currTaskPose['z'],
-                              currTaskPose['u'], currTaskPose['v'], currTaskPose['w']]
+                currTPList = [
+                    currTaskPose["x"],
+                    currTaskPose["y"],
+                    currTaskPose["z"],
+                    currTaskPose["u"],
+                    currTaskPose["v"],
+                    currTaskPose["w"],
+                ]
 
                 # capture additional matrices here
                 handeye.captureHandEyeInputs(currTPList, rvec.T, tvec.T)
@@ -87,11 +103,14 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 if handeye.cntInputData >= 3:
                     handeye.calculateHandEyeMatrix()
 
-                PrintMsg.printStdErr(
-                    "Input Data Count: " + str(handeye.cntInputData))
-                strText = "Input Data Count: " + \
-                    str(handeye.cntInputData) + \
-                    "(" + str(handeye.distance) + ")"
+                PrintMsg.printStdErr("Input Data Count: " + str(handeye.cntInputData))
+                strText = (
+                    "Input Data Count: "
+                    + str(handeye.cntInputData)
+                    + "("
+                    + str(handeye.distance)
+                    + ")"
+                )
                 infoText.setText(strText)
 
     # def processR(self, *args):
@@ -171,7 +190,8 @@ class CalibHandEyeKeyHandler(KeyHandler):
             return
 
         PrintMsg.printStdErr(
-            "---------------------------------------------------------------")
+            "---------------------------------------------------------------"
+        )
         hmTransform = handeye.getHandEyeResultMatrixUsingOpenCV()
         PrintMsg.printStdErr("Transform Matrix = ")
         PrintMsg.printStdErr(hmTransform)
@@ -181,7 +201,9 @@ class CalibHandEyeKeyHandler(KeyHandler):
         # TODO: [0] is available??
         updateUI.updateData(hmTransform.reshape(1, 16)[0])
 
-        infoText.setText('Succeeded to extract a handeye matrix.')
+        infoText.setText("Succeeded to extract a handeye matrix.")
+
+        super().enableExitFlag()
 
     # automated handeye calibration
 
