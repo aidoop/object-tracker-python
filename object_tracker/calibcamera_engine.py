@@ -88,8 +88,7 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
 
         # create a camera calqibration object
         if AppConfig.UseCalibChessBoard == True:
-            calibcam = CalibrationCamera(
-                AppConfig.ChessWidth, AppConfig.ChessHeight)
+            calibcam = CalibrationCamera(AppConfig.ChessWidth, AppConfig.ChessHeight)
         else:
             calibcam = CalibrationCameraAruco()
 
@@ -120,8 +119,7 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
                 color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
             if (
-                ObjectTrackerErrMsg.checkValueIsNone(
-                    color_image, "video color frame")
+                ObjectTrackerErrMsg.checkValueIsNone(color_image, "video color frame")
                 == False
             ):
                 break
@@ -136,7 +134,7 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
                     color_image, dsize=(640, 480), interpolation=cv2.INTER_AREA
                 )
                 interproc_dict["video"] = {
-                    "name": "cameracalib:"+cameraName,
+                    "name": "cameracalib:" + cameraName,
                     "width": 640,
                     "height": 480,
                     "frame": color_image_resized,
@@ -148,15 +146,15 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
             # pressedKey = (cv2.waitKey(1) & 0xFF)
             try:
                 (name, cmd) = cmd_interproc_q.get_nowait()
-                if name != "cameracalib:"+cameraName:
+                if name != "cameracalib:" + cameraName:
                     continue
 
                 if cmd == "snapshot":
-                    pressedKey = 0x63   # 'c' key
+                    pressedKey = 0x63  # 'c' key
                 elif cmd == "result":
-                    pressedKey = 0x67   # 'g' key
+                    pressedKey = 0x67  # 'g' key
                 elif cmd == "exit":
-                    pressedKey = 0x71   # 'q' key
+                    pressedKey = 0x71  # 'q' key
             except queue.Empty:
                 continue
 
@@ -169,7 +167,7 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
                 infoText,
                 cameraName,
                 interproc_dict,
-                video_interproc_e
+                video_interproc_e,
             ):
                 break
 

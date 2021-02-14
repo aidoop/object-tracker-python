@@ -17,7 +17,7 @@ class CalibCameraUpdate:
         }
 
         CALIB_CAMERA_RESULT = json.dumps(jsonData)
-        return CALIB_CAMERA_RESULT
+        print(CALIB_CAMERA_RESULT)
 
     @staticmethod
     def getData(self):

@@ -150,7 +150,7 @@ def proc_video_stream(interproc_dict, ve, cq):
         # wait for an video frame event
         ve.wait()
 
-        # exit if 'app_exit' flast is set
+        # exit if 'app_exit' flag is set
         if interproc_dict["app_exit"] == True:
             break
 

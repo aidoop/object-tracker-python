@@ -1,4 +1,3 @@
-
 from enum import Enum
 
 
@@ -16,29 +15,36 @@ class HandEyeAutoMove:
         self.rot_x = 10.0
         self.rot_y = 10.0
         self.rot_z = 10.0
+        self.total_move = 70
 
         self.stage = self.STAGE_GONEXT
 
         self.auto_move_rotation_poses = [
             [0.0, 0.0, 0.0, self.rot_x, 0.0, 0.0],
-            [0.0, 0.0, 0.0, self.rot_x*(-2.0), 0.0, 0.0],
+            [0.0, 0.0, 0.0, self.rot_x * (-2.0), 0.0, 0.0],
             [0.0, 0.0, 0.0, self.rot_x, 0.0, 0.0],
             [0.0, 0.0, 0.0, 0.0, self.rot_y, 0.0],
-            [0.0, 0.0, 0.0, 0.0, self.rot_y*(-2.0), 0.0],
+            [0.0, 0.0, 0.0, 0.0, self.rot_y * (-2.0), 0.0],
             [0.0, 0.0, 0.0, 0.0, self.rot_y, 0.0],
             [0.0, 0.0, 0.0, 0.0, 0.0, self.rot_z],
-            [0.0, 0.0, 0.0, 0.0, 0.0, self.rot_z*(-2.0)],
+            [0.0, 0.0, 0.0, 0.0, 0.0, self.rot_z * (-2.0)],
             [0.0, 0.0, 0.0, 0.0, 0.0, self.rot_z],
         ]
 
         self.auto_move_translation_poses = [
             [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
             [self.trans_move_x, 0.0, 0.0, 0.0, 0.0, 0.0],
-            [self.trans_move_x*(-1.0), self.trans_move_y, 0.0, 0.0, 0.0, 0.0],
-            [self.trans_move_x*(-1.0), self.trans_move_y *
-             (-1.0), 0.0, 0.0, 0.0, 0.0],
-            [self.trans_move_x, self.trans_move_y*(-1.0), 0.0, 0.0, 0.0, 0.0],
-            [0.0, self.trans_move_y, self.trans_move_z*(-1.0), 0.0, 0.0, 0.0],
+            [self.trans_move_x * (-1.0), self.trans_move_y, 0.0, 0.0, 0.0, 0.0],
+            [
+                self.trans_move_x * (-1.0),
+                self.trans_move_y * (-1.0),
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+            ],
+            [self.trans_move_x, self.trans_move_y * (-1.0), 0.0, 0.0, 0.0, 0.0],
+            [0.0, self.trans_move_y, self.trans_move_z * (-1.0), 0.0, 0.0, 0.0],
             [0.0, 0.0, self.trans_move_z, 0.0, 0.0, 0.0],
         ]
 
@@ -46,17 +52,26 @@ class HandEyeAutoMove:
         self.auto_move_rel_poses = []
         self.curr_list_index = -1
 
-    def initialize(self, trans_move_x=0.05, trans_move_y=0.05, trans_move_z=0.05, rot_x=10.0, rot_y=10.0, rot_z=10.0):
+    def initialize(
+        self,
+        trans_move_x=0.05,
+        trans_move_y=0.05,
+        trans_move_z=0.05,
+        rot_x=10.0,
+        rot_y=10.0,
+        rot_z=10.0,
+        total_move=70,
+    ):
         self.trans_move_x = trans_move_x
         self.trans_move_y = trans_move_y
         self.trans_move_z = trans_move_z
         self.rot_x = rot_x
         self.rot_y = rot_z
         self.rot_y = rot_z
+        self.total_move = total_move
 
         for trans_pose in self.auto_move_translation_poses:
-            self.auto_move_rel_poses += ([trans_pose] +
-                                         self.auto_move_rotation_poses)
+            self.auto_move_rel_poses += [trans_pose] + self.auto_move_rotation_poses
 
         self.initialized = True
 
@@ -65,7 +80,7 @@ class HandEyeAutoMove:
 
     def get_next(self):
         self.curr_list_index += 1
-        if self.curr_list_index >= len(self.auto_move_rel_poses):
+        if self.curr_list_index >= min(len(self.auto_move_rel_poses), self.total_move):
             self.reset()
             return []
 

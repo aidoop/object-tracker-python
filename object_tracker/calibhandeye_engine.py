@@ -12,7 +12,8 @@ from aidobjtrack.config.appconfig import AppConfig
 from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
 from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture
 from aidobjtrack.camera.camera_videocapture import VideoCapture
-#from aidobjtrack.robot.robot_dev_indydcp import RobotIndy7Dev
+
+# from aidobjtrack.robot.robot_dev_indydcp import RobotIndy7Dev
 from aidobjtrack.util.util import ObjectTrackerErrMsg, DisplayInfoText
 from aidobjtrack.keyhandler.calibhandeye_keyhandler import CalibHandEyeKeyHandler
 from aidobjtrack.util.hm_util import *
@@ -28,6 +29,7 @@ from aidobjtrack.handeye.calibhandeye_auto_move import HandEyeAutoMove
 def drawText(img, text, imgpt):
     font = cv2.FONT_HERSHEY_PLAIN
     cv2.putText(img, text, imgpt, font, 1, (0, 255, 0), 1, cv2.LINE_AA)
+
 
 ###############################################################################
 # Hand-eye calibration process
@@ -46,8 +48,13 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
     cmd_interproc_q = cq
 
     gqlDataClient = VisonGqlDataClient()
-    if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
-        #print("Can't connect operato vision server.")
+    if (
+        gqlDataClient.connect(
+            "http://localhost:3000", "system", "admin@hatiolab.com", "admin"
+        )
+        is False
+    ):
+        # print("Can't connect operato vision server.")
         sys.exit()
 
     gqlDataClient.fetchTrackingCamerasAll()
@@ -58,9 +65,9 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
     AppConfig.VideoFrameWidth = cameraObject.width
     AppConfig.VideoFrameHeight = cameraObject.height
 
-    robotName = ''
+    robotName = ""
     if cameraObject.baseRobotArm is not None:
-        robotName = cameraObject.baseRobotArm['name']
+        robotName = cameraObject.baseRobotArm["name"]
         robotObject = gqlDataClient.robotArms[robotName]
         robotIP = robotObject.endpoint
     else:
@@ -86,7 +93,19 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
     # auto handeye calibration mode
     handeye_automove = HandEyeAutoMove()
     if cameraObject.handEyeAutoMode == True:
-        handeye_automove.initialize()
+        autohandeye_total_move = cameraObject.autoHandeyeTotalIterations
+        xyz_move = cameraObject.autoHandeyeMoveXyz
+        uvw_move = cameraObject.autoHandeyeMoveUvw
+
+        handeye_automove.initialize(
+            xyz_move,
+            xyz_move,
+            xyz_move,
+            uvw_move,
+            uvw_move,
+            uvw_move,
+            autohandeye_total_move,
+        )
         robot_ready_count = 0
     else:
         pass
@@ -96,35 +115,41 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
     #     rsCamDev = RealsenseCapture(args.camIndex)
     # elif(args.camType == 'uvc'):
     #     rsCamDev = OpencvCapture(args.camIndex)
-    if cameraObject.type == 'realsense-camera':
+    if cameraObject.type == "realsense-camera":
         rsCamDev = RealsenseCapture(cameraObject.endpoint)
         AppConfig.VideoFrameWidth = 1920
         AppConfig.VideoFrameHeight = 1080
-    elif cameraObject.type == 'camera-connector':
+    elif cameraObject.type == "camera-connector":
         rsCamDev = OpencvCapture(int(cameraObject.endpoint))
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth,
-                        AppConfig.VideoFrameHeight, AppConfig.VideoFramePerSec, cameraName)
+    vcap = VideoCapture(
+        rsCamDev,
+        AppConfig.VideoFrameWidth,
+        AppConfig.VideoFrameHeight,
+        AppConfig.VideoFramePerSec,
+        cameraName,
+    )
 
     # Start streaming
     vcap.start()
 
     # get instrinsics
-    #mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), AppConfig.UseRealSenseInternalMatrix)
+    # mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), AppConfig.UseRealSenseInternalMatrix)
     # get internal intrinsics & extrinsics in D435
-    if(AppConfig.UseRealSenseInternalMatrix == True):
+    if AppConfig.UseRealSenseInternalMatrix == True:
         mtx, dist = vcap.getInternalIntrinsicsMat()
     else:
         mtx = cameraObject.cameraMatrix
         dist = cameraObject.distCoeff
 
-  # create key handler
+    # create key handler
     keyhandler = CalibHandEyeKeyHandler()
 
     # create handeye object
     handeyeAruco = HandEyeAruco(
-        AppConfig.HandEyeArucoDict, AppConfig.HandEyeArucoSize, mtx, dist)
+        AppConfig.HandEyeArucoDict, AppConfig.HandEyeArucoSize, mtx, dist
+    )
     handeyeAruco.setCalibMarkerID(AppConfig.CalibMarkerID)
 
     # start indy7 as a direct-teaching mode as default
@@ -140,12 +165,12 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
 
     # get frames and process a key event
     try:
-        while(True):
+        while True:
             # Wait for a coherent pair of frames: depth and color
             color_image = vcap.get_video_frame()
 
             # change the format to BGR format for opencv
-            if cameraObject.type == 'realsense-camera':
+            if cameraObject.type == "realsense-camera":
                 color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
             # check core variables are available..
@@ -153,15 +178,22 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
                 break
             if ObjectTrackerErrMsg.checkValueIsNone(dist, "distortion coeff.") == False:
                 break
-            if ObjectTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
+            if (
+                ObjectTrackerErrMsg.checkValueIsNone(color_image, "video color frame")
+                == False
+            ):
                 break
-            if ObjectTrackerErrMsg.checkValueIsNone(handeye, "hand eye matrix") == False:
+            if (
+                ObjectTrackerErrMsg.checkValueIsNone(handeye, "hand eye matrix")
+                == False
+            ):
                 break
             # if ObjectTrackerErrMsg.checkValueIsNone(indy7, "indy7 object") == False:
             #     break
 
             (flagFindMainAruco, ids, rvec, tvec) = handeyeAruco.processArucoMarker(
-                color_image, mtx, dist, vcap)
+                color_image, mtx, dist, vcap
+            )
 
             # draw info. text
             infoText.draw(color_image)
@@ -174,28 +206,49 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
                         next_move = handeye_automove.get_next()
                         if next_move:
                             # indy7.move_task_by_async(next_move)
-                            gqlDataClient.moveRobotTaskByNoWait(robotName, {
-                                'x': next_move[0], 'y': next_move[1], 'z': next_move[2], 'u': next_move[3], 'v': next_move[4], 'w': next_move[5]})
-                        handeye_automove.set_stage(
-                            HandEyeAutoMove.STAGE_CAPTURE)
-                        robot_ready_count = 0
+                            gqlDataClient.moveRobotTaskByNoWait(
+                                robotName,
+                                {
+                                    "x": next_move[0],
+                                    "y": next_move[1],
+                                    "z": next_move[2],
+                                    "u": next_move[3],
+                                    "v": next_move[4],
+                                    "w": next_move[5],
+                                },
+                            )
+                            handeye_automove.set_stage(HandEyeAutoMove.STAGE_CAPTURE)
+                            robot_ready_count = 0
+                        else:
+                            handeye_automove.stop()
                     elif handeye_automove.get_stage() == HandEyeAutoMove.STAGE_CAPTURE:
                         # robot_status = indy7.get_robot_status()
-                        robot_status = gqlDataClient.get_robot_status(
-                            robotName)
+                        robot_status = gqlDataClient.get_robot_status(robotName)
                         # if not robot_status['busy'] and robot_status['movedone']:
-                        if not robot_status['busy'] and robot_status['moveFinished']:
+                        if not robot_status["busy"] and robot_status["moveFinished"]:
                             robot_ready_count += 1
 
                             if robot_ready_count > 30:
                                 # process the position capture operation(= keypress 'c')
                                 keyhandler.processKeyHandler(
-                                    99, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, infoText, gqlDataClient, robotName, handeye_automove)
-                                handeye_automove.set_stage(
-                                    HandEyeAutoMove.STAGE_GONEXT)
+                                    99,
+                                    flagFindMainAruco,
+                                    color_image,
+                                    ids,
+                                    tvec,
+                                    rvec,
+                                    mtx,
+                                    dist,
+                                    handeye,
+                                    infoText,
+                                    gqlDataClient,
+                                    robotName,
+                                    handeye_automove,
+                                )
+                                handeye_automove.set_stage(HandEyeAutoMove.STAGE_GONEXT)
                                 robot_ready_count = 0
                     else:
-                        #print('unknown stage..')
+                        # print('unknown stage..')
                         pass
 
             # display the captured image
@@ -220,15 +273,29 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
                     continue
 
                 if cmd == "snapshot":
-                    pressedKey = 0x63   # 'c' key
+                    pressedKey = 0x63  # 'c' key
                 elif cmd == "result":
-                    pressedKey = 0x67   # 'g' key
+                    pressedKey = 0x67  # 'g' key
                 elif cmd == "exit":
-                    pressedKey = 0x71   # 'q' key
+                    pressedKey = 0x71  # 'q' key
             except queue.Empty:
                 continue
 
-            if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, infoText, gqlDataClient, robotName, handeye_automove):
+            if keyhandler.processKeyHandler(
+                pressedKey,
+                flagFindMainAruco,
+                color_image,
+                ids,
+                tvec,
+                rvec,
+                mtx,
+                dist,
+                handeye,
+                infoText,
+                gqlDataClient,
+                robotName,
+                handeye_automove,
+            ):
                 break
 
             # have a delay to make CPU usage lower...
@@ -252,7 +319,7 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
     # indy7.finalize()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # parse program parameters to get necessary aruments
     # argPar = argparse.ArgumentParser(description="HandEye Calibration")
     # argPar.add_argument('camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'rs: Intel Realsense, uvc: UVC-Supported')

@@ -2,17 +2,16 @@ import numpy as np
 
 
 class ROI:
-
     def __init__(self):
         self.id = None
         self.tl = None
         self.rb = None
 
+
 # RobotArm
 
 
 class RobotArm:
-
     def __init__(self):
         self.id = None
         self.name = None
@@ -21,11 +20,11 @@ class RobotArm:
         self.gripperOffset = None
         self.markerOffset = None
 
+
 # Tracking Camera
 
 
 class TrackingCamera:
-
     def __init__(self):
         self.ROIs = list()
         self.name = None
@@ -41,6 +40,9 @@ class TrackingCamera:
         self.camObjOffset = None
         self.width = None
         self.height = None
+        self.autoHandeyeTotalIterations = None
+        self.autoHandeyeMoveXyz = None
+        self.autoHandeyeMoveUvw = None
 
     def setCameraMatrix(self, row, col, inputData):
         self.cameraMatrix = VisionGqlUtil.setMatrixData(row, col, inputData)
@@ -57,19 +59,19 @@ class TrackingCamera:
         if rois is None:
             return
         for roi in rois:
-            if (roi['region']['lt'] is None) or (roi['region']['rb'] is None):
+            if (roi["region"]["lt"] is None) or (roi["region"]["rb"] is None):
                 continue
             roiObject = ROI()
-            roiObject.id = roi['id']
-            roiObject.tl = [roi['region']['lt']['x'], roi['region']['lt']['y']]
-            roiObject.rb = [roi['region']['rb']['x'], roi['region']['rb']['y']]
+            roiObject.id = roi["id"]
+            roiObject.tl = [roi["region"]["lt"]["x"], roi["region"]["lt"]["y"]]
+            roiObject.rb = [roi["region"]["rb"]["x"], roi["region"]["rb"]["y"]]
             self.ROIs.append(roiObject)
+
 
 # Trackable Object
 
 
 class TrackableObject:
-
     def __init__(self):
         self.name = None
         self.totype = None
@@ -77,11 +79,11 @@ class TrackableObject:
         self.active = None
         self.poseOffset = None
 
+
 # Workspace
 
 
 class VisonWorkspace:
-
     def __init__(self):
         self.name = None
         self.wstype = None
@@ -89,11 +91,11 @@ class VisonWorkspace:
         self.active = None
         self.params = None
 
+
 # Utilities
 
 
 class VisionGqlUtil:
-
     @staticmethod
     def setMatrixData(row, col, inputData):
         if inputData is None:
@@ -104,4 +106,13 @@ class VisionGqlUtil:
     def setPoseData(inputData):
         if inputData is None:
             return
-        return np.array([inputData['x'], inputData['y'], inputData['z'], inputData['u'], inputData['v'], inputData['w']])
+        return np.array(
+            [
+                inputData["x"],
+                inputData["y"],
+                inputData["z"],
+                inputData["u"],
+                inputData["v"],
+                inputData["w"],
+            ]
+        )
