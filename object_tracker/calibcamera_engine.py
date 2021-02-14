@@ -134,7 +134,7 @@ def calibcamera_engine(app_args, interproc_dict, ve=None, cq=None):
                     color_image, dsize=(640, 480), interpolation=cv2.INTER_AREA
                 )
                 interproc_dict["video"] = {
-                    "name": "cameracalib:" + cameraName,
+                    "name": "cameracalib" + ":" + cameraName,
                     "width": 640,
                     "height": 480,
                     "frame": color_image_resized,

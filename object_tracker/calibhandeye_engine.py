@@ -258,7 +258,7 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
                     color_image, dsize=(640, 480), interpolation=cv2.INTER_AREA
                 )
                 interproc_dict["video"] = {
-                    "device": "handeyecalib",
+                    "name": "handeyecalib" + ":" + cameraName,
                     "width": 640,
                     "height": 480,
                     "frame": color_image_resized,
@@ -269,11 +269,11 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
             # pressedKey = (cv2.waitKey(1) & 0xFF)
             try:
                 (name, cmd) = cmd_interproc_q.get_nowait()
-                if name != "handeyecalib":
+                if name != "handeyecalib" + ":" + cameraName:
                     continue
 
-                if cmd == "snapshot":
-                    pressedKey = 0x63  # 'c' key
+                if cmd == "start":
+                    pressedKey = 0x61  # 'a' key
                 elif cmd == "result":
                     pressedKey = 0x67  # 'g' key
                 elif cmd == "exit":

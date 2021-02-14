@@ -74,7 +74,7 @@ class VideoBridgeData(BridgeData):
         BridgeData.BRIDGE_DATA["type"] = self.type
         BridgeData.BRIDGE_DATA["name"] = self.name
         BridgeData.BRIDGE_DATA["body"] = {
-            "frame": self.frame,
+            "frame": "data:image/jpeg;base64," + self.frame,
             "width": self.width,
             "height": self.height,
         }
@@ -120,8 +120,11 @@ def thread_data_receive(sock, interproc_dict, command_queue):
             recv_message = sock.recv()
             if len(recv_message) > 0:
                 recv_obj = json.loads(recv_message)
-                (type, name, cmd) = (recv_obj["type"],
-                                     recv_obj["name"], recv_obj["body"])
+                (type, name, cmd) = (
+                    recv_obj["type"],
+                    recv_obj["name"],
+                    recv_obj["body"],
+                )
                 PrintMsg.printStdErr(type, cmd)
                 if type == BridgeDataType.CMD:
                     command_queue.put((name, cmd))
@@ -159,8 +162,7 @@ def proc_video_stream(interproc_dict, ve, cq):
                 name = interproc_dict["object"]["name"]
                 object_type = interproc_dict["object"]["object_type"]
                 object_data = interproc_dict["object"]["object_data"]
-                bridge_data = ObjectBridgeData(
-                    name, object_type, object_data)
+                bridge_data = ObjectBridgeData(name, object_type, object_data)
                 ws.send(bridge_data.dumps())
 
             if interproc_dict["video"] != {}:
