@@ -88,12 +88,13 @@ class CalibCameraKeyHandler(KeyHandler):
             )
 
             # get the result data and throw into the websocket process
-            interproc_dict["object"] = {
-                "name": "cameracalib:" + cameraName,
-                "object_type": "result",
-                "object_data": calibResult,
-            }
-            video_interproc_e.set()
+            if interproc_dict is not None:
+                interproc_dict["object"] = {
+                    "name": "cameracalib:" + cameraName,
+                    "object_type": "result",
+                    "object_data": calibResult,
+                }
+                video_interproc_e.set()
 
         else:
             strInfoText = "Calibration failed. - " + str(reproerr)
@@ -101,4 +102,5 @@ class CalibCameraKeyHandler(KeyHandler):
         PrintMsg.printStdErr(strInfoText)
         infoText.setText(strInfoText)
 
-        super().enableExitFlag()
+        if interproc_dict is not None:
+            super().enableExitFlag()

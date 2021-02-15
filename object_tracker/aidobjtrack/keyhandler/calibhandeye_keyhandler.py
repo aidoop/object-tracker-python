@@ -203,7 +203,8 @@ class CalibHandEyeKeyHandler(KeyHandler):
 
         infoText.setText("Succeeded to extract a handeye matrix.")
 
-        super().enableExitFlag()
+        # TODO: need to exit here?
+        # super().enableExitFlag()
 
     # automated handeye calibration
 

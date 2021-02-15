@@ -37,7 +37,7 @@ def drawText(img, text, imgpt):
 ###############################################################################
 
 
-def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
+def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
     cameraName = app_args
     if cameraName is "":
@@ -159,9 +159,11 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
     infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
 
     # setup an opencv window
-    # cv2.namedWindow(cameraName, cv2.WINDOW_NORMAL)
-    # cv2.setWindowProperty(
-    #     cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    if video_interproc_e is None:
+        cv2.namedWindow(cameraName, cv2.WINDOW_NORMAL)
+        cv2.setWindowProperty(
+            cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
+        )
 
     # get frames and process a key event
     try:
@@ -252,7 +254,6 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
                         pass
 
             # display the captured image
-            # cv2.imshow(cameraName, color_image)
             if video_interproc_e is not None:
                 color_image_resized = cv2.resize(
                     color_image, dsize=(640, 480), interpolation=cv2.INTER_AREA
@@ -264,20 +265,24 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
                     "frame": color_image_resized,
                 }
                 video_interproc_e.set()
+            else:
+                cv2.imshow(cameraName, color_image)
 
             # handle key inputs
-            # pressedKey = (cv2.waitKey(1) & 0xFF)
             try:
-                (name, cmd) = cmd_interproc_q.get_nowait()
-                if name != "handeyecalib" + ":" + cameraName:
-                    continue
+                if cmd_interproc_q is not None:
+                    (name, cmd) = cmd_interproc_q.get_nowait()
+                    if name != "handeyecalib:" + cameraName:
+                        continue
 
-                if cmd == "start":
-                    pressedKey = 0x61  # 'a' key
-                elif cmd == "result":
-                    pressedKey = 0x67  # 'g' key
-                elif cmd == "exit":
-                    pressedKey = 0x71  # 'q' key
+                    if cmd == "start":
+                        pressedKey = 0x61  # 'a' key
+                    elif cmd == "result":
+                        pressedKey = 0x67  # 'g' key
+                    elif cmd == "exit":
+                        pressedKey = 0x71  # 'q' key
+                else:
+                    pressedKey = cv2.waitKey(1) & 0xFF
             except queue.Empty:
                 continue
 
@@ -311,8 +316,10 @@ def calibhandeye_engine(app_args, interproc_dict, ve=None, cq=None):
         # Stop streaming
         vcap.stop()
 
-        interproc_dict["app_exit"] = True
-        video_interproc_e.set()
+        if interproc_dict is not None:
+            interproc_dict["app_exit"] = True
+            if video_interproc_e is not None:
+                video_interproc_e.set()
 
     # arrange all to finitsh this application here
     # cv2.destroyAllWindows()
