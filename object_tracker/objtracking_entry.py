@@ -62,8 +62,9 @@ class BridgeData:
 
 
 class VideoBridgeData(BridgeData):
+    BRIDGE_DATA_TYPE = "video"
+
     def __init__(self, name, frame, width, height):
-        self.type = BridgeDataType.VIDEO
         self.name = name
         self.frame = frame
         self.width = width
@@ -71,9 +72,9 @@ class VideoBridgeData(BridgeData):
 
     def dumps(self):
         BridgeData.BRIDGE_DATA = {}
-        BridgeData.BRIDGE_DATA["type"] = self.type
         BridgeData.BRIDGE_DATA["name"] = self.name
         BridgeData.BRIDGE_DATA["body"] = {
+            "type": VideoBridgeData.BRIDGE_DATA_TYPE,
             "frame": "data:image/jpeg;base64," + self.frame,
             "width": self.width,
             "height": self.height,
@@ -85,18 +86,17 @@ class VideoBridgeData(BridgeData):
 
 
 class ObjectBridgeData(BridgeData):
-    def __init__(self, name, object_type, object_data):
-        self.type = BridgeDataType.OBJECT
+    BRIDGE_DATA_TYPE = "object"
+
+    def __init__(self, name, object_data):
         self.name = name
-        self.object_type = object_type
         self.object_data = object_data
 
     def dumps(self):
         BridgeData.BRIDGE_DATA = {}
-        BridgeData.BRIDGE_DATA["type"] = self.type
         BridgeData.BRIDGE_DATA["name"] = self.name
         BridgeData.BRIDGE_DATA["body"] = {
-            "object_type": self.object_type,
+            "type": ObjectBridgeData.BRIDGE_DATA_TYPE,
             "object_data": self.object_data,
         }
         return json.dumps(BridgeData.BRIDGE_DATA)
@@ -158,11 +158,11 @@ def proc_video_stream(interproc_dict, ve, cq):
             break
 
         try:
+            # TODO: should modularize these data conversion..
             if interproc_dict["object"] != {}:
                 name = interproc_dict["object"]["name"]
-                object_type = interproc_dict["object"]["object_type"]
                 object_data = interproc_dict["object"]["object_data"]
-                bridge_data = ObjectBridgeData(name, object_type, object_data)
+                bridge_data = ObjectBridgeData(name, object_data)
                 ws.send(bridge_data.dumps())
 
             if interproc_dict["video"] != {}:
