@@ -193,9 +193,9 @@ class CalibHandEyeKeyHandler(KeyHandler):
             "---------------------------------------------------------------"
         )
         hmTransform = handeye.getHandEyeResultMatrixUsingOpenCV()
-        PrintMsg.printStdErr("Transform Matrix = ")
-        PrintMsg.printStdErr(hmTransform)
-        HandEyeCalibration.saveTransformMatrix(hmTransform)
+        # PrintMsg.printStdErr("Transform Matrix = ")
+        # PrintMsg.printStdErr(hmTransform)
+        # HandEyeCalibration.saveTransformMatrix(hmTransform)
 
         updateUI = CalibHandeyeUpdate()
         # TODO: [0] is available??

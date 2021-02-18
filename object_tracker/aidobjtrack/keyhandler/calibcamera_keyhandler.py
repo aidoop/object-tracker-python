@@ -80,8 +80,8 @@ class CalibCameraKeyHandler(KeyHandler):
         strInfoText = "Calibration completed successfully... - " + str(reproerr)
 
         # save calibration data to the specific xml file
-        savedFileName = "CalibCamResult" + str(camIndex) + ".json"
-        calibcam.saveResults(savedFileName, cammtx, distcoeff)
+        # savedFileName = "CalibCamResult" + str(camIndex) + ".json"
+        # calibcam.saveResults(savedFileName, cammtx, distcoeff)
 
         # update the result data
         calibResult = CalibCameraUpdate.updateData(
