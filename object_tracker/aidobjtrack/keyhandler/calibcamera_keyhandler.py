@@ -92,8 +92,7 @@ class CalibCameraKeyHandler(KeyHandler):
             # get the result data and throw into the websocket process
             if interproc_dict is not None:
                 interproc_dict["object"] = {
-                    "name": "calibresult:" + cameraName,
-                    "object_type": "result",
+                    "name": "cameracalib:" + cameraName,
                     "object_data": calibResult,
                 }
                 video_interproc_e.set()
@@ -103,5 +102,5 @@ class CalibCameraKeyHandler(KeyHandler):
         # PrintMsg.printStdErr(strInfoText)
         infoText.setText(strInfoText)
 
-        if interproc_dict is not None:
-            super().enableExitFlag()
+        # if interproc_dict is not None:
+        #     super().enableExitFlag()

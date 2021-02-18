@@ -186,6 +186,8 @@ class CalibHandEyeKeyHandler(KeyHandler):
         handeye = args[7]
         infoText = args[8]
         interproc_dict = args[12]
+        video_interproc_e = args[13]
+        cameraName = args[14]
 
         if handeye.cntInputData < 3:
             if interproc_dict is not None:
@@ -202,13 +204,21 @@ class CalibHandEyeKeyHandler(KeyHandler):
 
         updateUI = CalibHandeyeUpdate()
         # TODO: [0] is available??
-        updateUI.updateData(hmTransform.reshape(1, 16)[0])
+        update_data = updateUI.updateData(hmTransform.reshape(1, 16)[0])
 
         infoText.setText("Succeeded to extract a handeye matrix.")
 
-        # TODO: need to exit here?
+        # get the result data and throw into the websocket process
         if interproc_dict is not None:
-            super().enableExitFlag()
+            interproc_dict["object"] = {
+                "name": "handeyecalib:" + cameraName,
+                "object_data": update_data,
+            }
+            video_interproc_e.set()
+
+        # TODO: need to exit here?
+        # if interproc_dict is not None:
+        #     super().enableExitFlag()
 
     # automated handeye calibration
 

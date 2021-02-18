@@ -246,6 +246,9 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
                                     gqlDataClient,
                                     robotName,
                                     handeye_automove,
+                                    interproc_dict,
+                                    video_interproc_e,
+                                    cameraName,
                                 )
                                 handeye_automove.set_stage(HandEyeAutoMove.STAGE_GONEXT)
                                 robot_ready_count = 0
@@ -301,6 +304,8 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 robotName,
                 handeye_automove,
                 interproc_dict,
+                video_interproc_e,
+                cameraName,
             ):
                 break
 
