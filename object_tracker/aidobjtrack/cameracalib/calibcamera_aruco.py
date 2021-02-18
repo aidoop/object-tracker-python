@@ -11,7 +11,6 @@ from aidobjtrack.aruco.aruco_detect import ArucoDetect
 
 
 class CalibrationCameraAruco:
-
     def __init__(self):
         # prepare arrays to store object points and image points from all the images.
         # 3d point in real world space
@@ -27,8 +26,7 @@ class CalibrationCameraAruco:
 
     def calcuateCameraMatrix(self, images):
         # opencv algorithm termination criteria
-        criteria = (cv2.TERM_CRITERIA_EPS +
-                    cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
         counter, corners_list, id_list = [], [], []
         first = True
@@ -50,9 +48,13 @@ class CalibrationCameraAruco:
         counter = np.array(counter)
 
         # start camera calibartion
-        if (len(id_list) > 0):
+        if len(id_list) > 0:
             ret, mtx, dist = self.arucoDetect.calibrateCamera(
-                corners_list, id_list, counter, (AppConfig.VideoFrameHeight, AppConfig.VideoFrameWidth))
+                corners_list,
+                id_list,
+                counter,
+                (AppConfig.VideoFrameHeight, AppConfig.VideoFrameWidth),
+            )
             print("Reprojection Error: " + str(ret), file=sys.stderr)
 
             # TODO: should check this reprojection eror is available...
@@ -61,12 +63,13 @@ class CalibrationCameraAruco:
             calibResult = False
             mtx = None
             dist = None
+            ret = -1
 
         # return reprojection error
         return (calibResult, mtx, dist, ret)
 
     def saveResults(self, fname, mtx, dist):
-        #name, ext = os.path.splitext(fname)
+        # name, ext = os.path.splitext(fname)
         calibFile = cv2.FileStorage(fname, cv2.FILE_STORAGE_WRITE)
         calibFile.write("cameraMatrix", mtx)
         calibFile.write("distCoeff", dist)

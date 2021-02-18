@@ -188,6 +188,8 @@ class CalibHandEyeKeyHandler(KeyHandler):
         interproc_dict = args[12]
 
         if handeye.cntInputData < 3:
+            if interproc_dict is not None:
+                super().enableExitFlag()
             return
 
         PrintMsg.printStdErr(

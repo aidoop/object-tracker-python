@@ -57,10 +57,8 @@ class BoxObjectTracker(ObjectTracker):
     # OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/object-tracker-python/logs/object-train20201101T1825/mask_rcnn_object-train_0178.h5"
 
     # a best candidate...
-    OBJECT_WEIGHT_PATH = (
-        "./models/object-train20201101T1825/mask_rcnn_object-train_0098.h5"
-    )
-    LOGS_PATH = "./logs"
+    OBJECT_WEIGHT_PATH = "/home/jinwon/Documents/github/things-factory/packages/operato-robotics/object-tracker-python/models/object-train20201101T1825/mask_rcnn_object-train_0098.h5"
+    LOGS_PATH = "/home/jinwon/Documents/github/things-factory/packages/operato-robotics/object-tracker-python/logs"
 
     def __init__(self):
         self.markerObjectList = []

@@ -20,12 +20,13 @@ opencv-contrib-python==4.2.0.34
 pyrealsense2==2.35.2.1937
 requests
 gql
+websocket-client
 scipy==1.4.1
 Pillow
 cython
 matplotlib
 scikit-image==0.16.2
-tensorflow==2.3.0
+tensorflow==2.3.2
 h5py
 imgaug
 IPython[all]

@@ -175,10 +175,7 @@ def objecttracking_engine():
                     color_image_half = (
                         cv2.resize(
                             color_image,
-                            (
-                                int(AppConfig.VideoFrameWidth / 2),
-                                int(AppConfig.VideoFrameHeight / 2),
-                            ),
+                            (960, 540),
                         )
                         if AppConfig.VideoFrameWidth > 100
                         else color_image

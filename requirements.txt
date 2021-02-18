@@ -4,4 +4,4 @@ opencv-contrib-python==4.2.0.34
 pyrealsense2==2.35.2.1937
 requests
 gql
-
+websocket-client

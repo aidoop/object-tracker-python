@@ -71,35 +71,36 @@ class CalibCameraKeyHandler(KeyHandler):
 
         # get image file names
         images = glob.glob(dirFrameImage + "/*.jpg")
-        ret, cammtx, distcoeff, reproerr = calibcam.calcuateCameraMatrix(images)
+        _, cammtx, distcoeff, reproerr = calibcam.calcuateCameraMatrix(images)
 
         strInfoText = ""
 
         # don't check results and make user decide if this calculated values can be used.
         # if ret == True:
-        strInfoText = "Calibration completed successfully... - " + str(reproerr)
+        if (cammtx is not None) and (distcoeff is not None):
+            strInfoText = "Calibration completed successfully... - " + str(reproerr)
 
-        # save calibration data to the specific xml file
-        # savedFileName = "CalibCamResult" + str(camIndex) + ".json"
-        # calibcam.saveResults(savedFileName, cammtx, distcoeff)
+            # save calibration data to the specific xml file
+            # savedFileName = "CalibCamResult" + str(camIndex) + ".json"
+            # calibcam.saveResults(savedFileName, cammtx, distcoeff)
 
-        # update the result data
-        calibResult = CalibCameraUpdate.updateData(
-            distcoeff[0], cammtx.reshape(1, 9)[0]
-        )
+            # update the result data
+            calibResult = CalibCameraUpdate.updateData(
+                distcoeff[0], cammtx.reshape(1, 9)[0]
+            )
 
-        # get the result data and throw into the websocket process
-        if interproc_dict is not None:
-            interproc_dict["object"] = {
-                "name": "calibresult:" + cameraName,
-                "object_type": "result",
-                "object_data": calibResult,
-            }
-            video_interproc_e.set()
-        # else:
-        #     strInfoText = "Calibration failed. - " + str(reproerr)
+            # get the result data and throw into the websocket process
+            if interproc_dict is not None:
+                interproc_dict["object"] = {
+                    "name": "calibresult:" + cameraName,
+                    "object_type": "result",
+                    "object_data": calibResult,
+                }
+                video_interproc_e.set()
+        else:
+            strInfoText = "Calibration failed."
 
-        PrintMsg.printStdErr(strInfoText)
+        # PrintMsg.printStdErr(strInfoText)
         infoText.setText(strInfoText)
 
         if interproc_dict is not None:
