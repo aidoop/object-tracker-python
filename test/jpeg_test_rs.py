@@ -40,12 +40,12 @@ try:
 
     print("printing jpeg header data")
     for idx in range(0, 128):
-        print('')
+        print("")
 
     print("completed..")
 
 except Exception as ex:
-    print("Error :", ex)
+    print("Error :", ex, file=sys.stderr)
 
 finally:
     # When everything done, release the capture

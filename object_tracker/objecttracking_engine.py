@@ -22,7 +22,12 @@ from aidobjtrack.util.util import ObjectTrackerErrMsg
 def objecttracking_engine():
     # create application data
     app_data = ObjectTrakcingAppData()
-    if app_data.connect_server('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') == False:
+    if (
+        app_data.connect_server(
+            "http://localhost:3000", "system", "admin@hatiolab.com", "admin"
+        )
+        == False
+    ):
         print("Can't connect operato vision server.")
         sys.exit()
 
@@ -36,15 +41,16 @@ def objecttracking_engine():
     # prepare object update status
     objStatusUpdate = ObjectUpdateStatus(app_data.get_gql_client())
 
-    if (app_data.tracking_method == ObjectTrackingMethod.BOX):
+    if app_data.tracking_method == ObjectTrackingMethod.BOX:
         cams = app_data.get_camera_list()
         for cam in cams:
             cv2.namedWindow(cam.camera_name, cv2.WINDOW_NORMAL)
             cv2.setWindowProperty(
-                cam.camera_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+                cam.camera_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
+            )
 
     try:
-        while(True):
+        while True:
 
             # get markable object
             tobjIDList = app_data.get_mark_id_list_of_camera(0).copy()
@@ -53,18 +59,34 @@ def objecttracking_engine():
             for vtc in vtcList:
                 # get a frame
                 color_image = vtc.vcap.get_video_frame()
-                #(color_image, depth_image) = vtc.vcap.get_frames()
+                # (color_image, depth_image) = vtc.vcap.get_frames()
                 # assert color_image is not None, 'no captured frame'
                 if color_image is None:
                     continue
 
                 # check if core variables are available..
-                if (app_data.tracking_method == ObjectTrackingMethod.ARUCO):
-                    if (ObjectTrackerErrMsg.checkValueIsNone(vtc.mtx, "camera matrix") == False) or (ObjectTrackerErrMsg.checkValueIsNone(vtc.dist, "distortion coeff.") == False):
+                if app_data.tracking_method == ObjectTrackingMethod.ARUCO:
+                    if (
+                        ObjectTrackerErrMsg.checkValueIsNone(vtc.mtx, "camera matrix")
+                        == False
+                    ) or (
+                        ObjectTrackerErrMsg.checkValueIsNone(
+                            vtc.dist, "distortion coeff."
+                        )
+                        == False
+                    ):
                         break
-                if ObjectTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
+                if (
+                    ObjectTrackerErrMsg.checkValueIsNone(
+                        color_image, "video color frame"
+                    )
+                    == False
+                ):
                     break
-                if ObjectTrackerErrMsg.checkValueIsNone(vtc.handeye, "hand eye matrix") == False:
+                if (
+                    ObjectTrackerErrMsg.checkValueIsNone(vtc.handeye, "hand eye matrix")
+                    == False
+                ):
                     break
 
                 if AppConfig.ObjTrackingDebugWoRobot == False:
@@ -74,9 +96,10 @@ def objecttracking_engine():
                         if ra.name == vtc.robot_name:
                             # detect markers here..
                             resultObjs = vtc.objectMarkTracker.findObjects(
-                                color_image, vtc, ra.gripperOffset)
+                                color_image, vtc, ra.gripperOffset
+                            )
 
-                            if(resultObjs == None):
+                            if resultObjs == None:
                                 continue
 
                             for resultObj in resultObjs:
@@ -89,7 +112,15 @@ def objecttracking_engine():
                                     [x, y, z, u, v, w] = resultObj.targetPos
 
                                     objStatusUpdate.addObjStatus(
-                                        resultObj.markerID, [vtc.camera_name], x, y, z, u, v, w)
+                                        resultObj.markerID,
+                                        [vtc.camera_name],
+                                        x,
+                                        y,
+                                        z,
+                                        u,
+                                        v,
+                                        w,
+                                    )
 
                                     # TODO: update object status based on ROIs later
                                     # if found is True:
@@ -103,9 +134,10 @@ def objecttracking_engine():
                 else:
                     # detect markers here..
                     resultObjs = vtc.objectMarkTracker.findObjects(
-                        color_image, vtc, None)
+                        color_image, vtc, None
+                    )
 
-                    if(resultObjs == None):
+                    if resultObjs == None:
                         continue
 
                     for resultObj in resultObjs:
@@ -119,7 +151,8 @@ def objecttracking_engine():
 
                             # replace roi regions to camera name
                             objStatusUpdate.addObjStatus(
-                                resultObj.markerID, [vtc.camera_name], x, y, z, u, v, w)
+                                resultObj.markerID, [vtc.camera_name], x, y, z, u, v, w
+                            )
 
                             # TODO: update object status based on ROIs later
                             # if found is True:
@@ -139,19 +172,30 @@ def objecttracking_engine():
 
                 # display a frame image
                 if app_data.tracking_method == ObjectTrackingMethod.ARUCO:
-                    color_image_half = cv2.resize(
-                        color_image, (int(AppConfig.VideoFrameWidth/2), int(AppConfig.VideoFrameHeight/2))) if AppConfig.VideoFrameWidth > 100 else color_image
+                    color_image_half = (
+                        cv2.resize(
+                            color_image,
+                            (
+                                int(AppConfig.VideoFrameWidth / 2),
+                                int(AppConfig.VideoFrameHeight / 2),
+                            ),
+                        )
+                        if AppConfig.VideoFrameWidth > 100
+                        else color_image
+                    )
                     cv2.imshow(vtc.camera_name, color_image_half)
                 else:
                     # BGR to RGB for opencv imshow function
-                    color_image_view = cv2.cvtColor(
-                        color_image, cv2.COLOR_RGB2BGR)
+                    color_image_view = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
                     # create images to show
                     # sub_image = cv2.applyColorMap(cv2.convertScaleAbs(
                     #     depth_image, alpha=0.07), cv2.COLORMAP_JET)
                     sub_image = vtc.objectMarkTracker.getMaskImage(
-                        color_image, AppConfig.VideoFrameWidth, AppConfig.VideoFrameHeight)
+                        color_image,
+                        AppConfig.VideoFrameWidth,
+                        AppConfig.VideoFrameHeight,
+                    )
                     # sub_image = maskcv2.cvtColor(mask_image, cv2.COLOR_GRAY2RGB)
 
                     # draw pose axis in the mask image
@@ -174,12 +218,12 @@ def objecttracking_engine():
                 time.sleep(0.2)
 
             # handle key inputs
-            pressedKey = (cv2.waitKey(1) & 0xFF)
+            pressedKey = cv2.waitKey(1) & 0xFF
             if keyhandler.processKeyHandler(pressedKey):
                 break
 
     except Exception as ex:
-        print("Error :", ex)
+        print("Error :", ex, file=sys.stderr)
 
     finally:
         if vtcList is not None:
@@ -189,6 +233,6 @@ def objecttracking_engine():
     cv2.destroyAllWindows()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     objecttracking_engine()

@@ -1,4 +1,3 @@
-
 import numpy as np
 import cv2
 import cv2.aruco as aruco
@@ -14,11 +13,11 @@ import pyrealsense2 as rs
 import open3d
 
 ###############################################################################
-# Hand-eye calibration process 
-#   -                                                                
+# Hand-eye calibration process
+#   -
 ###############################################################################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # Configure depth and color streams
     pipeline = rs.pipeline()
@@ -39,7 +38,7 @@ if __name__ == '__main__':
     profile = pipeline.get_active_profile()
     depth_profile = rs.video_stream_profile(profile.get_stream(rs.stream.depth))
     depth_intrinsics = depth_profile.get_intrinsics()
-    w, h = depth_intrinsics.width, depth_intrinsics.height    
+    w, h = depth_intrinsics.width, depth_intrinsics.height
 
     # Processing blocks
     pc = rs.pointcloud()
@@ -48,17 +47,19 @@ if __name__ == '__main__':
     spatial = rs.spatial_filter()
 
     colorizer = rs.colorizer()
-    filters = [rs.disparity_transform(),
-            rs.spatial_filter(),
-            rs.temporal_filter(),
-            rs.disparity_transform(False)]
+    filters = [
+        rs.disparity_transform(),
+        rs.spatial_filter(),
+        rs.temporal_filter(),
+        rs.disparity_transform(False),
+    ]
 
-    ## not aligned now 
+    ## not aligned now
     # align_to = rs.stream.color
     # align = rs.align(align_to)
 
     try:
-        while(True):
+        while True:
             success, frames = pipeline.try_wait_for_frames(timeout_ms=0)
             if not success:
                 continue
@@ -78,19 +79,19 @@ if __name__ == '__main__':
             depth_colormap = np.asanyarray(colorized_depth.get_data())
 
             mapped_frame, color_source = other_frame, color_image
-            #mapped_frame, color_source = colorized_depth, depth_colormap
+            # mapped_frame, color_source = colorized_depth, depth_colormap
 
             points = pc.calculate(depth_frame)
             pc.map_to(mapped_frame)
-
 
             np_points = np.random.rand(100, 3)
 
             # convert to open3d point cloud
             img_depth = Image(depth_colormap)
             img_color = Image(color_image)
-            rgbd = create_rgbd_image_from_color_and_depth(img_color, img_depth, convert_rgb_to_intensity=False)
-
+            rgbd = create_rgbd_image_from_color_and_depth(
+                img_color, img_depth, convert_rgb_to_intensity=False
+            )
 
             # # focusing on a (320, 120) pixel
             # depth = depth_frame.get_distance(640, 480)
@@ -99,20 +100,18 @@ if __name__ == '__main__':
             # print(text)
 
             # display the captured image
-            cv2.imshow('PointCloud Test', color_image)
+            cv2.imshow("PointCloud Test", color_image)
 
             # TODO: arrange these opencv key events based on other key event handler class
             # handle key inputs
-            pressedKey = (cv2.waitKey(1) & 0xFF)
-            if(pressedKey == ord('q')):
+            pressedKey = cv2.waitKey(1) & 0xFF
+            if pressedKey == ord("q"):
                 break
 
     except Exception as ex:
-        print("Error :", ex)
+        print("Error :", ex, file=sys.stderr)
 
     finally:
         # Stop streaming
         pipeline.stop()
         cv2.destroyAllWindows()
-
-

@@ -28,13 +28,14 @@ def drawText(img, text, imgpt):
     font = cv2.FONT_HERSHEY_PLAIN
     cv2.putText(img, text, imgpt, font, 1, (0, 255, 0), 1, cv2.LINE_AA)
 
+
 ###############################################################################
 # Hand-eye calibration process
 #   -
 ###############################################################################
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # parse program parameters to get necessary aruments
     # argPar = argparse.ArgumentParser(description="HandEye Calibration")
@@ -46,9 +47,9 @@ if __name__ == '__main__':
     indy7 = RobotIndy7Dev()
 
     # create an robot arm object
-    robot_arm = RobotArm(indy7, 'indy7')
+    robot_arm = RobotArm(indy7, "indy7")
 
-    if(robot_arm.start(AppConfig.INDY_SERVER_IP) == False):
+    if robot_arm.start(AppConfig.INDY_SERVER_IP) == False:
         print("Can't connect the robot and exit this process..")
         sys.exit()
 
@@ -64,7 +65,7 @@ if __name__ == '__main__':
     robot_ready_count = 0
 
     # camera index
-    rsCamIndex = '10'
+    rsCamIndex = "10"
 
     # create the camera device object
     # rsCamDev = RealsenseCapture(rsCamIndex)
@@ -73,22 +74,27 @@ if __name__ == '__main__':
     # create video capture object using realsense camera device object
     AppConfig.VideoFrameWidth = 1920
     AppConfig.VideoFrameHeight = 1080
-    vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth, AppConfig.VideoFrameHeight,
-                        AppConfig.VideoFramePerSec, 'camera10')     # fix camera name
+    vcap = VideoCapture(
+        rsCamDev,
+        AppConfig.VideoFrameWidth,
+        AppConfig.VideoFrameHeight,
+        AppConfig.VideoFramePerSec,
+        "camera10",
+    )  # fix camera name
 
     # Start streaming
     vcap.start()
 
     # get instrinsics
-    mtx, dist = vcap.getIntrinsicsMat(
-        int(rsCamIndex), False)
+    mtx, dist = vcap.getIntrinsicsMat(int(rsCamIndex), False)
 
-  # create key handler
+    # create key handler
     keyhandler = CalibHandEyeKeyHandler()
 
     # create handeye object
     handeyeAruco = HandEyeAruco(
-        AppConfig.HandEyeArucoDict, AppConfig.HandEyeArucoSize, mtx, dist)
+        AppConfig.HandEyeArucoDict, AppConfig.HandEyeArucoSize, mtx, dist
+    )
     handeyeAruco.setCalibMarkerID(19)
 
     # start robot_arm as a direct-teaching mode as default
@@ -103,7 +109,7 @@ if __name__ == '__main__':
 
     # get frames and process a key event
     try:
-        while(True):
+        while True:
             # Wait for a coherent pair of frames: depth and color
             color_image = vcap.get_video_frame()
 
@@ -112,15 +118,25 @@ if __name__ == '__main__':
                 break
             if ObjectTrackerErrMsg.checkValueIsNone(dist, "distortion coeff.") == False:
                 break
-            if ObjectTrackerErrMsg.checkValueIsNone(color_image, "video color frame") == False:
+            if (
+                ObjectTrackerErrMsg.checkValueIsNone(color_image, "video color frame")
+                == False
+            ):
                 break
-            if ObjectTrackerErrMsg.checkValueIsNone(handeye, "hand eye matrix") == False:
+            if (
+                ObjectTrackerErrMsg.checkValueIsNone(handeye, "hand eye matrix")
+                == False
+            ):
                 break
-            if ObjectTrackerErrMsg.checkValueIsNone(robot_arm, "robot_arm object") == False:
+            if (
+                ObjectTrackerErrMsg.checkValueIsNone(robot_arm, "robot_arm object")
+                == False
+            ):
                 break
 
             (flagFindMainAruco, ids, rvec, tvec) = handeyeAruco.processArucoMarker(
-                color_image, mtx, dist, vcap)
+                color_image, mtx, dist, vcap
+            )
 
             infoText.draw(color_image)
 
@@ -135,32 +151,56 @@ if __name__ == '__main__':
                     robot_ready_count = 0
                 elif handeye_automove.get_stage() == HandEyeAutoMove.STAGE_CAPTURE:
                     robot_status = robot_arm.get_robot_status()
-                    if not robot_status['busy'] and robot_status['movedone']:
+                    if not robot_status["busy"] and robot_status["movedone"]:
                         robot_ready_count += 1
 
                         if robot_ready_count > 30:
                             # process the position capture operation(= keypress 'c')
                             keyhandler.processKeyHandler(
-                                99, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, robot_arm, infoText, handeye_automove)
-                            handeye_automove.set_stage(
-                                HandEyeAutoMove.STAGE_GONEXT)
+                                99,
+                                flagFindMainAruco,
+                                color_image,
+                                ids,
+                                tvec,
+                                rvec,
+                                mtx,
+                                dist,
+                                handeye,
+                                robot_arm,
+                                infoText,
+                                handeye_automove,
+                            )
+                            handeye_automove.set_stage(HandEyeAutoMove.STAGE_GONEXT)
                             robot_ready_count = 0
                 else:
-                    print('unknown stage..')
+                    print("unknown stage..")
 
             # display the captured image
-            cv2.imshow('HandEye', color_image)
+            cv2.imshow("HandEye", color_image)
 
             # handle key inputs
-            pressedKey = (cv2.waitKey(1) & 0xFF)
-            if keyhandler.processKeyHandler(pressedKey, flagFindMainAruco, color_image, ids, tvec, rvec, mtx, dist, handeye, robot_arm, infoText, handeye_automove):
+            pressedKey = cv2.waitKey(1) & 0xFF
+            if keyhandler.processKeyHandler(
+                pressedKey,
+                flagFindMainAruco,
+                color_image,
+                ids,
+                tvec,
+                rvec,
+                mtx,
+                dist,
+                handeye,
+                robot_arm,
+                infoText,
+                handeye_automove,
+            ):
                 break
 
             # have a delay to make CPU usage lower...
             # sleep(0.1)
 
     except Exception as ex:
-        print("Error :", ex)
+        print("Error :", ex, file=sys.stderr)
 
     finally:
         # direct teaching mode is disalbe before exit-

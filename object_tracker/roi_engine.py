@@ -1,4 +1,3 @@
-
 import numpy as np
 import cv2
 import cv2.aruco as aruco
@@ -26,7 +25,7 @@ from roi_arucomanager import ROIAruco2DManager
 #   -
 ###############################################################################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # # parse program parameters to get necessary aruments
     # argPar = argparse.ArgumentParser(description="HandEye Calibration")
@@ -47,8 +46,13 @@ if __name__ == '__main__':
     cameraName = sys.argv[1]
 
     gqlDataClient = VisonGqlDataClient()
-    if(gqlDataClient.connect('http://localhost:3000', 'system', 'admin@hatiolab.com', 'admin') is False):
-        #print("Can't connect operato vision server.")
+    if (
+        gqlDataClient.connect(
+            "http://localhost:3000", "system", "admin@hatiolab.com", "admin"
+        )
+        is False
+    ):
+        # print("Can't connect operato vision server.")
         sys.exit()
 
     # gqlDataClient.parseVisionWorkspaces()
@@ -59,29 +63,33 @@ if __name__ == '__main__':
     AppConfig.VideoFrameWidth = cameraObject.width or AppConfig.VideoFrameWidth
     AppConfig.VideoFrameHeight = cameraObject.height or AppConfig.VideoFrameHeight
 
-    if cameraObject.type == 'realsense-camera':
+    if cameraObject.type == "realsense-camera":
         rsCamDev = RealsenseCapture(cameraObject.endpoint)
-    elif cameraObject.type == 'camera-connector':
+    elif cameraObject.type == "camera-connector":
         rsCamDev = OpencvCapture(int(cameraObject.endpoint))
 
     # create video capture object using realsense camera device object
-    vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth,
-                        AppConfig.VideoFrameHeight, AppConfig.VideoFramePerSec, cameraName)
+    vcap = VideoCapture(
+        rsCamDev,
+        AppConfig.VideoFrameWidth,
+        AppConfig.VideoFrameHeight,
+        AppConfig.VideoFramePerSec,
+        cameraName,
+    )
 
     # Start streaming
     vcap.start()
 
     # get instrinsics
-    #mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), AppConfig.UseRealSenseInternalMatrix)
-    if(AppConfig.UseRealSenseInternalMatrix == True):
+    # mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), AppConfig.UseRealSenseInternalMatrix)
+    if AppConfig.UseRealSenseInternalMatrix == True:
         mtx, dist = vcap.getInternalIntrinsicsMat()
     else:
         mtx = cameraObject.cameraMatrix
         dist = cameraObject.distCoeff
 
     # create aruco manager
-    ROIMgr = ROIAruco2DManager(
-        AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist)
+    ROIMgr = ROIAruco2DManager(AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist)
 
     # for arucoPair in arucoPairList:
     #     arucoPairValues = arucoPair.split(',')
@@ -94,7 +102,7 @@ if __name__ == '__main__':
     infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
 
     try:
-        while(True):
+        while True:
             # Wait for a coherent pair of frames: depth and color
             color_image = vcap.get_video_frame()
 
@@ -103,7 +111,10 @@ if __name__ == '__main__':
                 break
             if ObjectTrackerErrMsg.checkValueIsNone(dist, "distortion coeff.") == False:
                 break
-            if ObjectTrackerErrMsg.checkValueIsNone(color_image, "vidqeo color frame") == False:
+            if (
+                ObjectTrackerErrMsg.checkValueIsNone(color_image, "vidqeo color frame")
+                == False
+            ):
                 break
 
             # find ROI region
@@ -111,25 +122,30 @@ if __name__ == '__main__':
 
             # draw ROI regions
             for ROIRegion in ROIRegions:
-                cv2.rectangle(
-                    color_image, ROIRegion[0], ROIRegion[1], (255, 0, 0), 3)
+                cv2.rectangle(color_image, ROIRegion[0], ROIRegion[1], (255, 0, 0), 3)
 
             # create info text
             infoText.draw(color_image)
 
             # display the captured image
-            cv2.imshow('ROI Selection', color_image)
+            cv2.imshow("ROI Selection", color_image)
 
             time.sleep(0.2)
 
             # TODO: arrange these opencv key events based on other key event handler class
             # handle key inputs
-            pressedKey = (cv2.waitKey(1) & 0xFF)
-            if keyhander.processKeyHandler(pressedKey, int(cameraObject.endpoint), ROIRegions, ROIRegionIds, infoText):
+            pressedKey = cv2.waitKey(1) & 0xFF
+            if keyhander.processKeyHandler(
+                pressedKey,
+                int(cameraObject.endpoint),
+                ROIRegions,
+                ROIRegionIds,
+                infoText,
+            ):
                 break
 
     except Exception as ex:
-        print("Error :", ex)
+        print("Error :", ex, file=sys.stderr)
 
     finally:
         # Stop streaming

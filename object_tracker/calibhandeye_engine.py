@@ -307,7 +307,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
             # qsleep(0.2)
 
     except Exception as ex:
-        print("Error :", ex)
+        print("Error :", ex, file=sys.stderr)
 
     finally:
         # direct teaching mode is disalbe before exit

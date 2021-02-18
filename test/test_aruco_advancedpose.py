@@ -1,4 +1,3 @@
-
 import numpy as np
 import cv2
 import cv2.aruco as aruco
@@ -26,32 +25,37 @@ from aidobjtrack.handeye.calibhandeye_handeye import *
 #   -
 ###############################################################################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # camera index
-    rsCamIndex = '4'
-    #rsCamDev = RealsenseCapture(rsCamIndex)
+    rsCamIndex = "4"
+    # rsCamDev = RealsenseCapture(rsCamIndex)
     rsCamDev = OpencvCapture(int(rsCamIndex))
-    vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth,
-                        AppConfig.VideoFrameHeight, AppConfig.VideoFramePerSec, 'camera02')
+    vcap = VideoCapture(
+        rsCamDev,
+        AppConfig.VideoFrameWidth,
+        AppConfig.VideoFrameHeight,
+        AppConfig.VideoFramePerSec,
+        "camera02",
+    )
 
     # Start streamingq
     vcap.start()
 
     # get instrinsics
     mtx, dist = vcap.getIntrinsicsMat(
-        int(rsCamIndex), AppConfig.UseRealSenseInternalMatrix)
+        int(rsCamIndex), AppConfig.UseRealSenseInternalMatrix
+    )
 
     # create an aruco detect object
-    arucoDetect = ArucoDetect(
-        AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist)
-    #arucoDetect = ArucoDetect(AppConfig.ArucoDict, 0.075, mtx, dist)
-    #arucoDetect = ArucoDetect(aruco.DICT_7X7_250, 0.05, mtx, dist)
+    arucoDetect = ArucoDetect(AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist)
+    # arucoDetect = ArucoDetect(AppConfig.ArucoDict, 0.075, mtx, dist)
+    # arucoDetect = ArucoDetect(aruco.DICT_7X7_250, 0.05, mtx, dist)
 
     arucoAdvPose = ArucoAdvPose()
 
     try:
-        while(True):
+        while True:
             # Wait for a coherent pair of frames: depth and color
             color_image = vcap.get_video_frame()
 
@@ -76,8 +80,10 @@ if __name__ == '__main__':
                 hmmtx = HandEyeCalibration.loadTransformMatrix()
 
                 # calcaluate the specific position based on hmInput
-                hmWanted = HMUtil.makeHM(np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [
-                                         0.0, 0.0, 1.0]]), np.array([0.0, 0.0, 0.0]).T)
+                hmWanted = HMUtil.makeHM(
+                    np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]),
+                    np.array([0.0, 0.0, 0.0]).T,
+                )
                 hmInput = np.dot(hmCal2Cam, hmWanted)
 
                 # get the last homogeneous matrix
@@ -98,18 +104,18 @@ if __name__ == '__main__':
                 arucoDetect.drawAx(color_image, rvec, tvec)
 
             # displaqy the captured image
-            cv2.imshow('Prcision Fixing', color_image)
+            cv2.imshow("Prcision Fixing", color_image)
 
             time.sleep(0.1)
 
             # TODO: arrange these opencv key events based on other key event handler class
             # handle key inputs
-            pressedKey = (cv2.waitKey(1) & 0xFF)
-            if(pressedKey == ord('q')):
+            pressedKey = cv2.waitKey(1) & 0xFF
+            if pressedKey == ord("q"):
                 break
 
     except Exception as ex:
-        print("Error :", ex)
+        print("Error :", ex, file=sys.stderr)
 
     finally:
         # Stop streaming

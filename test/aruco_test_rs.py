@@ -23,7 +23,7 @@ pipeline.start(config)
 
 
 try:
-    while (True):
+    while True:
         # Wait for a coherent pair of frames: depth and color
         frames = pipeline.wait_for_frames()
         color_frame = frames.get_color_frame()
@@ -45,7 +45,8 @@ try:
 
         # lists of ids and the corners belonging to each id
         corners, ids, rejectedImgPoints = aruco.detectMarkers(
-            gray, aruco_dict, parameters=parameters)
+            gray, aruco_dict, parameters=parameters
+        )
 
         # font for displaying text (below)
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -68,19 +69,28 @@ try:
 
             # code to show ids of the marker found
             for i in range(0, ids.size):
-                cv2.putText(color_image, str(ids[i]), tuple(
-                    corners[i][0][0]), font, 1, (0, 255, 0), 1, cv2.LINE_AA)
+                cv2.putText(
+                    color_image,
+                    str(ids[i]),
+                    tuple(corners[i][0][0]),
+                    font,
+                    1,
+                    (0, 255, 0),
+                    1,
+                    cv2.LINE_AA,
+                )
         else:
             # code to show 'No Ids' when no markers are found
-            cv2.putText(color_image, "No Ids", (0, 64),
-                        font, 1, (0, 255, 0), 2, cv2.LINE_AA)
+            cv2.putText(
+                color_image, "No Ids", (0, 64), font, 1, (0, 255, 0), 2, cv2.LINE_AA
+            )
 
         # display the resulting frame
-        cv2.imshow('Image Show', color_image)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        cv2.imshow("Image Show", color_image)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 except Exception as ex:
-    print("Error :", ex)
+    print("Error :", ex, file=sys.stderr)
 
 finally:
     # When everything done, release the capture

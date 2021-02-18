@@ -101,7 +101,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
         # create info text
         infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
     except Exception as ex:
-        print("Error :", ex)
+        print("Error :", ex, file=sys.stderr)
         sys.exit(0)
 
     # setup an opencv window
@@ -179,7 +179,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 break
 
     except Exception as ex:
-        print("Error :", ex)
+        print("Error :", ex, file=sys.stderr)
 
     finally:
         # Stop streaming
