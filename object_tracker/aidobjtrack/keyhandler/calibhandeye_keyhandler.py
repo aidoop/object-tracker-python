@@ -185,6 +185,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
     def processG(self, *args):
         handeye = args[7]
         infoText = args[8]
+        interproc_dict = args[12]
 
         if handeye.cntInputData < 3:
             return
@@ -204,7 +205,8 @@ class CalibHandEyeKeyHandler(KeyHandler):
         infoText.setText("Succeeded to extract a handeye matrix.")
 
         # TODO: need to exit here?
-        # super().enableExitFlag()
+        if interproc_dict is not None:
+            super().enableExitFlag()
 
     # automated handeye calibration
 

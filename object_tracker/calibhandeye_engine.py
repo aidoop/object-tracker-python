@@ -300,6 +300,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 gqlDataClient,
                 robotName,
                 handeye_automove,
+                interproc_dict,
             ):
                 break
 
