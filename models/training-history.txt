@@ -1,0 +1,29 @@
+object-train20201031T1858
+- delbox7
+use 'resnet100'
+add augmenation
+(
+augmentation=imgaug.augmenters.Sometimes(0.5, [
+                    imgaug.augmenters.Fliplr(0.5),
+                    imgaug.augmenters.GaussianBlur(sigma=(0.0, 5.0)),
+                    imgaug.augmenters.Flipud(0.5)
+                ])
+)
+layers='4+'
+Echo = 100
+
+
+object-train20201101T1825
+- delbox8
+use 'resnet100'
+add augmenation
+(
+augmentation=imgaug.augmenters.Sometimes(0.5, [
+                    imgaug.augmenters.Fliplr(0.5),
+                    imgaug.augmenters.GaussianBlur(sigma=(0.0, 5.0)),
+                    imgaug.augmenters.Flipud(0.5)
+                ])
+)
+layers='4+'
+Echo = 100
+
