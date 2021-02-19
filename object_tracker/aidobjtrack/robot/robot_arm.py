@@ -1,12 +1,8 @@
-
 import sys
 import cv2
 
-from aidobjtrack.camera.camera_dev_realsense import RealsenseCapture  # for an example
-
 
 class RobotArm:
-
     def __init__(self, robot_dev, name):
 
         # set camera device object
@@ -66,28 +62,3 @@ class RobotArm:
 
     def reset_robot(self):
         return self.dev.reset_robot()
-
-
-###############################################################################
-# test sample codes
-###############################################################################
-if __name__ == '__main__':
-
-    # create the camera object of intel realsense
-    rsCamDev = RealsenseCapture(0)
-    if(rsCamDev is None):
-        print("Realsense device can't be opened..")
-        sys.exit()
-
-    # create video capture object using realsense camera object
-    vcap = VideoCapture(rsCamDev, 1280, 720, 30, 'camera01')
-
-    vcap.start()
-
-    frameIdx = 0
-    for frmIdx in range(0, 10):
-        vcap.get_video_frame()
-        print(frameIdx)
-        frameIdx += 1
-
-    vcap.stop()

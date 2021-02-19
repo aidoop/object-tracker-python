@@ -11,12 +11,14 @@ from aidobjtrack.camera.camera_dev_opencv import OpencvCapture
 from aidobjtrack.camera.camera_videocapture import VideoCapture
 from aidobjtrack.util.util import ObjectTypeCheck
 from aidobjtrack.visiongql.visiongql_client import VisonGqlDataClient
-from aidobjtrack.objtracking.objecttracking_aurco import ArucoMarkerObject, ArucoMarkerTracker
+from aidobjtrack.objtracking.objecttracking_aurco import (
+    ArucoMarkerObject,
+    ArucoMarkerTracker,
+)
 from aidobjtrack.objtracking.objecttracking_roimgr_retangle import ROIRetangleManager
 
 
 class ObjectTrakcingAppData(object):
-
     def __init__(self):
         # set trakcing method-
         self.tracking_method = AppConfig.APP_TRACKING_METHOD
@@ -42,11 +44,15 @@ class ObjectTrakcingAppData(object):
             # print('self.gqlDataClient.detectionMethod: ',
             #       self.gqlDataClient.detectionMethod)
             self.tracking_method = self.get_detection_method(
-                self.gqlDataClient.detectionMethod)
+                self.gqlDataClient.detectionMethod
+            )
             # print('self.tracking_method: ',
             #       self.tracking_method)
             if self.tracking_method == ObjectTrackingMethod.BOX:
-                from aidobjtrack.objtracking.objecttracking_box import BoxObject, BoxObjectTracker
+                from aidobjtrack.objtracking.objecttracking_box import (
+                    BoxObject,
+                    BoxObjectTracker,
+                )
 
             ###############################################################################
             # most of data is based on camera connector of operato-robotics
@@ -63,22 +69,45 @@ class ObjectTrakcingAppData(object):
 
                 # set robot name
                 if AppConfig.ObjTrackingDebugWoRobot == False:
-                    if ObjectTypeCheck.checkValueIsAvail(trackingCamera.baseRobotArm) == False:
+                    if (
+                        ObjectTypeCheck.checkValueIsAvail(trackingCamera.baseRobotArm)
+                        == False
+                    ):
                         print("robot arm is not detected..")
                         continue
-                    obj_tracking_camera.robot_name = trackingCamera.baseRobotArm['name']
+                    obj_tracking_camera.robot_name = trackingCamera.baseRobotArm["name"]
 
                 # create a camera device object
-                rsCamDev = RealsenseCapture(trackingCamera.endpoint) if trackingCamera.type == 'realsense-camera' else (OpencvCapture(int(
-                    trackingCamera.endpoint)) if trackingCamera.type == 'camera-connector' else None)
-                assert rsCamDev is not None, 'camera type error'
+                rsCamDev = (
+                    RealsenseCapture(trackingCamera.endpoint)
+                    if trackingCamera.type == "realsense-camera"
+                    else (
+                        OpencvCapture(int(trackingCamera.endpoint))
+                        if trackingCamera.type == "camera-connector"
+                        else None
+                    )
+                )
+                assert rsCamDev is not None, "camera type error"
                 rsCamDev.prepare()
 
                 # create a video capture object and start
-                AppConfig.VideoFrameWidth = trackingCamera.width if self.tracking_method is ObjectTrackingMethod.ARUCO else AppConfig.VideoFrameWidth
-                AppConfig.VideoFrameHeight = trackingCamera.height if self.tracking_method is ObjectTrackingMethod.ARUCO else AppConfig.VideoFrameHeight
-                vcap = VideoCapture(rsCamDev, AppConfig.VideoFrameWidth,
-                                    AppConfig.VideoFrameHeight, AppConfig.VideoFramePerSec, obj_tracking_camera.camera_name)
+                AppConfig.VideoFrameWidth = (
+                    trackingCamera.width
+                    if self.tracking_method is ObjectTrackingMethod.ARUCO
+                    else AppConfig.VideoFrameWidth
+                )
+                AppConfig.VideoFrameHeight = (
+                    trackingCamera.height
+                    if self.tracking_method is ObjectTrackingMethod.ARUCO
+                    else AppConfig.VideoFrameHeight
+                )
+                vcap = VideoCapture(
+                    rsCamDev,
+                    AppConfig.VideoFrameWidth,
+                    AppConfig.VideoFrameHeight,
+                    AppConfig.VideoFramePerSec,
+                    obj_tracking_camera.camera_name,
+                )
                 if vcap == None:
                     continue
                 vcap.start()
@@ -97,21 +126,36 @@ class ObjectTrakcingAppData(object):
                 obj_tracking_camera.handeye = trackingCamera.handEyeMatrix
 
                 # create an object tracker
-                objTracker = BoxObjectTracker() if self.tracking_method == ObjectTrackingMethod.BOX else ArucoMarkerTracker(
-                ) if self.tracking_method == ObjectTrackingMethod.ARUCO else None
+                objTracker = (
+                    BoxObjectTracker()
+                    if self.tracking_method == ObjectTrackingMethod.BOX
+                    else ArucoMarkerTracker()
+                    if self.tracking_method == ObjectTrackingMethod.ARUCO
+                    else None
+                )
                 assert objTracker is not None
 
                 # TODO: change fucntion parameters for the comparability of ArucoObjectTracker
                 objTracker.initialize(
-                    AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist, obj_tracking_camera.handeye)
+                    AppConfig.ArucoDict,
+                    AppConfig.ArucoSize,
+                    mtx,
+                    dist,
+                    obj_tracking_camera.handeye,
+                )
                 obj_tracking_camera.objectMarkTracker = objTracker
 
                 # initialize ROI manager -
                 # TODO: deprecated soon......
                 ROIMgr = ROIRetangleManager()
                 for ROIData in trackingCamera.ROIs:
-                    ROIInput = [ROIData.tl[0], ROIData.tl[1],
-                                ROIData.rb[0], ROIData.rb[1], ROIData.id]
+                    ROIInput = [
+                        ROIData.tl[0],
+                        ROIData.tl[1],
+                        ROIData.rb[0],
+                        ROIData.rb[1],
+                        ROIData.id,
+                    ]
                     ROIMgr.appendROI(ROIInput)
                 obj_tracking_camera.ROIMgr = ROIMgr
 
@@ -132,13 +176,20 @@ class ObjectTrakcingAppData(object):
             trackableMarkKeys = self.gqlDataClient.trackableObjects.keys()
             for trackableMarkKey in trackableMarkKeys:
                 trackableMark = self.gqlDataClient.trackableObjects[trackableMarkKey]
-                print('Trackable Marks')
-                print(trackableMark.endpoint, ', ', trackableMark.poseOffset)
+                print("Trackable Marks")
+                print(trackableMark.endpoint, ", ", trackableMark.poseOffset)
 
                 # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
-                obj = BoxObject(trackableMark.endpoint, trackableMark.poseOffset) if self.tracking_method == ObjectTrackingMethod.BOX else ArucoMarkerObject(
-                    int(trackableMark.endpoint), trackableMark.poseOffset) if self.tracking_method == ObjectTrackingMethod.ARUCO else None
-                assert obj is not None, 'trackable object not defined'
+                obj = (
+                    BoxObject(trackableMark.endpoint, trackableMark.poseOffset)
+                    if self.tracking_method == ObjectTrackingMethod.BOX
+                    else ArucoMarkerObject(
+                        int(trackableMark.endpoint), trackableMark.poseOffset
+                    )
+                    if self.tracking_method == ObjectTrackingMethod.ARUCO
+                    else None
+                )
+                assert obj is not None, "trackable object not defined"
 
                 for otc in self.obj_tracking_camera_list:
                     otc.objectMarkTracker.setTrackingObject(obj)
@@ -148,7 +199,13 @@ class ObjectTrakcingAppData(object):
 
     def get_mark_id_list_of_camera(self, cam_indx):
         # assert len(self.obj_tracking_camera_list) > 0
-        return self.obj_tracking_camera_list[cam_indx].objectMarkTracker.getTrackingObjIDList() if len(self.obj_tracking_camera_list) > 0 else self.obj_tracking_camera_list
+        return (
+            self.obj_tracking_camera_list[
+                cam_indx
+            ].objectMarkTracker.getTrackingObjIDList()
+            if len(self.obj_tracking_camera_list) > 0
+            else self.obj_tracking_camera_list
+        )
 
     def get_gql_client(self):
         return self.gqlDataClient.get_client()
@@ -167,7 +224,6 @@ class ObjectTrakcingAppData(object):
         return AppConfig.APP_TRACKING_METHOD
 
     class ObjectTrakcingCamera:
-
         def __init__(self):
             self.camera_name = None
             self.vcap = None

@@ -1,5 +1,5 @@
-
-import pyrealsense2 as rs   # for realsense api
+import platform
+import pyrealsense2 as rs  # for realsense api
 import numpy as np
 import sys
 import time
@@ -18,7 +18,6 @@ class RealSensePreset(IntEnum):
 
 
 class RealsenseCapture(CameraDev):
-
     def __init__(self, matchedSerialNumber):  # devIndex):
 
         # configure depth and color streams
@@ -56,10 +55,8 @@ class RealsenseCapture(CameraDev):
         self._framePerSec = fps
 
         # enable color and depth streams with fixed resolutions & fps of the depth frame
-        self.__config.enable_stream(
-            rs.stream.depth, 848, 480, rs.format.z16, 30)
-        self.__config.enable_stream(
-            rs.stream.color, width, height, rs.format.rgb8, fps)
+        self.__config.enable_stream(rs.stream.depth, 848, 480, rs.format.z16, 30)
+        self.__config.enable_stream(rs.stream.color, width, height, rs.format.rgb8, fps)
 
         # create an align object based on color frames
         self.__align = rs.align(rs.stream.color)
@@ -74,8 +71,7 @@ class RealsenseCapture(CameraDev):
         depth_sensor = self.__pipecfg.get_device().first_depth_sensor()
 
         # Using preset HighAccuracy for recording
-        depth_sensor.set_option(rs.option.visual_preset,
-                                RealSensePreset.HighAccuracy)
+        depth_sensor.set_option(rs.option.visual_preset, RealSensePreset.HighAccuracy)
 
         self.depth_scale = depth_sensor.get_depth_scale()
 
@@ -159,13 +155,13 @@ class RealsenseCapture(CameraDev):
         # spatial.set_option(rs.option.holes_fill, 2)
         # hff = rs.hole_filling_filter(1)
 
-        #colorizer = rs.colorizer()
+        # colorizer = rs.colorizer()
         self.filters = [
             rs.disparity_transform(),
             rs.decimation_filter(),
             rs.spatial_filter(),
             rs.temporal_filter(),
-            rs.disparity_transform(False)
+            rs.disparity_transform(False),
         ]
 
     def set_flag_filters(self, flag):
@@ -190,14 +186,19 @@ class RealsenseCapture(CameraDev):
         color_intrin = color_profile.as_video_stream_profile().intrinsics
 
         depth_point = rs.rs2_deproject_pixel_to_point(
-            color_intrin, [imageX, imageY], depth)
+            color_intrin, [imageX, imageY], depth
+        )
         return depth_point
 
     # covert realsense intrisic data to camera matrix
     def convertIntrinsicsMat(self, intrinsics):
-        mtx = np.array([[intrinsics.fx,             0, intrinsics.ppx],
-                        [0, intrinsics.fy, intrinsics.ppy],
-                        [0,             0,              1]])
+        mtx = np.array(
+            [
+                [intrinsics.fx, 0, intrinsics.ppx],
+                [0, intrinsics.fy, intrinsics.ppy],
+                [0, 0, 1],
+            ]
+        )
 
         dist = np.array(intrinsics.coeffs[:4])
         return mtx, dist
@@ -206,9 +207,9 @@ class RealsenseCapture(CameraDev):
 ###############################################################################
 # test sample codes
 ###############################################################################
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    rsCamDev = RealsenseCapture('001622071306')
+    rsCamDev = RealsenseCapture("001622071306")
 
     rsCamDev.initialize(640, 480, 30)
 
