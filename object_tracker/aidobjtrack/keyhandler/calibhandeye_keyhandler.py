@@ -103,14 +103,8 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 if handeye.cntInputData >= 3:
                     handeye.calculateHandEyeMatrix()
 
-                PrintMsg.printStdErr("Input Data Count: " + str(handeye.cntInputData))
-                strText = (
-                    "Input Data Count: "
-                    + str(handeye.cntInputData)
-                    + "("
-                    + str(handeye.distance)
-                    + ")"
-                )
+                PrintMsg.printStdErr(f"({str(handeye.cntInputData)}")
+                strText = f"{handeye.cntInputData} ({handeye.distance})"
                 infoText.setText(strText)
 
     # def processR(self, *args):

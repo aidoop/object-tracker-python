@@ -156,7 +156,12 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
     # indy7.set_teaching_mode(True)
 
     # create info text
-    infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
+    infoText = DisplayInfoText(
+        cv2.FONT_HERSHEY_PLAIN,
+        (10, 60),
+        AppConfig.VideoFrameWidth,
+        AppConfig.VideoFrameHeight,
+    )
 
     # setup an opencv window
     if video_interproc_e is None:

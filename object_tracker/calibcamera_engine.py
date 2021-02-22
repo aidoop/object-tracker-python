@@ -99,7 +99,12 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
         keyhandler = CalibCameraKeyHandler()
 
         # create info text
-        infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
+        infoText = DisplayInfoText(
+            cv2.FONT_HERSHEY_PLAIN,
+            (10, 60),
+            AppConfig.VideoFrameWidth,
+            AppConfig.VideoFrameHeight,
+        )
     except Exception as ex:
         print("Error :", ex, file=sys.stderr)
         sys.exit(0)

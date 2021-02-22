@@ -44,16 +44,29 @@ class PrintMsg:
 
 
 class DisplayInfoText:
-    def __init__(self, font, startPos):
+    def __init__(self, font, startPos, image_width, image_height):
         self.font = font
         self.startPos = startPos
         self.text = ""
+        self.image_width = image_width
+        self.image_height = image_height
 
     def draw(self, image):
         if self.text == "":
             return
+
+        font_scale = 3 if self.image_width <= 1920 else 5
+        font_thickness = 2 if self.image_width <= 1920 else 4
+
         cv2.putText(
-            image, self.text, self.startPos, self.font, 1, (0, 255, 0), 1, cv2.LINE_AA
+            image,
+            self.text,
+            self.startPos,
+            self.font,
+            font_scale,
+            (0, 255, 0),
+            font_thickness,
+            cv2.LINE_AA,
         )
 
     def setText(self, text):

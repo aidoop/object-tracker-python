@@ -29,18 +29,10 @@ class CalibCameraKeyHandler(KeyHandler):
         cv2.imwrite(
             os.path.join(dirFrameImage, str(self.interation) + ".jpg"), color_image
         )
-        PrintMsg.printStdErr(
-            "Image caputured - "
-            + os.path.join(dirFrameImage, str(self.interation) + ".jpg")
-        )
+        PrintMsg.printStdErr(f"Image caputured - {self.interation}")
         self.interation += 1
 
-        strInfoText = (
-            "Image Captured("
-            + str(self.interation)
-            + ") - "
-            + os.path.join(dirFrameImage, str(self.interation) + ".jpg")
-        )
+        strInfoText = f"Image caputured - {self.interation}"
         infoText.setText(strInfoText)
 
     def processZ(self, *args):
