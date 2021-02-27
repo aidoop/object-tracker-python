@@ -2,11 +2,9 @@ from time import sleep
 from enum import Enum, unique
 from typing import NamedTuple
 
-from calibcamera_engine import calibcamera_engine
-from calibhandeye_engine import calibhandeye_engine
-from objecttracking_engine import objecttracking_engine
-
-from aidobjtrack.util.util import SingletonInstane
+from applications.calibcamera_engine import calibcamera_engine
+from applications.calibhandeye_engine import calibhandeye_engine
+import objecttracking_engine
 
 
 class ObjectTrackingAppType(Enum):
@@ -41,14 +39,11 @@ def objtracking_select_start(interproc_dict, ve, cq):
             continue
 
         if interproc_dict["app_type"] == ObjectTrackingAppType.CAMERACALIB.value:
-            calibcamera_engine(
-                interproc_dict["app_args"], interproc_dict, ve, cq)
+            calibcamera_engine(interproc_dict["app_args"], interproc_dict, ve, cq)
         elif interproc_dict["app_type"] == ObjectTrackingAppType.HANDEYECALIB.value:
-            calibhandeye_engine(
-                interproc_dict["app_args"], interproc_dict, ve, cq)
+            calibhandeye_engine(interproc_dict["app_args"], interproc_dict, ve, cq)
         elif interproc_dict["app_type"] == ObjectTrackingAppType.OBJTRACKING.value:
-            objecttracking_engine(
-                interproc_dict["app_args"], interproc_dict, ve, cq)
+            objecttracking_engine(interproc_dict["app_args"], interproc_dict, ve, cq)
         else:
             pass
 

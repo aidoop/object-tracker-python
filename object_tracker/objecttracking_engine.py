@@ -7,11 +7,12 @@ import argparse
 import time
 import numpy as np
 
-from aidobjtrack.config.appconfig import AppConfig, ObjectTrackingMethod
-from aidobjtrack.objtracking.objecttracking_app_data import ObjectTrakcingAppData
-from aidobjtrack.keyhandler.objecttracking_keyhandler import ObjectTrackingKeyHandler
-from aidobjtrack.data_update.objecttracking_updatestatus import ObjectUpdateStatus
-from aidobjtrack.util.util import ObjectTrackerErrMsg
+
+from applications.config.appconfig import AppConfig, ObjectTrackingMethod
+from applications.objtracking.objecttracking_app_data import ObjectTrakcingAppData
+from applications.keyhandler.objecttracking_keyhandler import ObjectTrackingKeyHandler
+from applications.data_update.objecttracking_updatestatus import ObjectUpdateStatus
+from applications.etc.util import ObjectTrackerErrMsg
 
 ###############################################################################
 # Hand-eye calibration process
