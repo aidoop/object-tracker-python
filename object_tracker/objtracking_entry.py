@@ -6,17 +6,17 @@ import numpy as np
 import json
 import base64
 import sys
-
-
 import socket
 from websocket import create_connection, WebSocket
 import threading
-
 from time import sleep
 
-from calibcamera_engine import calibcamera_engine
-from objtracking_select import objtracking_select_start, ObjectTrackingAppType
-from aidobjtrack.util.util import PrintMsg
+from applications.calibcamera_engine import calibcamera_engine
+from objtracking_select import (
+    objtracking_select_start,
+    ObjectTrackingAppType,
+)
+from applications.etc.util import PrintMsg
 
 
 """
