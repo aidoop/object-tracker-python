@@ -1,6 +1,5 @@
-
-from mrcnn import model as modellib, utils
-from mrcnn.config import Config
+from aidoop.mask_rcnn import model as modellib, utils
+from aidoop.mask_rcnn.config import Config
 import os
 import sys
 import json
@@ -20,6 +19,7 @@ class InferenceConfig(Config):
     """Configuration for training on the toy  dataset.
     Derives from the base Config class and overrides some values.
     """
+
     # Give the configuration a recognizable name
     NAME = "object-train"
 
@@ -47,7 +47,8 @@ class MaskRcnnDetect:
 
     def __init__(self, weight_file_path, log_dir):
         assert (weight_file_path is not None) and (
-            log_dir is not None), "weight_file_path and log_dir should not be empty"
+            log_dir is not None
+        ), "weight_file_path and log_dir should not be empty"
         self.weight_file_path = weight_file_path
         self.log_dir = log_dir
 
@@ -56,8 +57,9 @@ class MaskRcnnDetect:
         self.inference_config.display()
 
         # create a model
-        self.model = modellib.MaskRCNN(mode="inference", config=self.inference_config,
-                                       model_dir=self.log_dir)
+        self.model = modellib.MaskRCNN(
+            mode="inference", config=self.inference_config, model_dir=self.log_dir
+        )
         assert self.model is not None
 
         self.model.load_weights(self.weight_file_path, by_name=True)
@@ -81,11 +83,11 @@ class MaskRcnnDetect:
 
         if MaskRcnnDetect.PRINT_DETECTION_TIME:
             print("-----------------------------------------------------")
-            print("MRCNN Elapsed Time: {} sec".format(edtime-sttime))
-            print("Object Count: ", result['masks'].shape[-1])
+            print("MRCNN Elapsed Time: {} sec".format(edtime - sttime))
+            print("Object Count: ", result["masks"].shape[-1])
 
-        self.mask_list = self.get_mask_list(result['masks'])
-        self.scores = result['scores']
+        self.mask_list = self.get_mask_list(result["masks"])
+        self.scores = result["scores"]
 
         return self.mask_list
 
@@ -110,11 +112,11 @@ class MaskRcnnDetect:
 
         if MaskRcnnDetect.PRINT_DETECTION_TIME:
             print("-----------------------------------------------------")
-            print("MRCNN Elapsed Time: {} sec".format(edtime-sttime))
-            print("Object Count: ", result['masks'].shape[-1])
+            print("MRCNN Elapsed Time: {} sec".format(edtime - sttime))
+            print("Object Count: ", result["masks"].shape[-1])
 
-        self.mask_list = self.get_mask_list(result['masks'])
-        self.scores = result['scores']
+        self.mask_list = self.get_mask_list(result["masks"])
+        self.scores = result["scores"]
 
         return self.mask_list
 
@@ -147,15 +149,14 @@ class MaskRcnnDetect:
         if len(mask_list) > 0:
             accumulated_mask = mask_list[0]
             for mask in mask_list:
-                accumulated_mask = np.logical_or(
-                    mask, accumulated_mask)
+                accumulated_mask = np.logical_or(mask, accumulated_mask)
 
-            mask_image = np.where(
-                accumulated_mask, 255, 0).astype(np.uint8)
+            mask_image = np.where(accumulated_mask, 255, 0).astype(np.uint8)
 
             # get the center point of mask regions
             contours, hierarchy = cv2.findContours(
-                mask_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+                mask_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
+            )
             for contour in contours:
                 # calculate moments for each contour
                 M = cv2.moments(contour)
@@ -169,18 +170,16 @@ class MaskRcnnDetect:
 
                 center_point_list.append((cX, cY))
 
-        return (center_point_list)
+        return center_point_list
 
     def get_mask_image(self, mask_list, width, height):
-        #center_point_list = list()
+        # center_point_list = list()
         if len(mask_list) > 0:
             accumulated_mask = mask_list[0]
             for mask in mask_list:
-                accumulated_mask = np.logical_or(
-                    mask, accumulated_mask)
+                accumulated_mask = np.logical_or(mask, accumulated_mask)
 
-            mask_image = np.where(
-                accumulated_mask, 255, 0).astype(np.uint8)
+            mask_image = np.where(accumulated_mask, 255, 0).astype(np.uint8)
 
             # # get the center point of mask regions
             # contours, hierarchy = cv2.findContours(
@@ -203,7 +202,7 @@ class MaskRcnnDetect:
         else:
             mask_image = np.zeros((height, width))
 
-        return (mask_image.astype(np.uint8))
+        return mask_image.astype(np.uint8)
 
     def get_splash_image_by_index(self, image, masks, mask_index):
 
@@ -225,7 +224,7 @@ class MaskRcnnDetect:
 ############################################################
 #  Inference Example
 ############################################################
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
 
     # Root directory of the project
@@ -242,17 +241,25 @@ if __name__ == '__main__':
     DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 
     EXAMPLE_IMAGE_PATH = os.path.join(
-        ROOT_DIR, "dataset", "balloon", "val", "14898532020_ba6199dd22_k.jpg")
+        ROOT_DIR, "dataset", "balloon", "val", "14898532020_ba6199dd22_k.jpg"
+    )
 
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description='infer Mask R-CNN to detect an object.')
-    parser.add_argument('--weights', required=True,
-                        metavar="/path/to/weights.h5",
-                        help="Path to weights .h5 file or 'coco'")
-    parser.add_argument('--image', required=True,
-                        metavar="path or URL to image",
-                        help='Image to apply the color splash effect on')
+        description="infer Mask R-CNN to detect an object."
+    )
+    parser.add_argument(
+        "--weights",
+        required=True,
+        metavar="/path/to/weights.h5",
+        help="Path to weights .h5 file or 'coco'",
+    )
+    parser.add_argument(
+        "--image",
+        required=True,
+        metavar="path or URL to image",
+        help="Image to apply the color splash effect on",
+    )
     args = parser.parse_args()
 
     # print("Weights: ", args.weights)

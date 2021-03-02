@@ -5,8 +5,8 @@ from enum import Enum, unique
 
 @unique
 class ObjectTrackingMethod(Enum):
-    ARUCO = 'Aruco'
-    BOX = 'Box'
+    ARUCO = "Aruco"
+    BOX = "Box"
 
 
 class AppConfig:
@@ -14,7 +14,7 @@ class AppConfig:
     APP_TRACKING_METHOD = ObjectTrackingMethod.ARUCO
 
     # robot parameters
-    #INDY_SERVER_IP = "192.168.0.104"
+    # INDY_SERVER_IP = "192.168.0.104"
     INDY_SERVER_IP = "192.168.0.25"
     INDY_SERVER_NAME = "NRMK-Indy7"
 

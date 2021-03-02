@@ -11,7 +11,7 @@ from aidoop.etc.hm_util import HMUtil
 from applications.objtracking.objecttracking_base import ObjectTracker
 
 # mask rcnn detector
-from mrcnn import inference as mo
+from aidoop.mask_rcnn import inference as mo
 
 
 def get_line_length(x1, y1, x2, y2):

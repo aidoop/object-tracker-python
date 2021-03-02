@@ -12,17 +12,17 @@ Usage: import the module (see Jupyter notebooks for examples), or run from
     python3 box_detector_train.py train --dataset=/path/to/object/dataset --weights=imagenet
 """
 
-from aidoop.mask_rcnn import model as modellib, utils
-from aidoop.mask_rcnn.config import Config
 import os
 import sys
 import json
 import datetime
 import numpy as np
 import skimage.draw
-
 import time
 import imgaug
+
+from aidoop.mask_rcnn import model as modellib, utils
+from aidoop.mask_rcnn.config import Config
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../")
