@@ -203,22 +203,3 @@ class RealsenseCapture(CameraDev):
         dist = np.array(intrinsics.coeffs[:4])
         return mtx, dist
 
-
-###############################################################################
-# test sample codes
-###############################################################################
-if __name__ == "__main__":
-
-    rsCamDev = RealsenseCapture("001622071306")
-
-    rsCamDev.initialize(640, 480, 30)
-
-    rsCamDev.start_capture()
-
-    frameIdx = 0
-    for frmIdx in range(0, 10):
-        rsCamDev.get_video_frame()
-        print(frameIdx)
-        frameIdx += 1
-
-    rsCamDev.stop_capture()

@@ -47,27 +47,3 @@ class OpencvCapture(CameraDev):
     # get 3D position w.r.t an image pixel based on camera-based coordination
     def get_3D_pos(self, imageX, imageY):
         raise NotImplementedError
-
-
-###############################################################################
-# test sample codes
-###############################################################################
-if __name__ == "__main__":
-
-    rsCamDev = OpencvCapture(2)
-
-    if rsCamDev is None:
-        print("OpenCV device can't be found..")
-        sys.exit()
-
-    rsCamDev.initialize(640, 480, 30)
-
-    rsCamDev.start_capture()
-
-    frameIdx = 0
-    for frmIdx in range(0, 10):
-        rsCamDev.get_video_frame()
-        print(frameIdx)
-        frameIdx += 1
-
-    rsCamDev.stop_capture()
