@@ -24,7 +24,7 @@ class CalibrationCamera:
         self.chessboardX = chessboardX
         self.chessboardY = chessboardY
 
-    def calcuateCameraMatrix(self, images):
+    def calculate_camera_matrix(self, images):
         # opencv algorithm termination criteria
         criteria = CalibrationCamera.OPENCV_TERMINATE_CRITERIA
 
@@ -75,13 +75,13 @@ class CalibrationCamera:
         # return reprojection error
         return (calibResult, mtx, dist, reperr)
 
-    def saveResults(self, fname, mtx, dist):
+    def save_result_to_file(self, fname, mtx, dist):
         # name, ext = os.path.splitext(fname)
         calibFile = cv2.FileStorage(fname, cv2.FILE_STORAGE_WRITE)
         calibFile.write("cameraMatrix", mtx)
         calibFile.write("distCoeff", dist)
         calibFile.release()
 
-    def clearObjImgPoints(self):
+    def clear_all(self):
         self.objpoints.clear()
         self.imgpoints.clear()

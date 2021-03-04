@@ -77,7 +77,7 @@ class ArucoMarkerTracker(ObjectTracker):
         # set detected objects to the result list..
         if np.all(ids != None):
             # estimate pose of each marker and return the values
-            rvec, tvec = self.arucoDetect.estimatePose(corners)
+            rvec, tvec = self.arucoDetect.estimate_pose(corners)
 
             for markerObject in self.markerObjectList:
                 for idx in range(len(ids)):
@@ -93,16 +93,18 @@ class ArucoMarkerTracker(ObjectTracker):
                         cv2.Rodrigues(rvec[idx], rotMatrix)
 
                         # make a homogeneous matrix using a rotation matrix and a translation matrix
-                        hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec[idx])
-                        # xyzuvw_midterm = HMUtil.convertHMtoXYZABCDeg(hmCal2Cam)
+                        hmCal2Cam = HMUtil.create_homogeneous_matrix(
+                            rotMatrix, tvec[idx]
+                        )
+                        # xyzuvw_midterm = HMUtil.convert_hm_to_xyzabc_by_deg(hmCal2Cam)
                         # print("Esitmated Mark Pose: ", xyzuvw_midterm)
 
                         # calcaluate the modified position based on pivot offset
                         # if markerObject.pivotOffset is None:
-                        #     hmWanted = HMUtil.convertXYZABCtoHMDeg([0.0, 0.0, 0.00, 0.0, 0.0, 0.0])     # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
+                        #     hmWanted = HMUtil.convert_xyzabc_to_hm_by_deg([0.0, 0.0, 0.00, 0.0, 0.0, 0.0])     # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
                         #     hmInput = np.dot(hmCal2Cam, hmWanted)
                         # else:
-                        #     hmWanted = HMUtil.convertXYZABCtoHMDeg(markerObject.pivotOffset)
+                        #     hmWanted = HMUtil.convert_xyzabc_to_hm_by_deg(markerObject.pivotOffset)
                         #     hmInput = np.dot(hmCal2Cam, hmWanted)
 
                         # update a pivot offset
@@ -122,7 +124,7 @@ class ArucoMarkerTracker(ObjectTracker):
                             offsetPoint = markerObject.pivotOffset
 
                         # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
-                        hmWanted = HMUtil.convertXYZABCtoHMDeg(offsetPoint)
+                        hmWanted = HMUtil.convert_xyzabc_to_hm_by_deg(offsetPoint)
                         hmInput = np.dot(hmCal2Cam, hmWanted)
 
                         ###########################################################################################
@@ -130,14 +132,14 @@ class ArucoMarkerTracker(ObjectTracker):
 
                         # get a final position
                         hmResult = np.dot(self.handEyeMat, hmInput)
-                        xyzuvw = HMUtil.convertHMtoXYZABCDeg(hmResult)
+                        xyzuvw = HMUtil.convert_hm_to_xyzabc_by_deg(hmResult)
 
                         # applying advance pose model
                         [x, y, z, u, v, w] = xyzuvw
-                        self.arucoAdvPose.setPose(x, y, z, u, v, w)
+                        self.arucoAdvPose.set_pose(x, y, z, u, v, w)
 
                         if self.arucoAdvPose.stable() == True:
-                            xyzuvw = self.arucoAdvPose.getPoses()
+                            xyzuvw = self.arucoAdvPose.get_filtered_poses()
 
                         # TODO:.............................................
                         # TODO: should change this routine....

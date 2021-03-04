@@ -49,7 +49,7 @@ class HandEyeAruco:
             if self.useArucoBoard is False:
                 # estimate pose of each marker and return the values
                 # rvet and tvec-different from camera coefficients
-                rvec, tvec = self.arucoDetect.estimatePose(corners)
+                rvec, tvec = self.arucoDetect.estimate_pose(corners)
 
                 # should do something here using extracted aruco marker ids here
                 self.flagFindMainAruco = False
@@ -73,7 +73,7 @@ class HandEyeAruco:
                 aruco.drawDetectedMarkers(color_image, corners)
             else:
                 # rvet and tvec-different from camera coefficients
-                poseret, rvec, tvec = self.arucoDetect.estimatePoseBoard(corners, ids)
+                poseret, rvec, tvec = self.arucoDetect.estimate_board_pose(corners, ids)
 
                 if poseret >= 4:
                     # draw a cooordinate axis(x, y, z)
@@ -199,15 +199,15 @@ class HandEyeCalibration:
 
     def captureHandEyeInputs(self, robotXYZABC, camRVec, camTVec):
         # prepare Gripper2Base inputs
-        hmRobot = HMUtil.convertXYZABCtoHMDeg(robotXYZABC)
+        hmRobot = HMUtil.convert_xyzabc_to_hm_by_deg(robotXYZABC)
         self.R_gripper2base.append(hmRobot[0:3, 0:3])
         self.t_gripper2base.append(hmRobot[0:3, 3])
 
         # prepare Target2Cam inputs
         camRMatrix = np.zeros(shape=(3, 3))
         cv2.Rodrigues(camRVec, camRMatrix)
-        hmCam = HMUtil.makeHM(camRMatrix, camTVec)
-        hmCam = HMUtil.inverseHM(hmCam)
+        hmCam = HMUtil.create_homogeneous_matrix(camRMatrix, camTVec)
+        hmCam = HMUtil.inverse_homogeneous_matrix(hmCam)
         self.R_target2cam.append(hmCam[0:3, 0:3])
         self.t_target2cam.append(hmCam[0:3, 3])
         self.cntInputData += 1
@@ -249,9 +249,11 @@ class HandEyeCalibration:
             # print("--------------------------------------", file=sys.stderr)
 
         # verify handeye calculation results
-        hmTemp = HMUtil.makeHM(self.R_cam2gripper, self.t_cam2gripper.T)
+        hmTemp = HMUtil.create_homogeneous_matrix(
+            self.R_cam2gripper, self.t_cam2gripper.T
+        )
 
-        xyzabc_temp = HMUtil.convertHMtoXYZABCDeg(hmTemp)
+        xyzabc_temp = HMUtil.convert_hm_to_xyzabc_by_deg(hmTemp)
         # print(xyzabc_temp, file=sys.stderr)
 
     def getPredefinedHandeye(self):
@@ -262,7 +264,7 @@ class HandEyeCalibration:
         # prdefined_matrix = [0.00165360882730919, 0.10332931833889342,
         #                     0.001752356149939573, -179.52921594383568, 0.24227911479934125, 179.77335961667296]
 
-        self.predefined_hm = HMUtil.convertXYZABCtoHMDeg(prdefined_matrix)
+        self.predefined_hm = HMUtil.convert_xyzabc_to_hm_by_deg(prdefined_matrix)
 
         return self.predefined_hm
 
@@ -287,13 +289,17 @@ class HandEyeCalibration:
 
         # select HORAUD algorithm on temporary
         # make a homogeneous matrix from Target(Calibration) to Gripper(TCP)
-        hmT2G = HMUtil.makeHM(self.R_cam2gripper, self.t_cam2gripper.T)
+        hmT2G = HMUtil.create_homogeneous_matrix(
+            self.R_cam2gripper, self.t_cam2gripper.T
+        )
         # make a homogeneous matrix from Gripper(TCP) to Robot Base
-        hmG2B = HMUtil.makeHM(
+        hmG2B = HMUtil.create_homogeneous_matrix(
             self.R_gripper2base[0], self.t_gripper2base[0].reshape(1, 3)
         )
         # make a homogeneous matrix from Camera to Target(Target)
-        hmC2T = HMUtil.makeHM(self.R_target2cam[0], self.t_target2cam[0].reshape(1, 3))
+        hmC2T = HMUtil.create_homogeneous_matrix(
+            self.R_target2cam[0], self.t_target2cam[0].reshape(1, 3)
+        )
 
         # Final HM(Camera to Robot Base)
         # H(C2B) = H(G2B)H(T2G)H(C2T)
@@ -312,15 +318,15 @@ class HandEyeCalibration:
         hmPredefined = self.getPredefinedHandeye()
 
         # prepare Gripper2Base inputs
-        hmG2B = HMUtil.convertXYZABCtoHMDeg(robotXYZABC)
+        hmG2B = HMUtil.convert_xyzabc_to_hm_by_deg(robotXYZABC)
 
         # prepare Target2Cam inputs
         camRMatrix = np.zeros(shape=(3, 3))
         cv2.Rodrigues(camRVec, camRMatrix)
-        hmT2C = HMUtil.makeHM(camRMatrix, camTVec)
-        hmC2T = HMUtil.inverseHM(hmT2C)
+        hmT2C = HMUtil.create_homogeneous_matrix(camRMatrix, camTVec)
+        hmC2T = HMUtil.inverse_homogeneous_matrix(hmT2C)
 
-        xyzuvwC2T = HMUtil.convertHMtoXYZABCDeg(hmC2T)
+        xyzuvwC2T = HMUtil.convert_hm_to_xyzabc_by_deg(hmC2T)
         # print('camera position: ', xyzuvwC2T, file=sys.stderr)
 
         # Final HM(Camera to Robot Base)

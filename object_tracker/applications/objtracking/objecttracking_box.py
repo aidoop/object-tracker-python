@@ -114,7 +114,7 @@ class BoxObjectTracker(ObjectTracker):
             self.mask_list = mask_list
 
             # get the minArearect and angle for each mask
-            (self.mask_rect_list, self.mask_angle_list) = self.estimatePose(mask_list)
+            (self.mask_rect_list, self.mask_angle_list) = self.estimate_pose(mask_list)
             print(self.mask_rect_list)
             print(self.mask_angle_list)
 
@@ -144,16 +144,16 @@ class BoxObjectTracker(ObjectTracker):
                 cv2.Rodrigues(rvec, rotMatrix)
 
                 # make a homogeneous matrix using a rotation matrix and a translation matrix
-                hmCal2Cam = HMUtil.makeHM(rotMatrix, tvec)
+                hmCal2Cam = HMUtil.create_homogeneous_matrix(rotMatrix, tvec)
 
                 # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
-                # hmWanted = HMUtil.convertXYZABCtoHMDeg(
+                # hmWanted = HMUtil.convert_xyzabc_to_hm_by_deg(
                 #     offsetPoint) if offsetPoint is not None else np.eye(4)
                 # hmInput = np.dot(hmCal2Cam, hmWanted)
 
                 # get a final position
                 hmResult = np.dot(self.handEyeMat, hmCal2Cam)
-                xyzuvw_list = HMUtil.convertHMtoXYZABCDeg(hmResult)
+                xyzuvw_list = HMUtil.convert_hm_to_xyzabc_by_deg(hmResult)
                 xyzuvw_arr = np.array(xyzuvw_list)
 
                 offsetPoint = (
@@ -266,7 +266,7 @@ class BoxObjectTracker(ObjectTracker):
     def getScoresList(self):
         return self.scores_list
 
-    def estimatePose(self, mask_list):
+    def estimate_pose(self, mask_list):
         box_list = list()
         angle_list = list()
 

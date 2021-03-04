@@ -37,7 +37,7 @@ class CalibCameraKeyHandler(KeyHandler):
 
     def processZ(self, *args):
         calibcam = args[2]
-        calibcam.clearObjImgPoints()
+        calibcam.clear_all()
         self.interation = 0
 
     def processG(self, *args):
@@ -63,7 +63,7 @@ class CalibCameraKeyHandler(KeyHandler):
 
         # get image file names
         images = glob.glob(dirFrameImage + "/*.jpg")
-        _, cammtx, distcoeff, reproerr = calibcam.calcuateCameraMatrix(images)
+        _, cammtx, distcoeff, reproerr = calibcam.calculate_camera_matrix(images)
 
         strInfoText = ""
 
@@ -74,7 +74,7 @@ class CalibCameraKeyHandler(KeyHandler):
 
             # save calibration data to the specific xml file
             # savedFileName = "CalibCamResult" + str(camIndex) + ".json"
-            # calibcam.saveResults(savedFileName, cammtx, distcoeff)
+            # calibcam.save_result_to_file(savedFileName, cammtx, distcoeff)
 
             # update the result data
             calibResult = CalibCameraUpdate.updateData(

@@ -8,65 +8,79 @@ import collections
 class ArucoAdvPose:
     def __init__(self):
 
-        self.isStable = False
+        self.is_stable = False
 
-        self.sizeEstPoses = 10
-        self.queueEstimatedPoseX = collections.deque(maxlen=self.sizeEstPoses)
-        self.queueEstimatedPoseY = collections.deque(maxlen=self.sizeEstPoses)
-        self.queueEstimatedPoseZ = collections.deque(maxlen=self.sizeEstPoses)
-        self.queueEstimatedPoseU = collections.deque(maxlen=self.sizeEstPoses)
-        self.queueEstimatedPoseV = collections.deque(maxlen=self.sizeEstPoses)
-        self.queueEstimatedPoseW = collections.deque(maxlen=self.sizeEstPoses)
+        self.estimated_pose_size = 10
+        self.queue_estimated_poseX = collections.deque(maxlen=self.estimated_pose_size)
+        self.queue_estimated_poseY = collections.deque(maxlen=self.estimated_pose_size)
+        self.queue_estimated_poseZ = collections.deque(maxlen=self.estimated_pose_size)
+        self.queue_estimated_poseU = collections.deque(maxlen=self.estimated_pose_size)
+        self.queue_estimated_poseV = collections.deque(maxlen=self.estimated_pose_size)
+        self.queue_estimated_poseW = collections.deque(maxlen=self.estimated_pose_size)
 
-        self.stdPoses = dict()
+        self.std_poses_dict = dict()
 
-    def setPose(self, x, y, z, u, v, w):
-        self.queueEstimatedPoseX.append(x)
-        self.queueEstimatedPoseY.append(y)
-        self.queueEstimatedPoseZ.append(z)
-        self.queueEstimatedPoseU.append(u)
-        self.queueEstimatedPoseV.append(v)
-        self.queueEstimatedPoseW.append(w)
+    def set_pose(self, x, y, z, u, v, w):
+        self.queue_estimated_poseX.append(x)
+        self.queue_estimated_poseY.append(y)
+        self.queue_estimated_poseZ.append(z)
+        self.queue_estimated_poseU.append(u)
+        self.queue_estimated_poseV.append(v)
+        self.queue_estimated_poseW.append(w)
 
-        self.stdPoses['x'] = np.std(self.queueEstimatedPoseX)
-        self.stdPoses['y'] = np.std(self.queueEstimatedPoseY)
-        self.stdPoses['z'] = np.std(self.queueEstimatedPoseZ)
-        self.stdPoses['u'] = np.std(self.queueEstimatedPoseU)
-        self.stdPoses['v'] = np.std(self.queueEstimatedPoseV)
-        self.stdPoses['w'] = np.std(self.queueEstimatedPoseW)
+        self.std_poses_dict["x"] = np.std(self.queue_estimated_poseX)
+        self.std_poses_dict["y"] = np.std(self.queue_estimated_poseY)
+        self.std_poses_dict["z"] = np.std(self.queue_estimated_poseZ)
+        self.std_poses_dict["u"] = np.std(self.queue_estimated_poseU)
+        self.std_poses_dict["v"] = np.std(self.queue_estimated_poseV)
+        self.std_poses_dict["w"] = np.std(self.queue_estimated_poseW)
 
-        self.isStable = self.determineStable()
+        self.is_stable = self.determin_stable()
 
-        # print('x std: ', self.stdPoses['x'])
-        # print('y std: ', self.stdPoses['y'])
-        # print('z std: ', self.stdPoses['z'])
-        # print('u std: ', self.stdPoses['u'])
-        # print('v std: ', self.stdPoses['v'])
-        # print('w std: ', self.stdPoses['w'])
-        # print('stable: ', self.isStable)
+        # print('x std: ', self.std_poses_dict['x'])
+        # print('y std: ', self.std_poses_dict['y'])
+        # print('z std: ', self.std_poses_dict['z'])
+        # print('u std: ', self.std_poses_dict['u'])
+        # print('v std: ', self.std_poses_dict['v'])
+        # print('w std: ', self.std_poses_dict['w'])
+        # print('stable: ', self.is_stable)
 
-    def determineStable(self):
-        return (self.stdPoses['x'] < 0.001) and (self.stdPoses['y'] < 0.001) and (self.stdPoses['z'] < 0.001) and (self.stdPoses['u'] < 0.5) and (self.stdPoses['v'] < 0.5) and (self.stdPoses['w'] < 0.5)
+    def determin_stable(self):
+        return (
+            (self.std_poses_dict["x"] < 0.001)
+            and (self.std_poses_dict["y"] < 0.001)
+            and (self.std_poses_dict["z"] < 0.001)
+            and (self.std_poses_dict["u"] < 0.5)
+            and (self.std_poses_dict["v"] < 0.5)
+            and (self.std_poses_dict["w"] < 0.5)
+        )
 
     def stable(self):
-        return self.isStable
+        return self.is_stable
 
-    def getPose(self, listPose):
+    def get_filtered_pose(self, listPose):
         copyList = list(listPose)
         copyList.sort()
-        return np.average(copyList[2:self.sizeEstPoses-2])
+        return np.average(copyList[2 : self.estimated_pose_size - 2])
 
-    def getPoses(self):
+    def get_filtered_poses(self):
 
-        if(len(self.queueEstimatedPoseX) < self.sizeEstPoses):
+        if len(self.queue_estimated_poseX) < self.estimated_pose_size:
             return None
 
-        avgPoses = dict()
-        avgPoses['x'] = self.getPose(self.queueEstimatedPoseX)
-        avgPoses['y'] = self.getPose(self.queueEstimatedPoseY)
-        avgPoses['z'] = self.getPose(self.queueEstimatedPoseZ)
-        avgPoses['u'] = self.getPose(self.queueEstimatedPoseU)
-        avgPoses['v'] = self.getPose(self.queueEstimatedPoseV)
-        avgPoses['w'] = self.getPose(self.queueEstimatedPoseW)
+        avg_poses_dict = dict()
+        avg_poses_dict["x"] = self.get_filtered_pose(self.queue_estimated_poseX)
+        avg_poses_dict["y"] = self.get_filtered_pose(self.queue_estimated_poseY)
+        avg_poses_dict["z"] = self.get_filtered_pose(self.queue_estimated_poseZ)
+        avg_poses_dict["u"] = self.get_filtered_pose(self.queue_estimated_poseU)
+        avg_poses_dict["v"] = self.get_filtered_pose(self.queue_estimated_poseV)
+        avg_poses_dict["w"] = self.get_filtered_pose(self.queue_estimated_poseW)
 
-        return [avgPoses['x'], avgPoses['y'], avgPoses['z'], avgPoses['u'], avgPoses['v'], avgPoses['w']]
+        return [
+            avg_poses_dict["x"],
+            avg_poses_dict["y"],
+            avg_poses_dict["z"],
+            avg_poses_dict["u"],
+            avg_poses_dict["v"],
+            avg_poses_dict["w"],
+        ]

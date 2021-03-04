@@ -61,7 +61,7 @@ class ROIAruco2DManager:
         if np.all(ids != None):
             # estimate pose of each marker and return the values
             # rvet and tvec-different from camera coefficients
-            rvec, tvec = self.arucoDetect.estimatePose(corners)
+            rvec, tvec = self.arucoDetect.estimate_pose(corners)
 
             centerPoint = dict()
             for arucoIDRange in self.arucoRangeList:
@@ -95,7 +95,7 @@ class ROIAruco2DManager:
         if np.all(ids != None):
             # estimate pose of each marker and return the values
             # rvet and tvec-different from camera coefficients
-            rvec, tvec = self.arucoDetect.estimatePose(corners)
+            rvec, tvec = self.arucoDetect.estimate_pose(corners)
 
             for idx in range(len(ids)):
                 for subidx in range(idx + 1, len(ids)):

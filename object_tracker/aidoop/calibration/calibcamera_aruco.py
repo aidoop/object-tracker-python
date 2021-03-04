@@ -34,7 +34,7 @@ class CalibrationCameraAruco:
         self.width = width
         self.height = height
 
-    def calcuateCameraMatrix(self, images):
+    def calculate_camera_matrix(self, images):
         # opencv algorithm termination criteria
         criteria = CalibrationCameraAruco.OPENCV_TERMINATE_CRITERIA
 
@@ -59,7 +59,7 @@ class CalibrationCameraAruco:
 
         # start camera calibartion
         if len(id_list) > 0:
-            ret, mtx, dist = self.arucoDetect.calibrateCamera(
+            ret, mtx, dist = self.arucoDetect.calibrate_camera(
                 corners_list,
                 id_list,
                 counter,
@@ -82,13 +82,13 @@ class CalibrationCameraAruco:
         # return reprojection error
         return (calibResult, mtx, dist, ret)
 
-    def saveResults(self, fname, mtx, dist):
+    def save_result_to_file(self, fname, mtx, dist):
         # name, ext = os.path.splitext(fname)
         calibFile = cv2.FileStorage(fname, cv2.FILE_STORAGE_WRITE)
         calibFile.write("cameraMatrix", mtx)
         calibFile.write("distCoeff", dist)
         calibFile.release()
 
-    def clearObjImgPoints(self):
+    def clear_all(self):
         self.objpoints.clear()
         self.imgpoints.clear()
