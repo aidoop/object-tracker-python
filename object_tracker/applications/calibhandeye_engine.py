@@ -8,10 +8,7 @@ import sys
 import multiprocessing as mp
 import queue
 
-
-from aidoop.camera.camera_dev_opencv import OpencvCapture
-from aidoop.camera.camera_dev_realsense import RealsenseCapture
-from aidoop.camera.camera_videocapture import VideoCapture
+from aidoop.camera.camera_videocapture import VideoCaptureFactory
 from aidoop.etc.hm_util import *
 from aidoop.calibration.calibhandeye_handeye import *
 from aidoop.calibration.calibhandeye_auto_move import HandEyeAutoMove
@@ -46,128 +43,134 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
     video_interproc_e = ve
     cmd_interproc_q = cq
 
-    gqlDataClient = VisonGqlDataClient()
-    if (
-        gqlDataClient.connect(
-            "http://localhost:3000", "system", "admin@hatiolab.com", "admin"
+    try:
+
+        gqlDataClient = VisonGqlDataClient()
+        if (
+            gqlDataClient.connect(
+                "http://localhost:3000", "system", "admin@hatiolab.com", "admin"
+            )
+            is False
+        ):
+            # print("Can't connect operato vision server.")
+            sys.exit()
+
+        gqlDataClient.fetchTrackingCamerasAll()
+        gqlDataClient.fetchRobotArmsAll()
+
+        cameraObject = gqlDataClient.trackingCameras[cameraName]
+
+        AppConfig.VideoFrameWidth = cameraObject.width
+        AppConfig.VideoFrameHeight = cameraObject.height
+
+        robotName = ""
+        if cameraObject.baseRobotArm is not None:
+            robotName = cameraObject.baseRobotArm["name"]
+            robotObject = gqlDataClient.robotArms[robotName]
+            robotIP = robotObject.endpoint
+        else:
+            robotIP = AppConfig.INDY_SERVER_IP
+
+        # create an indy7 object
+        # TODO: should check here if auto-mode will be used..
+        # if cameraObject.handEyeAutoMode == True:
+        #     indy7 = RobotIndy7Dev()
+        #     if(indy7.initalize(robotIP, AppConfig.INDY_SERVER_NAME) == False):
+        #         # print("Can't connect the robot and exit this process..")
+        #         sys.exit()
+
+        # create a window to display video frames
+        # cv2.namedWindow(cameraName)
+
+        # create a variable for frame indexing
+        flagFindMainAruco = False
+
+        # create a handeye calib. object
+        handeye = HandEyeCalibration()
+
+        # auto handeye calibration mode
+        handeye_automove = HandEyeAutoMove()
+        if cameraObject.handEyeAutoMode == True:
+            autohandeye_total_move = cameraObject.autoHandeyeTotalIterations
+            xyz_move = cameraObject.autoHandeyeMoveXyz
+            uvw_move = cameraObject.autoHandeyeMoveUvw
+
+            handeye_automove.initialize(
+                xyz_move,
+                xyz_move,
+                xyz_move,
+                uvw_move,
+                uvw_move,
+                uvw_move,
+                autohandeye_total_move,
+            )
+            robot_ready_count = 0
+        else:
+            pass
+
+        # # create the camera device object
+        # if(args.camType == 'rs'):
+        #     rsCamDev = RealsenseCapture(args.camIndex)
+        # elif(args.camType == 'uvc'):
+        #     rsCamDev = OpencvCapture(args.camIndex)
+        AppConfig.VideoFrameWidth = cameraObject.width or AppConfig.VideoFrameWidth
+        AppConfig.VideoFrameHeight = cameraObject.height or AppConfig.VideoFrameHeight
+        (AppConfig.VideoFrameWidth, AppConfig.VideoFrameHeight) = (
+            (1920, 1080)
+            if cameraObject.type == "realsense-camera"
+            else (AppConfig.VideoFrameWidth, AppConfig.VideoFrameHeight)
         )
-        is False
-    ):
-        # print("Can't connect operato vision server.")
-        sys.exit()
 
-    gqlDataClient.fetchTrackingCamerasAll()
-    gqlDataClient.fetchRobotArmsAll()
-
-    cameraObject = gqlDataClient.trackingCameras[cameraName]
-
-    AppConfig.VideoFrameWidth = cameraObject.width
-    AppConfig.VideoFrameHeight = cameraObject.height
-
-    robotName = ""
-    if cameraObject.baseRobotArm is not None:
-        robotName = cameraObject.baseRobotArm["name"]
-        robotObject = gqlDataClient.robotArms[robotName]
-        robotIP = robotObject.endpoint
-    else:
-        robotIP = AppConfig.INDY_SERVER_IP
-
-    # create an indy7 object
-    # TODO: should check here if auto-mode will be used..
-    # if cameraObject.handEyeAutoMode == True:
-    #     indy7 = RobotIndy7Dev()
-    #     if(indy7.initalize(robotIP, AppConfig.INDY_SERVER_NAME) == False):
-    #         # print("Can't connect the robot and exit this process..")
-    #         sys.exit()
-
-    # create a window to display video frames
-    # cv2.namedWindow(cameraName)
-
-    # create a variable for frame indexing
-    flagFindMainAruco = False
-
-    # create a handeye calib. object
-    handeye = HandEyeCalibration()
-
-    # auto handeye calibration mode
-    handeye_automove = HandEyeAutoMove()
-    if cameraObject.handEyeAutoMode == True:
-        autohandeye_total_move = cameraObject.autoHandeyeTotalIterations
-        xyz_move = cameraObject.autoHandeyeMoveXyz
-        uvw_move = cameraObject.autoHandeyeMoveUvw
-
-        handeye_automove.initialize(
-            xyz_move,
-            xyz_move,
-            xyz_move,
-            uvw_move,
-            uvw_move,
-            uvw_move,
-            autohandeye_total_move,
+        vcap = VideoCaptureFactory.create_video_capture(
+            cameraObject.type,
+            cameraObject.endpoint,
+            AppConfig.VideoFrameWidth,
+            AppConfig.VideoFrameHeight,
+            AppConfig.VideoFramePerSec,
+            cameraName,
         )
-        robot_ready_count = 0
-    else:
-        pass
 
-    # # create the camera device object
-    # if(args.camType == 'rs'):
-    #     rsCamDev = RealsenseCapture(args.camIndex)
-    # elif(args.camType == 'uvc'):
-    #     rsCamDev = OpencvCapture(args.camIndex)
-    if cameraObject.type == "realsense-camera":
-        rsCamDev = RealsenseCapture(cameraObject.endpoint)
-        AppConfig.VideoFrameWidth = 1920
-        AppConfig.VideoFrameHeight = 1080
-    elif cameraObject.type == "camera-connector":
-        rsCamDev = OpencvCapture(int(cameraObject.endpoint))
+        # Start streaming
+        vcap.start()
 
-    # create video capture object using realsense camera device object
-    vcap = VideoCapture(
-        rsCamDev,
-        AppConfig.VideoFrameWidth,
-        AppConfig.VideoFrameHeight,
-        AppConfig.VideoFramePerSec,
-        cameraName,
-    )
+        # get instrinsics
+        # mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), AppConfig.UseRealSenseInternalMatrix)
+        # get internal intrinsics & extrinsics in D435
+        if AppConfig.UseRealSenseInternalMatrix == True:
+            mtx, dist = vcap.getInternalIntrinsicsMat()
+        else:
+            mtx = cameraObject.cameraMatrix
+            dist = cameraObject.distCoeff
 
-    # Start streaming
-    vcap.start()
+        # create key handler
+        keyhandler = CalibHandEyeKeyHandler()
 
-    # get instrinsics
-    # mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), AppConfig.UseRealSenseInternalMatrix)
-    # get internal intrinsics & extrinsics in D435
-    if AppConfig.UseRealSenseInternalMatrix == True:
-        mtx, dist = vcap.getInternalIntrinsicsMat()
-    else:
-        mtx = cameraObject.cameraMatrix
-        dist = cameraObject.distCoeff
-
-    # create key handler
-    keyhandler = CalibHandEyeKeyHandler()
-
-    # create handeye object
-    handeyeAruco = HandEyeAruco(
-        AppConfig.HandEyeArucoDict, AppConfig.HandEyeArucoSize, mtx, dist
-    )
-    handeyeAruco.setCalibMarkerID(AppConfig.CalibMarkerID)
-
-    # start indy7 as a direct-teaching mode as default
-    # indy7.set_teaching_mode(True)
-
-    # create info text
-    infoText = DisplayInfoText(
-        cv2.FONT_HERSHEY_PLAIN,
-        (10, 60),
-        AppConfig.VideoFrameWidth,
-        AppConfig.VideoFrameHeight,
-    )
-
-    # setup an opencv window
-    if video_interproc_e is None:
-        cv2.namedWindow(cameraName, cv2.WINDOW_NORMAL)
-        cv2.setWindowProperty(
-            cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
+        # create handeye object
+        handeyeAruco = HandEyeAruco(
+            AppConfig.HandEyeArucoDict, AppConfig.HandEyeArucoSize, mtx, dist
         )
+        handeyeAruco.setCalibMarkerID(AppConfig.CalibMarkerID)
+
+        # start indy7 as a direct-teaching mode as default
+        # indy7.set_teaching_mode(True)
+
+        # create info text
+        infoText = DisplayInfoText(
+            cv2.FONT_HERSHEY_PLAIN,
+            (10, 60),
+            AppConfig.VideoFrameWidth,
+            AppConfig.VideoFrameHeight,
+        )
+
+        # setup an opencv window
+        if video_interproc_e is None:
+            cv2.namedWindow(cameraName, cv2.WINDOW_NORMAL)
+            cv2.setWindowProperty(
+                cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
+            )
+    except Exception as ex:
+        print("Preparation Exception:", ex, file=sys.stderr)
+        sys.exit(0)
 
     # get frames and process a key event
     try:
@@ -312,10 +315,6 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 cameraName,
             ):
                 break
-
-            # have a delay to make CPU usage lower...
-            # qsleep(0.2)
-
     except Exception as ex:
         print("Error :", ex, file=sys.stderr)
 

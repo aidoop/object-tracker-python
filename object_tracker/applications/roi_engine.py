@@ -9,9 +9,7 @@ import sys
 import argparse
 import json
 
-from aidoop.camera.camera_dev_realsense import RealsenseCapture
-from aidoop.camera.camera_dev_opencv import OpencvCapture
-from aidoop.camera.camera_videocapture import VideoCapture
+from aidoop.camera.camera_videocapture import VideoCaptureFactory
 
 from applications.config.appconfig import AppConfig
 from applications.etc.util import ObjectTrackerErrMsg, PrintMsg, DisplayInfoText
@@ -45,61 +43,65 @@ if __name__ == "__main__":
 
     cameraName = sys.argv[1]
 
-    gqlDataClient = VisonGqlDataClient()
-    if (
-        gqlDataClient.connect(
-            "http://localhost:3000", "system", "admin@hatiolab.com", "admin"
+    try:
+        gqlDataClient = VisonGqlDataClient()
+        if (
+            gqlDataClient.connect(
+                "http://localhost:3000", "system", "admin@hatiolab.com", "admin"
+            )
+            is False
+        ):
+            # print("Can't connect operato vision server.")
+            sys.exit()
+
+        # gqlDataClient.parseVisionWorkspaces()
+        # process all elements here...
+        gqlDataClient.fetchTrackingCamerasAll()
+        cameraObject = gqlDataClient.trackingCameras[cameraName]
+
+        AppConfig.VideoFrameWidth = cameraObject.width or AppConfig.VideoFrameWidth
+        AppConfig.VideoFrameHeight = cameraObject.height or AppConfig.VideoFrameHeight
+        (AppConfig.VideoFrameWidth, AppConfig.VideoFrameHeight) = (
+            (1920, 1080)
+            if cameraObject.type == "realsense-camera"
+            else (AppConfig.VideoFrameWidth, AppConfig.VideoFrameHeight)
         )
-        is False
-    ):
-        # print("Can't connect operato vision server.")
-        sys.exit()
 
-    # gqlDataClient.parseVisionWorkspaces()
-    # process all elements here...
-    gqlDataClient.fetchTrackingCamerasAll()
-    cameraObject = gqlDataClient.trackingCameras[cameraName]
+        vcap = VideoCaptureFactory.create_video_capture(
+            cameraObject.type,
+            cameraObject.endpoint,
+            AppConfig.VideoFrameWidth,
+            AppConfig.VideoFrameHeight,
+            AppConfig.VideoFramePerSec,
+            cameraName,
+        )
 
-    AppConfig.VideoFrameWidth = cameraObject.width or AppConfig.VideoFrameWidth
-    AppConfig.VideoFrameHeight = cameraObject.height or AppConfig.VideoFrameHeight
+        # Start streaming
+        vcap.start()
 
-    if cameraObject.type == "realsense-camera":
-        rsCamDev = RealsenseCapture(cameraObject.endpoint)
-    elif cameraObject.type == "camera-connector":
-        rsCamDev = OpencvCapture(int(cameraObject.endpoint))
+        # get instrinsics
+        # mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), AppConfig.UseRealSenseInternalMatrix)
+        if AppConfig.UseRealSenseInternalMatrix == True:
+            mtx, dist = vcap.getInternalIntrinsicsMat()
+        else:
+            mtx = cameraObject.cameraMatrix
+            dist = cameraObject.distCoeff
 
-    # create video capture object using realsense camera device object
-    vcap = VideoCapture(
-        rsCamDev,
-        AppConfig.VideoFrameWidth,
-        AppConfig.VideoFrameHeight,
-        AppConfig.VideoFramePerSec,
-        cameraName,
-    )
+        # create aruco manager
+        ROIMgr = ROIAruco2DManager(AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist)
 
-    # Start streaming
-    vcap.start()
+        # for arucoPair in arucoPairList:
+        #     arucoPairValues = arucoPair.split(',')
+        #     ROIMgr.setMarkIdPair((int(arucoPairValues[0]), int(arucoPairValues[1])))
 
-    # get instrinsics
-    # mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), AppConfig.UseRealSenseInternalMatrix)
-    if AppConfig.UseRealSenseInternalMatrix == True:
-        mtx, dist = vcap.getInternalIntrinsicsMat()
-    else:
-        mtx = cameraObject.cameraMatrix
-        dist = cameraObject.distCoeff
+        # create key handler for camera calibration1
+        keyhander = ROIKeyHandler()
 
-    # create aruco manager
-    ROIMgr = ROIAruco2DManager(AppConfig.ArucoDict, AppConfig.ArucoSize, mtx, dist)
-
-    # for arucoPair in arucoPairList:
-    #     arucoPairValues = arucoPair.split(',')
-    #     ROIMgr.setMarkIdPair((int(arucoPairValues[0]), int(arucoPairValues[1])))
-
-    # create key handler for camera calibration1
-    keyhander = ROIKeyHandler()
-
-    # create info text
-    infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
+        # create info text
+        infoText = DisplayInfoText(cv2.FONT_HERSHEY_PLAIN, (0, 20))
+    except Exception as ex:
+        print("Preparation Exception:", ex, file=sys.stderr)
+        sys.exit(0)
 
     try:
         while True:
@@ -145,7 +147,7 @@ if __name__ == "__main__":
                 break
 
     except Exception as ex:
-        print("Error :", ex, file=sys.stderr)
+        print("Main Loop Error :", ex, file=sys.stderr)
 
     finally:
         # Stop streaming

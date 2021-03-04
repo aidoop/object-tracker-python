@@ -1,8 +1,11 @@
 import sys
 import cv2
 
+from aidoop.camera.camera_dev_opencv import OpencvCapture
+from aidoop.camera.camera_dev_realsense import RealsenseCapture
 
-class VideoCapture(object):
+
+class VideoCapture:
     def __new__(cls, camDev, width, height, fps, name):
         if camDev == None:
             print("Camera Device is not opened...")
@@ -20,6 +23,9 @@ class VideoCapture(object):
         # initialize camera device object
         self.camDev.initialize(width, height, fps)
 
+        # prepare camera operatons
+        self.camDev.prepare()
+
         # set camera name
         self.name = name
 
@@ -28,6 +34,9 @@ class VideoCapture(object):
 
     def stop(self):
         return self.camDev.stop_capture()
+
+    def prepare(self):
+        return self.camDev.prepare()
 
     def get_name(self):
         return self.name
@@ -56,3 +65,36 @@ class VideoCapture(object):
 
     def get_3D_pos(self, imageX, imageY):
         return self.camDev.get_3D_pos(imageX, imageY)
+
+
+class VideoCaptureConnectorType:
+    UVC = "camera-connector"
+    REALSENSE = "realsense-camera"
+    AZURE_KINNECT = "azure-kinnect-camera"
+
+
+class VideoCaptureFactory:
+    @staticmethod
+    def create_video_capture(
+        camera_device_type: str,
+        cam_endpoint: str,
+        width: int,
+        height: int,
+        fps: int,
+        camera_name: str,
+    ) -> VideoCapture:
+        camDev = (
+            RealsenseCapture(cam_endpoint)
+            if camera_device_type == VideoCaptureConnectorType.REALSENSE
+            else OpencvCapture(int(cam_endpoint))
+            if camera_device_type == VideoCaptureConnectorType.UVC
+            else None
+        )
+
+        return VideoCapture(
+            camDev,
+            width,
+            height,
+            fps,
+            camera_name,
+        )

@@ -5,9 +5,7 @@ import sys
 import os
 from enum import Enum, unique
 
-from aidoop.camera.camera_dev_realsense import RealsenseCapture
-from aidoop.camera.camera_dev_opencv import OpencvCapture
-from aidoop.camera.camera_videocapture import VideoCapture
+from aidoop.camera.camera_videocapture import VideoCaptureFactory
 
 from applications.config.appconfig import AppConfig, ObjectTrackingMethod
 from applications.etc.util import ObjectTypeCheck
@@ -79,17 +77,17 @@ class ObjectTrakcingAppData(object):
                     obj_tracking_camera.robot_name = trackingCamera.baseRobotArm["name"]
 
                 # create a camera device object
-                rsCamDev = (
-                    RealsenseCapture(trackingCamera.endpoint)
-                    if trackingCamera.type == "realsense-camera"
-                    else (
-                        OpencvCapture(int(trackingCamera.endpoint))
-                        if trackingCamera.type == "camera-connector"
-                        else None
-                    )
-                )
-                assert rsCamDev is not None, "camera type error"
-                rsCamDev.prepare()
+                # rsCamDev = (
+                #     RealsenseCapture(trackingCamera.endpoint)
+                #     if trackingCamera.type == "realsense-camera"
+                #     else (
+                #         OpencvCapture(int(trackingCamera.endpoint))
+                #         if trackingCamera.type == "camera-connector"
+                #         else None
+                #     )
+                # )
+                # assert rsCamDev is not None, "camera type error"
+                # rsCamDev.prepare()
 
                 # create a video capture object and start
                 AppConfig.VideoFrameWidth = (
@@ -102,13 +100,22 @@ class ObjectTrakcingAppData(object):
                     if self.tracking_method is ObjectTrackingMethod.ARUCO
                     else AppConfig.VideoFrameHeight
                 )
-                vcap = VideoCapture(
-                    rsCamDev,
+                vcap = VideoCaptureFactory.create_video_capture(
+                    trackingCamera.type,
+                    trackingCamera.endpoint,
                     AppConfig.VideoFrameWidth,
                     AppConfig.VideoFrameHeight,
                     AppConfig.VideoFramePerSec,
-                    obj_tracking_camera.camera_name,
+                    trackingCamera.name,
                 )
+                # vcap = VideoCapture(
+                #     rsCamDev,
+                #     AppConfig.VideoFrameWidth,
+                #     AppConfig.VideoFrameHeight,
+                #     AppConfig.VideoFramePerSec,
+                #     obj_tracking_camera.camera_name,
+                # )
+
                 if vcap == None:
                     continue
                 vcap.start()

@@ -8,10 +8,7 @@ import time
 import multiprocessing as mp
 import queue
 
-
-from aidoop.camera.camera_dev_opencv import OpencvCapture
-from aidoop.camera.camera_dev_realsense import RealsenseCapture
-from aidoop.camera.camera_videocapture import VideoCapture
+from aidoop.camera.camera_videocapture import VideoCaptureFactory
 from aidoop.calibration.calibcamera import CalibrationCamera
 from aidoop.calibration.calibcamera_aruco import CalibrationCameraAruco
 
@@ -65,17 +62,15 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
         AppConfig.VideoFrameWidth = cameraObject.width or AppConfig.VideoFrameWidth
         AppConfig.VideoFrameHeight = cameraObject.height or AppConfig.VideoFrameHeight
+        (AppConfig.VideoFrameWidth, AppConfig.VideoFrameHeight) = (
+            (1920, 1080)
+            if cameraObject.type == "realsense-camera"
+            else (AppConfig.VideoFrameWidth, AppConfig.VideoFrameHeight)
+        )
 
-        if cameraObject.type == "realsense-camera":
-            rsCamDev = RealsenseCapture(cameraObject.endpoint)
-            AppConfig.VideoFrameWidth = 1920
-            AppConfig.VideoFrameHeight = 1080
-        elif cameraObject.type == "camera-connector":
-            rsCamDev = OpencvCapture(int(cameraObject.endpoint))
-
-        # create video capture object using realsense camera device object
-        vcap = VideoCapture(
-            rsCamDev,
+        vcap = VideoCaptureFactory.create_video_capture(
+            cameraObject.type,
+            cameraObject.endpoint,
             AppConfig.VideoFrameWidth,
             AppConfig.VideoFrameHeight,
             AppConfig.VideoFramePerSec,
@@ -107,7 +102,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
             AppConfig.VideoFrameHeight,
         )
     except Exception as ex:
-        print("Error :", ex, file=sys.stderr)
+        print("Preparation Exception:", ex, file=sys.stderr)
         sys.exit(0)
 
     # setup an opencv window
@@ -185,7 +180,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 break
 
     except Exception as ex:
-        print("Error :", ex, file=sys.stderr)
+        print("Main Loop Error :", ex, file=sys.stderr)
 
     finally:
         # Stop streaming

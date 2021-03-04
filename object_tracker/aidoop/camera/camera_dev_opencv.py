@@ -5,23 +5,6 @@ from aidoop.camera.camera_dev_abc import CameraDev
 
 
 class OpencvCapture(CameraDev):
-
-    # TODO: check if any uvc device exists.
-    # def __new__(cls, devIndex):
-
-    #     #camdev = object.__new__(cls)
-    #     # check if device is existed..
-    #     vcap = cv2.VideoCapture(devIndex)
-    #     vcapOpened = vcap.isOpened()
-    #     if(vcapOpened == True):
-    #         camdev = object.__new__(cls)
-    #     else:
-    #         camdev = None
-
-    #     vcap.release()
-
-    #     return camdev
-
     def __init__(self, devIndex):
         # open VideoCapture
         self.__videoCapture = cv2.VideoCapture(devIndex)

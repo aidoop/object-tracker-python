@@ -212,8 +212,8 @@ def objecttracking_engine():
             objStatusUpdate.clearObjStatus()
 
             # sleep for the specified duration.
-            if app_data.tracking_method == ObjectTrackingMethod.ARUCO:
-                time.sleep(0.2)
+            # if app_data.tracking_method == ObjectTrackingMethod.ARUCO:
+            #     time.sleep(0.2)
 
             # handle key inputs
             pressedKey = cv2.waitKey(1) & 0xFF
