@@ -18,10 +18,10 @@ class ObjectTracker(metaclass=ABCMeta):
 
     # set an object to track
     @abstractmethod
-    def setTrackingObject(self, object):
+    def set_tracking_object(self, object):
         pass
 
     # find objects in the registered object list
     @abstractmethod
-    def findObjects(self, *args):
+    def find_tracking_object(self, *args):
         pass

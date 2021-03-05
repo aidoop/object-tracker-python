@@ -32,7 +32,7 @@ class VisonGqlDataClient:
     def get_client(self):
         return self.client
 
-    def fetchTrackingCameras(self, cameras):
+    def fetch_tracking_cameras(self, cameras):
         for camera in cameras:
             name = camera["name"]
             cameraData = self.client.get_tracking_camera(name=name)
@@ -50,7 +50,7 @@ class VisonGqlDataClient:
                 cameraObject.distCoeff = np.array(tempList)
 
             # check if gql data is not set yet..
-            if ObjectTypeCheck.checkValueIsAvail(cameraData["cameraMatrix"]):
+            if ObjectTypeCheck.check_value_available(cameraData["cameraMatrix"]):
                 cameraObject.setCameraMatrix(
                     cameraData["cameraMatrix"]["rows"],
                     cameraData["cameraMatrix"]["columns"],
@@ -60,14 +60,14 @@ class VisonGqlDataClient:
             # deleted handEyeAutoMode
             # cameraObject.handEyeAutoMode = cameraData['handEyeAutoMode']
 
-            if ObjectTypeCheck.checkValueIsAvail(cameraData["handEyeMatrix"]):
+            if ObjectTypeCheck.check_value_available(cameraData["handEyeMatrix"]):
                 cameraObject.setHandeyeMatrix(
                     cameraData["handEyeMatrix"]["rows"],
                     cameraData["handEyeMatrix"]["columns"],
                     cameraData["handEyeMatrix"]["data"],
                 )
 
-            if ObjectTypeCheck.checkValueIsAvail(cameraData["rois"]):
+            if ObjectTypeCheck.check_value_available(cameraData["rois"]):
                 cameraObject.setROIData(cameraData["rois"])
 
             cameraObject.camObjOffset = VisionGqlUtil.setPoseData(
@@ -99,11 +99,11 @@ class VisonGqlDataClient:
 
             self.trackingCameras[name] = cameraObject
 
-    def fetchTrackingCamerasAll(self):
+    def fetch_tracking_camera_all(self):
         cameras = self.client.get_tracking_cameras()["items"]
-        self.fetchTrackingCameras(cameras)
+        self.fetch_tracking_cameras(cameras)
 
-    def fetchRobotArms(self, robotarms):
+    def fetch_robot_arms(self, robotarms):
         for robotarm in robotarms:
             name = robotarm["name"]
             robotarmData = self.client.get_robot_arm(name=name)
@@ -121,11 +121,11 @@ class VisonGqlDataClient:
 
             self.robotArms[name] = robotarmObject
 
-    def fetchRobotArmsAll(self):
+    def fetch_robot_arm_all(self):
         robot_arms = self.client.get_robot_arms()["items"]
-        self.fetchRobotArms(robot_arms)
+        self.fetch_robot_arms(robot_arms)
 
-    def fetchTrackableMarks(self, marks):
+    def fetch_trackable_objects(self, marks):
         for mark in marks:
             name = mark["name"]
             markData = self.client.get_trackable_object(name=name)
@@ -138,12 +138,12 @@ class VisonGqlDataClient:
 
             self.trackableObjects[name] = markObject
 
-    def fetchTrackableMarksAll(self):
+    def fetch_trackable_objects_all(self):
         marks = self.client.get_trackable_objects()["items"]
-        self.fetchTrackableMarks(marks)
+        self.fetch_trackable_objects(marks)
 
     # in case of only 1 workspace
-    def fetchVisionWorkspace(self):
+    def fetch_vision_workspace(self):
         wskpCnt = self.client.get_tracking_workspaces()["total"]
         workspaces = self.client.get_tracking_workspaces()["items"]
         if wskpCnt >= 2:
@@ -164,23 +164,23 @@ class VisonGqlDataClient:
 
         # fetch robot arms
         robot_arms = vision_workspace["robotArms"]
-        self.fetchRobotArms(robot_arms)
+        self.fetch_robot_arms(robot_arms)
 
         # fetch cameras
         tracking_cameras = vision_workspace["trackingCameras"]
-        self.fetchTrackingCameras(tracking_cameras)
+        self.fetch_tracking_cameras(tracking_cameras)
 
         # fetch trackable objects
         trackable_objects = vision_workspace["trackableObjects"]
-        self.fetchTrackableMarks(trackable_objects)
+        self.fetch_trackable_objects(trackable_objects)
 
-    def getRobotPose(self, name):
+    def get_robot_pose(self, name):
         return self.client.get_robot_arm_pose(name=name)
 
-    def moveRobotTaskBy(self, name, pose):
+    def move_robotarm_task_by(self, name, pose):
         return self.client.robot_task_moveby(name=name, pose=pose)
 
-    def moveRobotTaskByNoWait(self, name, pose):
+    def move_robotarm_task_by_nowait(self, name, pose):
         return self.client.robot_task_moveby_nowait(name=name, pose=pose)
 
     def get_robot_status(self, name):

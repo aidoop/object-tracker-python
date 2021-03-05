@@ -10,17 +10,17 @@ class ROIManager(metaclass=ABCMeta):
     # Abstraction Functions
     ###################################
     @abstractmethod
-    def appendROI(self, roi):
+    def append_roi(self, roi):
         pass
 
     @abstractmethod
-    def getROIList(self):
+    def get_roi_list(self):
         pass
 
     @abstractclassmethod
-    def isInsideROI(self, newRegion):
+    def is_inside_roi(self, newRegion):
         pass
 
     @abstractclassmethod
-    def clearROIAll(self):
+    def clear_roi_all(self):
         pass

@@ -432,10 +432,10 @@ DIRECT_VAR_TYPE_MODBUS_REG = 10
 
 def dump_buf(msg, buf, length):
     if debugging:
-        PrintMsg.printStdErr(msg)
+        PrintMsg.print_error(msg)
         for i in range(0, length):
-            # PrintMsg.printStdErr(i, end=' - ')
-            PrintMsg.printStdErr(buf[i])
+            # PrintMsg.print_error(i, end=' - ')
+            PrintMsg.print_error(buf[i])
 
 
 ###############################################################################
@@ -522,13 +522,13 @@ class IndyDCPClient:
         try:
             self.sock_fd.connect((self.server_ip, self.__server_port))
         except socket.error as e:
-            PrintMsg.printStdErr("Socket connection error: {}".format(e))
+            PrintMsg.print_error("Socket connection error: {}".format(e))
             self.sock_fd.close()
             # self.__lock.release()
             return False
         else:
             if True:
-                PrintMsg.printStdErr(
+                PrintMsg.print_error(
                     "Connect: Server IP ({ser_ip})".format(ser_ip=self.server_ip)
                 )
                 # self.__lock.release()
@@ -540,11 +540,11 @@ class IndyDCPClient:
 
     def shutdown(self):
         self.sock_fd.shutdown(socket.SHUT_RDWR)
-        PrintMsg.printStdErr("Shut down")
+        PrintMsg.print_error("Shut down")
 
     def set_timeout_sec(self, time_out):
         if time_out < 0:
-            PrintMsg.printStdErr("Invalid time out setting: {}<0".format(time_out))
+            PrintMsg.print_error("Invalid time out setting: {}<0".format(time_out))
         self.time_out = time_out
 
     def _send_message(self, buf, size):
@@ -554,11 +554,11 @@ class IndyDCPClient:
             self.sock_fd.settimeout(self.time_out)
             sent = self.sock_fd.send(buf[total_sent:size])
             if sent == -1:
-                PrintMsg.printStdErr("Error: sent == -1")
+                PrintMsg.print_error("Error: sent == -1")
                 return -1
             elif sent == 0:
                 # self.__lock.release()
-                PrintMsg.printStdErr("Error: sent == 0")
+                PrintMsg.print_error("Error: sent == 0")
                 return -1
             total_sent = total_sent + sent
         return 0
@@ -570,7 +570,7 @@ class IndyDCPClient:
             self.sock_fd.settimeout(self.time_out)
             chunk = self.sock_fd.recv(size - bytes_recd)
             if chunk == b"":
-                PrintMsg.printStdErr("Error: receive error")
+                PrintMsg.print_error("Error: receive error")
                 memset(buf, 0, sizeof(buf))
                 # self.__lock.release()
                 self.shutdown()
@@ -588,37 +588,37 @@ class IndyDCPClient:
         req_robot_name = np.array(req.val.robotName).tostring().decode("utf-8")
         res_robot_name = np.array(res.val.robotName).tostring().decode("utf-8")
         if req_robot_name != res_robot_name:
-            PrintMsg.printStdErr(
+            PrintMsg.print_error(
                 "Header check fail (robotName): Request {_req}, Response {_res}".format(
                     _req=req_robot_name, _res=res_robot_name
                 )
             )
         if req.val.stepInfo != res.val.stepInfo:
-            PrintMsg.printStdErr(
+            PrintMsg.print_error(
                 "Header check fail (stepInfo): Request {_req}, Response {_res}".format(
                     _req=req.val.stepInfo, _res=res.val.stepInfo
                 )
             )
         if req.val.invokeId != res.val.invokeId:
-            PrintMsg.printStdErr(
+            PrintMsg.print_error(
                 "Header check fail (invokeId): Request {_req}, Response {_res}".format(
                     _req=req.val.invokeId, _res=res.val.invokeId
                 )
             )
         if res.val.sof != self.__sof_server:
-            PrintMsg.printStdErr(
+            PrintMsg.print_error(
                 "Header check fail (sof): Request {_req}, Response {_res}".format(
                     _req=self.__sof_server, _res=res.val.sof
                 )
             )
         if req.val.cmdId != res.val.cmdId:
-            PrintMsg.printStdErr(
+            PrintMsg.print_error(
                 "Header check fail (cmdId): Request {_req}, Response {_res}".format(
                     _req=req.val.cmdId, _res=res.val.cmdId
                 )
             )
         if res.val.cmdId == CMD_ERROR:
-            PrintMsg.printStdErr(err_to_string(err_code))
+            PrintMsg.print_error(err_to_string(err_code))
             return err_code
         return ERR_NONE
 
@@ -696,7 +696,7 @@ class IndyDCPClient:
         res_data = Data()
         res_data_size = res_header.val.dataSize
         if res_data_size > SIZE_DATA_TCP_MAX or res_data_size < 0:
-            PrintMsg.printStdErr(
+            PrintMsg.print_error(
                 "Response data size is invalid {} (max: {}): Disconnected".format(
                     res_data_size, SIZE_DATA_TCP_MAX
                 )
@@ -722,9 +722,9 @@ class IndyDCPClient:
 
         if req_ext_data_size > sys.maxsize or req_ext_data_size < 0:
             self.disconnect()
-            PrintMsg.printStdErr("Send data size error")
+            PrintMsg.print_error("Send data size error")
         if req_ext_data_size > 0 and req_ext_data is None:
-            PrintMsg.printStdErr("Send data error: Null data")
+            PrintMsg.print_error("Send data error: Null data")
 
         # Make request header
         req_header = HeaderCommand()
@@ -790,10 +790,10 @@ class IndyDCPClient:
 
         if res_ext_data_size < 0 or res_ext_data_size > sys.maxsize:
             self.disconnect()
-            PrintMsg.printStdErr("Recv data error: size")
+            PrintMsg.print_error("Recv data error: size")
         elif res_data.int2dArr[0] is not ext_cmd:
             self.disconnect()
-            PrintMsg.printStdErr(
+            PrintMsg.print_error(
                 "Recv data error: ext_cmd {}/{}".format(res_data.int2dArr[0], ext_cmd)
             )
         if res_ext_data_size > 0:
@@ -1404,7 +1404,7 @@ class IndyDCPClient:
                     return res
 
             else:
-                PrintMsg.printStdErr("None matched type")
+                PrintMsg.print_error("None matched type")
                 return False
         else:
             return error_code
@@ -1415,7 +1415,7 @@ class IndyDCPClient:
         _req_data.int3dArr[0] = dv_type
         _req_data.int3dArr[1] = dv_addr
         if dv_len > 20:
-            PrintMsg.printStdErr("Length should be less than 20, but {}".format(dv_len))
+            PrintMsg.print_error("Length should be less than 20, but {}".format(dv_len))
             return
         _req_data.int3dArr[2] = dv_len
 
@@ -1479,7 +1479,7 @@ class IndyDCPClient:
                         )
                     return res
             else:
-                PrintMsg.printStdErr("None matched type")
+                PrintMsg.print_error("None matched type")
                 return False
         else:
             return error_code
@@ -1512,7 +1512,7 @@ class IndyDCPClient:
             memmove(addressof(_req_data.byte) + 8, pointer(c_uint16(val)), 2)
             _req_data_size += 2
         else:
-            PrintMsg.printStdErr("None matched type")
+            PrintMsg.print_error("None matched type")
 
         self._handle_command(CMD_WRITE_DIRECT_VARIABLE, _req_data, _req_data_size)
 
@@ -1592,7 +1592,7 @@ class IndyDCPClient:
                 )
                 _req_data_size += type_size
         else:
-            PrintMsg.printStdErr("None matched type")
+            PrintMsg.print_error("None matched type")
 
         self._handle_command(CMD_WRITE_DIRECT_VARIABLES, _req_data, _req_data_size)
 
@@ -1697,14 +1697,14 @@ class IndyDCPClient:
     def wait_for_program_finish(self):
         while self.get_program_state()["running"]:
             pass
-        PrintMsg.printStdErr("Program Finished: ", GLOBAL_DICT["stop"])
+        PrintMsg.print_error("Program Finished: ", GLOBAL_DICT["stop"])
         return GLOBAL_DICT["stop"]
 
     def wait_for_move_finish(self):
         while self.get_robot_status()["busy"]:
             pass
         while self.get_robot_status()["movedone"]:
-            PrintMsg.printStdErr("Move finished!")
+            PrintMsg.print_error("Move finished!")
             return True
 
     def set_workspace(self, cmd_pos):
@@ -1763,7 +1763,7 @@ def del_teaching_data(file_name, wp_name):
 ###############################################################################
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        PrintMsg.printStdErr("{0} <Server IP> <Robot Name>".format(sys.argv[0]))
+        PrintMsg.print_error("{0} <Server IP> <Robot Name>".format(sys.argv[0]))
         sys.exit()
 
     _server_ip = sys.argv[1]
@@ -1774,29 +1774,29 @@ if __name__ == "__main__":
     indy.connect()
 
     # Get Task Position
-    PrintMsg.printStdErr("### Test: GetTaskPos() ###")
+    PrintMsg.print_error("### Test: GetTaskPos() ###")
     task_pos = indy.get_task_pos()
-    PrintMsg.printStdErr("Task Pos: ")
-    PrintMsg.printStdErr(task_pos)
+    PrintMsg.print_error("Task Pos: ")
+    PrintMsg.print_error(task_pos)
 
     # Get Joint Position
-    PrintMsg.printStdErr("### Test: GetJointPos() ###")
+    PrintMsg.print_error("### Test: GetJointPos() ###")
     joint_pos = indy.get_joint_pos()
-    PrintMsg.printStdErr("Joint Pos: ")
-    PrintMsg.printStdErr(joint_pos)
+    PrintMsg.print_error("Joint Pos: ")
+    PrintMsg.print_error(joint_pos)
 
     # check if next move is available
-    PrintMsg.printStdErr("get_inv_kin test: ")
-    PrintMsg.printStdErr(indy.get_inv_kin(task_pos, joint_pos))
+    PrintMsg.print_error("get_inv_kin test: ")
+    PrintMsg.print_error(indy.get_inv_kin(task_pos, joint_pos))
 
     # # Move to Task
-    # PrintMsg.printStdErr('### Test: MoveToT() ###')
+    # PrintMsg.print_error('### Test: MoveToT() ###')
     # indy.task_move_to(task_pos)
 
     # # Move to Joint
-    # PrintMsg.printStdErr('### Test: MoveToJ() ###')
+    # PrintMsg.print_error('### Test: MoveToJ() ###')
     # indy.joint_move_to(joint_pos)
 
     # Disconnect
     indy.disconnect()
-    PrintMsg.printStdErr("Test finished")
+    PrintMsg.print_error("Test finished")

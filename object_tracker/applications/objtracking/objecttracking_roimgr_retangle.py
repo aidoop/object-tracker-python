@@ -7,13 +7,13 @@ class ROIRetangleManager(ROIManager):
     def __init__(self):
         self.RectangleROIList = []
 
-    def appendROI(self, roi):
+    def append_roi(self, roi):
         self.RectangleROIList.append(roi)
 
-    def getROIList(self):
+    def get_roi_list(self):
         return self.RectangleROIList
 
-    def isInsideROI(self, newRegion):
+    def is_inside_roi(self, newRegion):
         isInside = False
         foundRIDs = list()
         for idx in range(len(self.RectangleROIList)):
@@ -24,7 +24,7 @@ class ROIRetangleManager(ROIManager):
                 isInside = True
         return (isInside, foundRIDs)
 
-    def clearROIAll(self):
+    def clear_roi_all(self):
         self.RectangleROIList.clear()
 
     # TODO: two region type is not identical.

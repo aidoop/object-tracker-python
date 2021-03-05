@@ -14,7 +14,7 @@ class ObjectUpdateStatus(object):
         self.ObjStatusList.clear()
         self.gqlClient = client
 
-    def addObjStatus(self, id, rois, x, y, z, u, v, w):
+    def add_tracking_object_status(self, id, rois, x, y, z, u, v, w):
         for roi in rois:
             objStatus = {
                 "id": str(id),
@@ -26,7 +26,7 @@ class ObjectUpdateStatus(object):
             self.ObjStatusList.append(objStatus)
 
     # don't send 'state' data for undetermined objects
-    def addNoObjStatus(self, id):
+    def add_empty_object_status(self, id):
         objStatus = {
             "id": str(id),
             # "state": {
@@ -47,9 +47,9 @@ class ObjectUpdateStatus(object):
 
         # process undetected marks
         for markerID in undetectedObjectIDList:
-            # self.addObjStatus(markerID, [None],
+            # self.add_tracking_object_status(markerID, [None],
             #                   None, None, None, None, None, None)
-            self.addNoObjStatus(markerID)
+            self.add_empty_object_status(markerID)
 
         # process duplicated marks
         checkIDList = list()
@@ -72,8 +72,8 @@ class ObjectUpdateStatus(object):
         else:
             print("\n", status, "\n")
 
-    def containsObjStatus(self):
+    def contains_object_status(self):
         return len(self.ObjStatusList) > 0
 
-    def clearObjStatus(self):
+    def clear_object_status(self):
         self.ObjStatusList.clear()

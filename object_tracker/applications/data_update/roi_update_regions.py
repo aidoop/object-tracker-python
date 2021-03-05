@@ -2,12 +2,12 @@ import json
 
 
 class ROIUpdateRegions:
-    ROIRegionList = list()
+    roi_region_list = list()
 
     def __init__(self):
-        self.ROIRegionList.clear()
+        self.roi_region_list.clear()
 
-    def addROIRegion(self, id, ltx, lty, rbx, rby):
+    def add_roi_region(self, id, ltx, lty, rbx, rby):
         testNestedDict = {
             "id": id,
             "region": {
@@ -22,10 +22,10 @@ class ROIUpdateRegions:
             }
         }
 
-        self.ROIRegionList.append(testNestedDict)
+        self.roi_region_list.append(testNestedDict)
 
-    def printROIRegions(self):
-        print(json.dumps(self.ROIRegionList))
+    def print_roi_regions(self):
+        print(json.dumps(self.roi_region_list))
 
 
 ###############################################################################
@@ -34,6 +34,6 @@ class ROIUpdateRegions:
 if __name__ == '__main__':
     rur = ROIUpdateRegions()
 
-    rur.addROIRegion('abc', 100, 200, 500, 600)
-    rur.addROIRegion('uuu', 300, 500, 600, 900)
-    rur.printROIRegions()
+    rur.add_roi_region('abc', 100, 200, 500, 600)
+    rur.add_roi_region('uuu', 300, 500, 600, 900)
+    rur.print_roi_regions()

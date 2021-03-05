@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
         # gqlDataClient.parseVisionWorkspaces()
         # process all elements here...
-        gqlDataClient.fetchTrackingCamerasAll()
+        gqlDataClient.fetch_tracking_camera_all()
         cameraObject = gqlDataClient.trackingCameras[cameraName]
 
         AppConfig.VideoFrameWidth = cameraObject.width or AppConfig.VideoFrameWidth
@@ -109,12 +109,12 @@ if __name__ == "__main__":
             color_image = vcap.get_video_frame()
 
             # check core variables are available..
-            if ObjectTrackerErrMsg.checkValueIsNone(mtx, "camera matrix") == False:
+            if ObjectTrackerErrMsg.check_value_none(mtx, "camera matrix") == False:
                 break
-            if ObjectTrackerErrMsg.checkValueIsNone(dist, "distortion coeff.") == False:
+            if ObjectTrackerErrMsg.check_value_none(dist, "distortion coeff.") == False:
                 break
             if (
-                ObjectTrackerErrMsg.checkValueIsNone(color_image, "vidqeo color frame")
+                ObjectTrackerErrMsg.check_value_none(color_image, "vidqeo color frame")
                 == False
             ):
                 break

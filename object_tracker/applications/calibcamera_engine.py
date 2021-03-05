@@ -40,7 +40,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
     cameraName = app_args
     if cameraName is "":
-        PrintMsg.printStdErr("Input camera name is not available.")
+        PrintMsg.print_error("Input camera name is not available.")
         sys.exit()
 
     video_interproc_e = ve
@@ -57,7 +57,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
             sys.exit()
 
         # get camera data from operato
-        gqlDataClient.fetchTrackingCamerasAll()
+        gqlDataClient.fetch_tracking_camera_all()
         cameraObject = gqlDataClient.trackingCameras[cameraName]
 
         AppConfig.VideoFrameWidth = cameraObject.width or AppConfig.VideoFrameWidth
@@ -122,7 +122,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
             if (
-                ObjectTrackerErrMsg.checkValueIsNone(color_image, "video color frame")
+                ObjectTrackerErrMsg.check_value_none(color_image, "video color frame")
                 == False
             ):
                 break
@@ -196,7 +196,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
 if __name__ == "__main__":
 
     if len(sys.argv) < 2:
-        PrintMsg.printStdErr("Invalid paramters..")
+        PrintMsg.print_error("Invalid paramters..")
         sys.exit()
 
     calibcamera_engine(sys.argv[1])

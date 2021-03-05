@@ -68,24 +68,24 @@ def objecttracking_engine():
                 # check if core variables are available..
                 if app_data.tracking_method == ObjectTrackingMethod.ARUCO:
                     if (
-                        ObjectTrackerErrMsg.checkValueIsNone(vtc.mtx, "camera matrix")
+                        ObjectTrackerErrMsg.check_value_none(vtc.mtx, "camera matrix")
                         == False
                     ) or (
-                        ObjectTrackerErrMsg.checkValueIsNone(
+                        ObjectTrackerErrMsg.check_value_none(
                             vtc.dist, "distortion coeff."
                         )
                         == False
                     ):
                         break
                 if (
-                    ObjectTrackerErrMsg.checkValueIsNone(
+                    ObjectTrackerErrMsg.check_value_none(
                         color_image, "video color frame"
                     )
                     == False
                 ):
                     break
                 if (
-                    ObjectTrackerErrMsg.checkValueIsNone(vtc.handeye, "hand eye matrix")
+                    ObjectTrackerErrMsg.check_value_none(vtc.handeye, "hand eye matrix")
                     == False
                 ):
                     break
@@ -96,7 +96,7 @@ def objecttracking_engine():
                     for ra in raList:
                         if ra.name == vtc.robot_name:
                             # detect markers here..
-                            resultObjs = vtc.objectMarkTracker.findObjects(
+                            resultObjs = vtc.objectMarkTracker.find_tracking_object(
                                 color_image, vtc, ra.gripperOffset
                             )
 
@@ -105,14 +105,14 @@ def objecttracking_engine():
 
                             for resultObj in resultObjs:
                                 # # TODO: manage ROI data later
-                                # (found, foundRIDs) = vtc.ROIMgr.isInsideROI(
+                                # (found, foundRIDs) = vtc.ROIMgr.is_inside_roi(
                                 #     resultObj.corners)
                                 # found = False
 
                                 if resultObj.targetPos is not None:
                                     [x, y, z, u, v, w] = resultObj.targetPos
 
-                                    objStatusUpdate.addObjStatus(
+                                    objStatusUpdate.add_tracking_object_status(
                                         resultObj.markerID,
                                         [vtc.camera_name],
                                         x,
@@ -125,16 +125,16 @@ def objecttracking_engine():
 
                                     # TODO: update object status based on ROIs later
                                     # if found is True:
-                                    #     objStatusUpdate.addObjStatus(
+                                    #     objStatusUpdate.add_tracking_object_status(
                                     #         resultObj.markerID, foundRIDs, x, y, z, u, v, w)
                                     # else:
-                                    #     objStatusUpdate.addObjStatus(
+                                    #     objStatusUpdate.add_tracking_object_status(
                                     #         resultObj.markerID, [None], x, y, z, u, v, w)
                                     if len(tobjIDList) > 0:
                                         tobjIDList.remove(resultObj.markerID)
                 else:
                     # detect markers here..
-                    resultObjs = vtc.objectMarkTracker.findObjects(
+                    resultObjs = vtc.objectMarkTracker.find_tracking_object(
                         color_image, vtc, None
                     )
 
@@ -143,7 +143,7 @@ def objecttracking_engine():
 
                     for resultObj in resultObjs:
                         # # TODO: manage ROI data later
-                        # (found, foundRIDs) = vtc.ROIMgr.isInsideROI(
+                        # (found, foundRIDs) = vtc.ROIMgr.is_inside_roi(
                         #     resultObj.corners)
                         # found = False
 
@@ -151,23 +151,23 @@ def objecttracking_engine():
                             [x, y, z, u, v, w] = resultObj.targetPos
 
                             # replace roi regions to camera name
-                            objStatusUpdate.addObjStatus(
+                            objStatusUpdate.add_tracking_object_status(
                                 resultObj.markerID, [vtc.camera_name], x, y, z, u, v, w
                             )
 
                             # TODO: update object status based on ROIs later
                             # if found is True:
-                            #     objStatusUpdate.addObjStatus(
+                            #     objStatusUpdate.add_tracking_object_status(
                             #         resultObj.markerID, foundRIDs, x, y, z, u, v, w)
                             # else:
-                            #     objStatusUpdate.addObjStatus(
+                            #     objStatusUpdate.add_tracking_object_status(
                             #         resultObj.markerID, [None], x, y, z, u, v, w)
 
                             if len(tobjIDList) > 0:
                                 tobjIDList.remove(resultObj.markerID)
 
                 # draw ROI Region..
-                # for ROIRegion in vtc.ROIMgr.getROIList():
+                # for ROIRegion in vtc.ROIMgr.get_roi_list():
                 #     cv2.rectangle(
                 #         color_image, (ROIRegion[0], ROIRegion[1]), (ROIRegion[2], ROIRegion[3]), (255, 0, 0), 3)
 
@@ -189,7 +189,7 @@ def objecttracking_engine():
                     # create images to show
                     # sub_image = cv2.applyColorMap(cv2.convertScaleAbs(
                     #     depth_image, alpha=0.07), cv2.COLORMAP_JET)
-                    sub_image = vtc.objectMarkTracker.getMaskImage(
+                    sub_image = vtc.objectMarkTracker.get_mask_image(
                         color_image,
                         AppConfig.VideoFrameWidth,
                         AppConfig.VideoFrameHeight,
@@ -199,7 +199,7 @@ def objecttracking_engine():
                     # draw pose axis in the mask image
 
                     # show scores
-                    vtc.objectMarkTracker.putTextData(color_image_view)
+                    vtc.objectMarkTracker.put_info_text(color_image_view)
 
                     # display both color image and mask image
                     images = np.vstack((color_image_view, sub_image))
@@ -207,9 +207,9 @@ def objecttracking_engine():
                     cv2.imshow(vtc.camera_name, images)
 
             # send object information to UI and clear all
-            # if objStatusUpdate.containsObjStatus() == True:
+            # if objStatusUpdate.contains_object_status() == True:
             objStatusUpdate.sendObjStatus(tobjIDList)
-            objStatusUpdate.clearObjStatus()
+            objStatusUpdate.clear_object_status()
 
             # sleep for the specified duration.
             # if app_data.tracking_method == ObjectTrackingMethod.ARUCO:

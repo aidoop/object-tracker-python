@@ -41,7 +41,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         gqlDataClient = args[9]
         robotName = args[10]
 
-        PrintMsg.printStdErr(
+        PrintMsg.print_error(
             "---------------------------------------------------------------"
         )
         if ids is None:
@@ -52,7 +52,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 if ids[idx] == AppConfig.CalibMarkerID:
                     # get the current robot position
                     # currTaskPose = indy.get_task_pos()
-                    currTaskPose = gqlDataClient.getRobotPose(robotName)
+                    currTaskPose = gqlDataClient.get_robot_pose(robotName)
 
                     # convert dict. to list
                     currTPList = [
@@ -70,7 +70,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
                     if handeye.cntInputData >= 3:
                         handeye.calculateHandEyeMatrix()
 
-                    PrintMsg.printStdErr(
+                    PrintMsg.print_error(
                         "Input Data Count: " + str(handeye.cntInputData)
                     )
                     strText = (
@@ -80,12 +80,12 @@ class CalibHandEyeKeyHandler(KeyHandler):
                         + str(handeye.distance)
                         + ")"
                     )
-                    infoText.setText(strText)
+                    infoText.set_info_text(strText)
         else:
             if findAruco is True:
                 # get the current robot position
                 # currTaskPose = indy.get_task_pos()
-                currTaskPose = gqlDataClient.getRobotPose(robotName)
+                currTaskPose = gqlDataClient.get_robot_pose(robotName)
 
                 # convert dict. to list
                 currTPList = [
@@ -103,9 +103,9 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 if handeye.cntInputData >= 3:
                     handeye.calculateHandEyeMatrix()
 
-                PrintMsg.printStdErr(f"({str(handeye.cntInputData)}")
+                PrintMsg.print_error(f"({str(handeye.cntInputData)}")
                 strText = f"{handeye.cntInputData} ({handeye.distance})"
-                infoText.setText(strText)
+                infoText.set_info_text(strText)
 
     # def processR(self, *args):
     #     findAruco = args[0]
@@ -119,7 +119,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
     #     robotName = args[10]
     #     indy = args[12]
 
-    #     PrintMsg.printStdErr(
+    #     PrintMsg.print_error(
     #         "---------------------------------------------------------------")
     #     if ids is None:
     #         return
@@ -129,7 +129,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
     #             if(ids[idx] == AppConfig.CalibMarkerID):
     #                 # get the current robot position
     #                 currTPList = indy.get_task_pos()
-    #                 # currTaskPose = gqlDataClient.getRobotPose(robotName)
+    #                 # currTaskPose = gqlDataClient.get_robot_pose(robotName)
 
     #                 # # convert dict. to list
     #                 # currTPList = [currTaskPose['x'], currTaskPose['y'], currTaskPose['z'],
@@ -142,17 +142,17 @@ class CalibHandEyeKeyHandler(KeyHandler):
     #                 if handeye.cntInputData >= 3:
     #                     handeye.calculateHandEyeMatrix()
 
-    #                 PrintMsg.printStdErr(
+    #                 PrintMsg.print_error(
     #                     "Input Data Count: " + str(handeye.cntInputData))
     #                 strText = "Input Data Count: " + \
     #                     str(handeye.cntInputData) + \
     #                     "(" + str(handeye.distance) + ")"
-    #                 infoText.setText(strText)
+    #                 infoText.set_info_text(strText)
     #     else:
     #         if findAruco is True:
     #             # get the current robot position
     #             currTPList = indy.get_task_pos()
-    #             # currTaskPose = gqlDataClient.getRobotPose(robotName)
+    #             # currTaskPose = gqlDataClient.get_robot_pose(robotName)
 
     #             # # convert dict. to list
     #             # currTPList = [currTaskPose['x'], currTaskPose['y'], currTaskPose['z'],
@@ -164,12 +164,12 @@ class CalibHandEyeKeyHandler(KeyHandler):
     #             if handeye.cntInputData >= 3:
     #                 handeye.calculateHandEyeMatrix()
 
-    #             PrintMsg.printStdErr(
+    #             PrintMsg.print_error(
     #                 "Input Data Count: " + str(handeye.cntInputData))
     #             strText = "Input Data Count: " + \
     #                 str(handeye.cntInputData) + \
     #                 "(" + str(handeye.distance) + ")"
-    #             infoText.setText(strText)
+    #             infoText.set_info_text(strText)
 
     def processZ(self, *args):
         handeye = args[7]
@@ -188,19 +188,19 @@ class CalibHandEyeKeyHandler(KeyHandler):
                 super().enableExitFlag()
             return
 
-        PrintMsg.printStdErr(
+        PrintMsg.print_error(
             "---------------------------------------------------------------"
         )
         hmTransform = handeye.getHandEyeResultMatrixUsingOpenCV()
-        # PrintMsg.printStdErr("Transform Matrix = ")
-        # PrintMsg.printStdErr(hmTransform)
+        # PrintMsg.print_error("Transform Matrix = ")
+        # PrintMsg.print_error(hmTransform)
         # HandEyeCalibration.saveTransformMatrix(hmTransform)
 
         updateUI = CalibHandeyeUpdate()
         # TODO: [0] is available??
-        update_data = updateUI.updateData(hmTransform.reshape(1, 16)[0])
+        update_data = updateUI.update_result(hmTransform.reshape(1, 16)[0])
 
-        infoText.setText("Succeeded to extract a handeye matrix.")
+        infoText.set_info_text("Succeeded to extract a handeye matrix.")
 
         # get the result data and throw into the websocket process
         if interproc_dict is not None:

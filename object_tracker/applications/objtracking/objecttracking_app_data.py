@@ -33,11 +33,11 @@ class ObjectTrakcingAppData(object):
         try:
             # get gql data for a workspace
             if AppConfig.ObjTrackingDebugMode == False:
-                self.gqlDataClient.fetchVisionWorkspace()
+                self.gqlDataClient.fetch_vision_workspace()
             else:
-                self.gqlDataClient.fetchTrackingCamerasAll()
-                self.gqlDataClient.fetchRobotArmsAll()
-                self.gqlDataClient.fetchTrackableMarksAll()
+                self.gqlDataClient.fetch_tracking_camera_all()
+                self.gqlDataClient.fetch_robot_arm_all()
+                self.gqlDataClient.fetch_trackable_objects_all()
 
             # print('***********************')
             # print('self.gqlDataClient.detectionMethod: ',
@@ -69,7 +69,7 @@ class ObjectTrakcingAppData(object):
                 # set robot name
                 if AppConfig.ObjTrackingDebugWoRobot == False:
                     if (
-                        ObjectTypeCheck.checkValueIsAvail(trackingCamera.baseRobotArm)
+                        ObjectTypeCheck.check_value_available(trackingCamera.baseRobotArm)
                         == False
                     ):
                         print("robot arm is not detected..")
@@ -164,7 +164,7 @@ class ObjectTrakcingAppData(object):
                         ROIData.rb[1],
                         ROIData.id,
                     ]
-                    ROIMgr.appendROI(ROIInput)
+                    ROIMgr.append_roi(ROIInput)
                 obj_tracking_camera.ROIMgr = ROIMgr
 
                 obj_tracking_camera.camObjOffset = trackingCamera.camObjOffset
@@ -200,7 +200,7 @@ class ObjectTrakcingAppData(object):
                 assert obj is not None, "trackable object not defined"
 
                 for otc in self.obj_tracking_camera_list:
-                    otc.objectMarkTracker.setTrackingObject(obj)
+                    otc.objectMarkTracker.set_tracking_object(obj)
 
         except Exception as ex:
             print("application data parsing error :", ex)
@@ -210,7 +210,7 @@ class ObjectTrakcingAppData(object):
         return (
             self.obj_tracking_camera_list[
                 cam_indx
-            ].objectMarkTracker.getTrackingObjIDList()
+            ].objectMarkTracker.get_tracking_object_id_list()
             if len(self.obj_tracking_camera_list) > 0
             else self.obj_tracking_camera_list
         )

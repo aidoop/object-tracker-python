@@ -5,7 +5,7 @@ class CalibHandeyeUpdate:
     def __init__(self):
         pass
 
-    def updateData(self, handeye):
+    def update_result(self, handeye):
 
         jsonData = {
             "rows": 4,

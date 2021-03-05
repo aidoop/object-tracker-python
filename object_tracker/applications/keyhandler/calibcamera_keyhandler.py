@@ -29,11 +29,11 @@ class CalibCameraKeyHandler(KeyHandler):
         cv2.imwrite(
             os.path.join(dirFrameImage, str(self.interation) + ".jpg"), color_image
         )
-        PrintMsg.printStdErr(f"Image caputured - {self.interation}")
+        PrintMsg.print_error(f"Image caputured - {self.interation}")
         self.interation += 1
 
         strInfoText = f"Image caputured - {self.interation}"
-        infoText.setText(strInfoText)
+        infoText.set_info_text(strInfoText)
 
     def processZ(self, *args):
         calibcam = args[2]
@@ -77,7 +77,7 @@ class CalibCameraKeyHandler(KeyHandler):
             # calibcam.save_result_to_file(savedFileName, cammtx, distcoeff)
 
             # update the result data
-            calibResult = CalibCameraUpdate.updateData(
+            calibResult = CalibCameraUpdate.update_result(
                 distcoeff[0], cammtx.reshape(1, 9)[0]
             )
 
@@ -91,8 +91,8 @@ class CalibCameraKeyHandler(KeyHandler):
         else:
             strInfoText = "Calibration failed."
 
-        # PrintMsg.printStdErr(strInfoText)
-        infoText.setText(strInfoText)
+        # PrintMsg.print_error(strInfoText)
+        infoText.set_info_text(strInfoText)
 
         # if interproc_dict is not None:
         #     super().enableExitFlag()

@@ -37,7 +37,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
     cameraName = app_args
     if cameraName is "":
-        PrintMsg.printStdErr("Input camera name is not available.")
+        PrintMsg.print_error("Input camera name is not available.")
         sys.exit()
 
     video_interproc_e = ve
@@ -55,8 +55,8 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
             # print("Can't connect operato vision server.")
             sys.exit()
 
-        gqlDataClient.fetchTrackingCamerasAll()
-        gqlDataClient.fetchRobotArmsAll()
+        gqlDataClient.fetch_tracking_camera_all()
+        gqlDataClient.fetch_robot_arm_all()
 
         cameraObject = gqlDataClient.trackingCameras[cameraName]
 
@@ -183,21 +183,21 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
             # check core variables are available..
-            if ObjectTrackerErrMsg.checkValueIsNone(mtx, "camera matrix") == False:
+            if ObjectTrackerErrMsg.check_value_none(mtx, "camera matrix") == False:
                 break
-            if ObjectTrackerErrMsg.checkValueIsNone(dist, "distortion coeff.") == False:
+            if ObjectTrackerErrMsg.check_value_none(dist, "distortion coeff.") == False:
                 break
             if (
-                ObjectTrackerErrMsg.checkValueIsNone(color_image, "video color frame")
+                ObjectTrackerErrMsg.check_value_none(color_image, "video color frame")
                 == False
             ):
                 break
             if (
-                ObjectTrackerErrMsg.checkValueIsNone(handeye, "hand eye matrix")
+                ObjectTrackerErrMsg.check_value_none(handeye, "hand eye matrix")
                 == False
             ):
                 break
-            # if ObjectTrackerErrMsg.checkValueIsNone(indy7, "indy7 object") == False:
+            # if ObjectTrackerErrMsg.check_value_none(indy7, "indy7 object") == False:
             #     break
 
             (flagFindMainAruco, ids, rvec, tvec) = handeyeAruco.processArucoMarker(
@@ -215,7 +215,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
                         next_move = handeye_automove.get_next()
                         if next_move:
                             # indy7.move_task_by_async(next_move)
-                            gqlDataClient.moveRobotTaskByNoWait(
+                            gqlDataClient.move_robotarm_task_by_nowait(
                                 robotName,
                                 {
                                     "x": next_move[0],

@@ -18,7 +18,7 @@ class SingletonInstane:
 
 class ObjectTypeCheck:
     @staticmethod
-    def checkValueIsAvail(var):
+    def check_value_available(var):
         if var is None:
             return False
         return True
@@ -26,7 +26,7 @@ class ObjectTypeCheck:
 
 class ObjectTrackerErrMsg:
     @staticmethod
-    def checkValueIsNone(var, varname):
+    def check_value_none(var, varname):
         if var is None:
             print("Error: " + varname + " is not allocated..", file=sys.stderr)
             return False
@@ -35,10 +35,8 @@ class ObjectTrackerErrMsg:
 
 class PrintMsg:
     @staticmethod
-    def printStdErr(*args, **kwargs):
+    def print_error(*args, **kwargs):
         return print(*args, **kwargs, file=sys.stderr)
-        # pass
-
 
 # Info Text
 
@@ -69,5 +67,5 @@ class DisplayInfoText:
             cv2.LINE_AA,
         )
 
-    def setText(self, text):
+    def set_info_text(self, text):
         self.text = text

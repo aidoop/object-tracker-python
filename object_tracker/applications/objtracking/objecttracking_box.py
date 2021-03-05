@@ -86,21 +86,21 @@ class BoxObjectTracker(ObjectTracker):
         )
 
     # set detectable features like marker id of aruco marker
-    def setTrackingObject(self, object):
+    def set_tracking_object(self, object):
         assert isinstance(object, BoxObject)
 
         # TODO: handles two more object here?
         self.markerObjIDList.append(object.markerID)
         self.markerObjectList.append(object)
 
-    def getTrackingObjectList(self):
+    def get_tracking_object_list(self):
         return self.markerObjectList
 
-    def getTrackingObjIDList(self):
+    def get_tracking_object_id_list(self):
         return self.markerObjIDList
 
     # set detectable features and return the 2D or 3D positons in case that objects are detected..
-    def findObjects(self, *args):
+    def find_tracking_object(self, *args):
         color_image = args[0]
         vtc = args[1]
         gripperOffset = args[2]
@@ -118,7 +118,7 @@ class BoxObjectTracker(ObjectTracker):
             print(self.mask_rect_list)
             print(self.mask_angle_list)
 
-            self.center_point_list = self.findBoxCenterList(self.mask_rect_list)
+            self.center_point_list = self.find_box_center_list(self.mask_rect_list)
             print(self.center_point_list)
 
             # self.center_point_list = self.maskdetect.get_center_points(
@@ -185,7 +185,7 @@ class BoxObjectTracker(ObjectTracker):
 
         return resultList
 
-    def getMaskImage(self, color_image, width, height):
+    def get_mask_image(self, color_image, width, height):
         assert self.maskdetect is not None
 
         # mask_list = self.maskdetect.detect_object_by_data(color_image)
@@ -229,7 +229,7 @@ class BoxObjectTracker(ObjectTracker):
 
         return mask_image
 
-    def putTextData(self, color_image):
+    def put_info_text(self, color_image):
         assert color_image is not None
 
         # prepare font data
@@ -263,7 +263,7 @@ class BoxObjectTracker(ObjectTracker):
                 lineType,
             )
 
-    def getScoresList(self):
+    def get_scores_list(self):
         return self.scores_list
 
     def estimate_pose(self, mask_list):
@@ -304,7 +304,7 @@ class BoxObjectTracker(ObjectTracker):
 
         return (box_list, angle_list)
 
-    def findBoxCenterList(self, rect_list):
+    def find_box_center_list(self, rect_list):
         assert self.maskdetect is not None
 
         center_point_list = []

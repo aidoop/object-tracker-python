@@ -40,7 +40,7 @@ class ArucoMarkerTracker(ObjectTracker):
         self.arucoAdvPose = ArucoAdvPose()
 
     # set detectable features like marker id of aruco marker
-    def setTrackingObject(self, object):
+    def set_tracking_object(self, object):
         assert isinstance(object, ArucoMarkerObject)
 
         found = False
@@ -52,14 +52,14 @@ class ArucoMarkerTracker(ObjectTracker):
             self.markerObjIDList.append(object.markerID)
             self.markerObjectList.append(object)
 
-    def getTrackingObjectList(self):
+    def get_tracking_object_list(self):
         return self.markerObjectList
 
-    def getTrackingObjIDList(self):
+    def get_tracking_object_id_list(self):
         return self.markerObjIDList
 
     # set detectable features and return the 2D or 3D positons in case that objects are detected..
-    def findObjects(self, *args):
+    def find_tracking_object(self, *args):
         color_image = args[0]
         vtc = args[1]
         mtx = vtc.mtx

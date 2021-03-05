@@ -37,7 +37,7 @@ class ROIKeyHandler(KeyHandler):
         for idx in range(regionCnt):
             ROIRegionFile.write("RegionID", str(ROIRegionIds[idx]))
             ROIRegionFile.write("Region", np.array(ROIRegions[idx]))
-            rur.addROIRegion(
+            rur.add_roi_region(
                 str(ROIRegionIds[idx]),
                 int(round(ROIRegions[idx][1][0])),
                 int(round(ROIRegions[idx][1][1])),
@@ -46,10 +46,10 @@ class ROIKeyHandler(KeyHandler):
             )
 
         ROIRegionFile.release()
-        PrintMsg.printStdErr("ROI Regions saved.")
+        PrintMsg.print_error("ROI Regions saved.")
 
         # text out to stdout
-        rur.printROIRegions()
+        rur.print_roi_regions()
 
         # update info. text display
-        infoText.setText("ROI Regions saved successfully.")
+        infoText.set_info_text("ROI Regions saved successfully.")

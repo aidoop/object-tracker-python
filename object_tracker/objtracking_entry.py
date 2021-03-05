@@ -109,7 +109,7 @@ class ObjectBridgeData(BridgeData):
 # class DataBridgeSocket(WebSocket):
 #     def recv_frame(self):
 #         recv_data = super().recv()
-#         PrintMsg.printStdErr('recevied frame: ', frame)
+#         PrintMsg.print_error('recevied frame: ', frame)
 #         return frame
 
 
@@ -125,13 +125,13 @@ def thread_data_receive(sock, interproc_dict, command_queue):
                     recv_obj["name"],
                     recv_obj["body"],
                 )
-                PrintMsg.printStdErr(type, cmd)
+                PrintMsg.print_error(type, cmd)
                 if type == BridgeDataType.CMD:
                     command_queue.put((name, cmd))
         except Exception as ex:
-            PrintMsg.printStdErr(ex)
+            PrintMsg.print_error(ex)
 
-    PrintMsg.printStdErr("thread_data_receive ended")
+    PrintMsg.print_error("thread_data_receive ended")
 
 
 def proc_video_stream(interproc_dict, ve, cq):
@@ -185,7 +185,7 @@ def proc_video_stream(interproc_dict, ve, cq):
                 ws.send(bridge_data.dumps())
 
         except Exception as e:
-            PrintMsg.printStdErr(e)
+            PrintMsg.print_error(e)
             break
 
         interproc_dict["object"] = {}
@@ -243,7 +243,7 @@ def run_objtracking_engine(app_type, app_args):
 if __name__ == "__main__":
 
     if len(sys.argv) != 3:
-        PrintMsg.printStdErr("Invalid paramters..")
+        PrintMsg.print_error("Invalid paramters..")
         sys.exit()
 
     run_objtracking_engine(sys.argv[1], sys.argv[2])

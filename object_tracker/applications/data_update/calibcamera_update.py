@@ -5,7 +5,7 @@ class CalibCameraUpdate:
     CALIB_CAMERA_RESULT = ""
 
     @staticmethod
-    def updateData(dist, cammtx):
+    def update_result(dist, cammtx):
 
         jsonData = {
             "distortionCoefficient": [dist[0], dist[1], dist[2], dist[3], dist[4], 7.7],
