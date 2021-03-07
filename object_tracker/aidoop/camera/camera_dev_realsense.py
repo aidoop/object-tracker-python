@@ -202,4 +202,3 @@ class RealsenseCapture(CameraDev):
 
         dist = np.array(intrinsics.coeffs[:4])
         return mtx, dist
-
