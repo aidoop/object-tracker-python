@@ -206,7 +206,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         if interproc_dict is not None:
             interproc_dict["object"] = {
                 "name": "handeyecalib:" + cameraName,
-                "object_data": update_data,
+                "objectData": update_data,
             }
             video_interproc_e.set()
 

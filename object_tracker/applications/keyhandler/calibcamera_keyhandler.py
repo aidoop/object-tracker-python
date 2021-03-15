@@ -85,7 +85,7 @@ class CalibCameraKeyHandler(KeyHandler):
             if interproc_dict is not None:
                 interproc_dict["object"] = {
                     "name": "cameracalib:" + cameraName,
-                    "object_data": calibResult,
+                    "objectData": calibResult,
                 }
                 video_interproc_e.set()
         else:

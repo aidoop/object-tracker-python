@@ -2,7 +2,7 @@ import sys
 import cv2
 
 
-class RobotArm:
+class RobotArmBase:
     def __init__(self, robot_dev, name):
 
         # set camera device object

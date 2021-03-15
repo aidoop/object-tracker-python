@@ -4,7 +4,7 @@ from typing import NamedTuple
 
 from applications.calibcamera_engine import calibcamera_engine
 from applications.calibhandeye_engine import calibhandeye_engine
-import objecttracking_engine
+from applications.objtracking_engine import objecttracking_engine
 
 
 class ObjectTrackingAppType(Enum):

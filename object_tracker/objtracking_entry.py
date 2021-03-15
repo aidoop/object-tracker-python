@@ -12,7 +12,7 @@ import threading
 from time import sleep
 
 from applications.calibcamera_engine import calibcamera_engine
-from objtracking_select import (
+from applications.objtracking_select import (
     objtracking_select_start,
     ObjectTrackingAppType,
 )
@@ -47,11 +47,6 @@ class BridgeDataType:
     OBJECT = "object"
     VIDEO = "video"
     CMD = "cmd"
-
-
-# class BridgeDataFactory:
-#     @staticmethod
-#     def create(type, name, body):
 
 
 class BridgeData:
@@ -97,20 +92,12 @@ class ObjectBridgeData(BridgeData):
         BridgeData.BRIDGE_DATA["name"] = self.name
         BridgeData.BRIDGE_DATA["body"] = {
             "type": ObjectBridgeData.BRIDGE_DATA_TYPE,
-            "object_data": self.object_data,
+            "objectData": self.object_data,
         }
         return json.dumps(BridgeData.BRIDGE_DATA)
 
     def reset(self):
         super.reset()
-
-
-# TODO: check if you need any modification of frame level..
-# class DataBridgeSocket(WebSocket):
-#     def recv_frame(self):
-#         recv_data = super().recv()
-#         PrintMsg.print_error('recevied frame: ', frame)
-#         return frame
 
 
 def thread_data_receive(sock, interproc_dict, command_queue):
@@ -161,7 +148,7 @@ def proc_video_stream(interproc_dict, ve, cq):
             # TODO: should modularize these data conversion..
             if interproc_dict["object"] != {}:
                 name = interproc_dict["object"]["name"]
-                object_data = interproc_dict["object"]["object_data"]
+                object_data = interproc_dict["object"]["objectData"]
                 bridge_data = ObjectBridgeData(name, object_data)
                 ws.send(bridge_data.dumps())
 
