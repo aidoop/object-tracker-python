@@ -245,7 +245,9 @@ def objecttracking_engine(interproc_dict=None, ve=None, cq=None):
             # display the captured image
             if video_interproc_e is not None:
                 color_image_resized = cv2.resize(
-                    image_show_buffer, dsize=(show_width, show_height), interpolation=cv2.INTER_AREA
+                    image_show_buffer,
+                    dsize=(show_width, show_height),
+                    interpolation=cv2.INTER_AREA,
                 )
                 if interproc_dict is not None:
                     interproc_dict["video"] = {
@@ -256,7 +258,9 @@ def objecttracking_engine(interproc_dict=None, ve=None, cq=None):
                     }
                     video_interproc_e.set()
             else:
-                cv2.imshow("Object Tracking", image_show_buffer) if image_show_buffer is not None else pass
+                cv2.imshow(
+                    "Object Tracking", image_show_buffer
+                ) if image_show_buffer is not None else None
 
             # send object information to UI and clear all
             # if objStatusUpdate.contains_object_status() == True:
