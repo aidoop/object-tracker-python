@@ -20,7 +20,7 @@ from applications.etc.util import ObjectTrackerErrMsg
 ###############################################################################
 
 
-def objecttracking_engine(interproc_dict=None, ve=None, cq=None):
+def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
     # prepare inter-process queues
     video_interproc_e = ve
     cmd_interproc_q = cq
@@ -188,7 +188,7 @@ def objecttracking_engine(interproc_dict=None, ve=None, cq=None):
                         else color_image
                     )
 
-                    vtc_image_buffers[vtc_image_index] = color_image_half
+                    vtc_image_buffers.append(color_image_half)
                     vtc_image_index += 1
                     # cv2.imshow(vtc.camera_name, color_image_half)
                 else:
@@ -211,9 +211,7 @@ def objecttracking_engine(interproc_dict=None, ve=None, cq=None):
                     vtc.objectMarkTracker.put_info_text(color_image_view)
 
                     # display both color image and mask image
-                    vtc_image_buffers[vtc_image_index] = np.vstack(
-                        (color_image_view, sub_image)
-                    )
+                    vtc_image_buffers.append(np.vstack((color_image_view, sub_image)))
 
                     # cv2.imshow(vtc.camera_name, images)
 
@@ -251,12 +249,16 @@ def objecttracking_engine(interproc_dict=None, ve=None, cq=None):
                 )
                 if interproc_dict is not None:
                     interproc_dict["video"] = {
-                        "name": "objtracking" + ":" + cameraName,
+                        "name": "objtracking",
                         "width": show_width,
                         "height": show_height,
                         "frame": color_image_resized,
                     }
                     video_interproc_e.set()
+
+                cv2.imshow(
+                    "Object Tracking", image_show_buffer
+                ) if image_show_buffer is not None else None
             else:
                 cv2.imshow(
                     "Object Tracking", image_show_buffer
