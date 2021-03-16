@@ -18,6 +18,8 @@ from applications.etc.util import ObjectTrackerErrMsg, DisplayInfoText
 from applications.keyhandler.calibhandeye_keyhandler import CalibHandEyeKeyHandler
 from applications.visiongql.visiongql_client import VisonGqlDataClient
 
+from applications.bridge.bridge_interprocess import BridgeInterprocess
+
 
 #####################################################################################
 # Utility Functions
@@ -40,6 +42,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
         PrintMsg.print_error("Input camera name is not available.")
         sys.exit()
 
+    bridge_ip = BridgeInterprocess(interproc_dict, ve, cq)
     video_interproc_e = ve
     cmd_interproc_q = cq
 
@@ -163,7 +166,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
         )
 
         # setup an opencv window
-        if video_interproc_e is None:
+        if bridge_ip.availability() is False:
             cv2.namedWindow(cameraName, cv2.WINDOW_NORMAL)
             cv2.setWindowProperty(
                 cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
@@ -178,10 +181,6 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
             # Wait for a coherent pair of frames: depth and color
             color_image = vcap.get_video_frame()
 
-            # change the format to BGR format for opencv
-            if cameraObject.type == "realsense-camera":
-                color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
-
             # check core variables are available..
             if ObjectTrackerErrMsg.check_value_none(mtx, "camera matrix") == False:
                 break
@@ -191,6 +190,13 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 ObjectTrackerErrMsg.check_value_none(color_image, "video color frame")
                 == False
             ):
+                bridge_ip.send_dict_data(
+                    "error",
+                    {
+                        "name": "handeyecalib:" + cameraName,
+                        "message": "camera initialization failed",
+                    },
+                )
                 break
             if (
                 ObjectTrackerErrMsg.check_value_none(handeye, "hand eye matrix")
@@ -199,6 +205,10 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 break
             # if ObjectTrackerErrMsg.check_value_none(indy7, "indy7 object") == False:
             #     break
+
+            # change the format to BGR format for opencv
+            if cameraObject.type == "realsense-camera":
+                color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
             (flagFindMainAruco, ids, rvec, tvec) = handeyeAruco.processArucoMarker(
                 color_image, mtx, dist, vcap
@@ -253,8 +263,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
                                     gqlDataClient,
                                     robotName,
                                     handeye_automove,
-                                    interproc_dict,
-                                    video_interproc_e,
+                                    bridge_ip,
                                     cameraName,
                                 )
                                 handeye_automove.set_stage(HandEyeAutoMove.STAGE_GONEXT)
@@ -264,24 +273,26 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
                         pass
 
             # display the captured image
-            if video_interproc_e is not None:
+            if bridge_ip.availability() is True:
                 color_image_resized = cv2.resize(
                     color_image, dsize=(640, 480), interpolation=cv2.INTER_AREA
                 )
-                interproc_dict["video"] = {
-                    "name": "handeyecalib" + ":" + cameraName,
-                    "width": 640,
-                    "height": 480,
-                    "frame": color_image_resized,
-                }
-                video_interproc_e.set()
+                bridge_ip.send_dict_data(
+                    "video",
+                    {
+                        "name": "handeyecalib" + ":" + cameraName,
+                        "width": 640,
+                        "height": 480,
+                        "frame": color_image_resized,
+                    },
+                )
             else:
                 cv2.imshow(cameraName, color_image)
 
             # handle key inputs
             try:
-                if cmd_interproc_q is not None:
-                    (name, cmd) = cmd_interproc_q.get_nowait()
+                if bridge_ip.availability() is True:
+                    (name, cmd) = bridge_ip.get_cmd_queue_no_wait()
                     if name != "handeyecalib:" + cameraName:
                         continue
 
@@ -310,8 +321,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 gqlDataClient,
                 robotName,
                 handeye_automove,
-                interproc_dict,
-                video_interproc_e,
+                bridge_ip,
                 cameraName,
             ):
                 break
@@ -325,10 +335,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
         # Stop streaming
         vcap.stop()
 
-        if interproc_dict is not None:
-            interproc_dict["app_exit"] = True
-            if video_interproc_e is not None:
-                video_interproc_e.set()
+        bridge_ip.send_dict_data("app_exit", True)
 
     # arrange all to finitsh this application here
     # cv2.destroyAllWindows()

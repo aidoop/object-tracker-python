@@ -6,6 +6,7 @@ from applications.etc.util import PrintMsg
 from aidoop.etc.hm_util import *
 from aidoop.calibration.calibhandeye_handeye import *
 from applications.data_update.calibhandeye_update import CalibHandeyeUpdate
+from applications.bridge.bridge_interprocess import BridgeInterprocess
 
 
 class CalibHandEyeKeyHandler(KeyHandler):
@@ -179,9 +180,8 @@ class CalibHandEyeKeyHandler(KeyHandler):
     def processG(self, *args):
         handeye = args[7]
         infoText = args[8]
-        interproc_dict = args[12]
-        video_interproc_e = args[13]
-        cameraName = args[14]
+        bridge_ip = args[12]
+        cameraName = args[13]
 
         if handeye.cntInputData < 3:
             if interproc_dict is not None:
@@ -203,16 +203,13 @@ class CalibHandEyeKeyHandler(KeyHandler):
         infoText.set_info_text("Succeeded to extract a handeye matrix.")
 
         # get the result data and throw into the websocket process
-        if interproc_dict is not None:
-            interproc_dict["object"] = {
+        bridge_ip.send_dict_data(
+            "object",
+            {
                 "name": "handeyecalib:" + cameraName,
                 "objectData": update_data,
-            }
-            video_interproc_e.set()
-
-        # TODO: need to exit here?
-        # if interproc_dict is not None:
-        #     super().enableExitFlag()
+            },
+        )
 
     # automated handeye calibration
 

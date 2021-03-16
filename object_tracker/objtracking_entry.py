@@ -13,91 +13,16 @@ from time import sleep
 
 from applications.calibcamera_engine import calibcamera_engine
 from applications.objtracking_select import (
-    objtracking_select_start,
+    process_application_selection,
     ObjectTrackingAppType,
 )
 from applications.etc.util import PrintMsg
-
-
-"""
-Bridge Data Type
-{
-    type: bridge data type
-    name: the specific application name
-    body: json-style body data
-}
-"""
-
-
-"""
-Bridge Data Type
- - object
-    name: object name
-    body: varialbe json data
- - video
-    name: camera name
-    body: {frame: ..., width: xxx, height: yyy}
- - cmd
-    name: command name
-    body: {args: ...} (optional)
-"""
-
-
-class BridgeDataType:
-    OBJECT = "object"
-    VIDEO = "video"
-    CMD = "cmd"
-
-
-class BridgeData:
-    BRIDGE_DATA = dict()
-
-    def reset(self):
-        BridgeData.BRIDGE_DATA = {}
-
-
-class VideoBridgeData(BridgeData):
-    BRIDGE_DATA_TYPE = "video"
-
-    def __init__(self, name, frame, width, height):
-        self.name = name
-        self.frame = frame
-        self.width = width
-        self.height = height
-
-    def dumps(self):
-        BridgeData.BRIDGE_DATA = {}
-        BridgeData.BRIDGE_DATA["name"] = self.name
-        BridgeData.BRIDGE_DATA["body"] = {
-            "type": VideoBridgeData.BRIDGE_DATA_TYPE,
-            "frame": "data:image/jpeg;base64," + self.frame,
-            "width": self.width,
-            "height": self.height,
-        }
-        return json.dumps(BridgeData.BRIDGE_DATA)
-
-    def reset(self):
-        super.reset()
-
-
-class ObjectBridgeData(BridgeData):
-    BRIDGE_DATA_TYPE = "object"
-
-    def __init__(self, name, object_data):
-        self.name = name
-        self.object_data = object_data
-
-    def dumps(self):
-        BridgeData.BRIDGE_DATA = {}
-        BridgeData.BRIDGE_DATA["name"] = self.name
-        BridgeData.BRIDGE_DATA["body"] = {
-            "type": ObjectBridgeData.BRIDGE_DATA_TYPE,
-            "objectData": self.object_data,
-        }
-        return json.dumps(BridgeData.BRIDGE_DATA)
-
-    def reset(self):
-        super.reset()
+from applications.bridge.bridge_data import (
+    VideoBridgeData,
+    ObjectBridgeData,
+    ErrorBridgeData,
+    BridgeDataType,
+)
 
 
 def thread_data_receive(sock, interproc_dict, command_queue):
@@ -121,7 +46,7 @@ def thread_data_receive(sock, interproc_dict, command_queue):
     PrintMsg.print_error("thread_data_receive ended")
 
 
-def proc_video_stream(interproc_dict, ve, cq):
+def process_bridge_data(interproc_dict, ve, cq):
     ws = create_connection(
         "ws://localhost:34000", sockopt=((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),)
     )
@@ -140,16 +65,18 @@ def proc_video_stream(interproc_dict, ve, cq):
         # wait for an video frame event
         ve.wait()
 
-        # exit if 'app_exit' flag is set
-        if interproc_dict["app_exit"] == True:
-            break
-
         try:
             # TODO: should modularize these data conversion..
             if interproc_dict["object"] != {}:
                 name = interproc_dict["object"]["name"]
                 object_data = interproc_dict["object"]["objectData"]
                 bridge_data = ObjectBridgeData(name, object_data)
+                ws.send(bridge_data.dumps())
+
+            if interproc_dict["error"] != {}:
+                name = interproc_dict["error"]["name"]
+                message = interproc_dict["error"]["message"]
+                bridge_data = ErrorBridgeData(name, message)
                 ws.send(bridge_data.dumps())
 
             if interproc_dict["video"] != {}:
@@ -171,42 +98,52 @@ def proc_video_stream(interproc_dict, ve, cq):
                     )
                 ws.send(bridge_data.dumps())
 
+            # exit if 'app_exit' flag is set
+            if interproc_dict["app_exit"] == True:
+                break
+
         except Exception as e:
             PrintMsg.print_error(e)
             break
 
-        interproc_dict["object"] = {}
-        interproc_dict["video"] = {}
+        interproc_dict["object"].clear()
+        interproc_dict["video"].clear()
+        interproc_dict["error"].clear()
 
     # close socket and terminate the recv thread
     ws_recv_thread.do_run = False
     ws.close()
 
 
-def run_objtracking_engine(app_type, app_args):
+def run_application_main(app_type, app_args):
 
-    # TODO: check start method for multiprocessing spawn or ?
+    # start method with 'spawn'
     mp.set_start_method(method="spawn")
 
-    # TODO: check if event is a useful tool.
+    # create an event for inter-process syncronization
     video_sync = mp.Event()
 
+    # create command queue among processes
     cmd_queue = mp.Queue(maxsize=3)
     result_queue = mp.Queue(maxsize=3)
 
+    # create a dictionary to exchange data among processes
     mp_manager = mp.Manager()
     mp_global_dict = mp_manager.dict()
 
-    # TODO: node calls the select funciton with both application type and arguments
+    # node calls the select funciton with both application type and arguments
     mp_global_dict["app_type"] = app_type
     mp_global_dict["app_args"] = app_args
     mp_global_dict["app_exit"] = False
-    mp_global_dict["video"] = {}
-    mp_global_dict["object"] = {}
+
+    # CAUTION: must define dictionary keys here
+    mp_global_dict["video"] = dict()
+    mp_global_dict["object"] = dict()
+    mp_global_dict["error"] = dict()
 
     Processes = [
         mp.Process(
-            target=objtracking_select_start,
+            target=process_application_selection,
             args=(
                 mp_global_dict,
                 video_sync,
@@ -214,7 +151,7 @@ def run_objtracking_engine(app_type, app_args):
             ),
         ),
         mp.Process(
-            target=proc_video_stream,
+            target=process_bridge_data,
             args=(
                 mp_global_dict,
                 video_sync,
@@ -233,4 +170,4 @@ if __name__ == "__main__":
         PrintMsg.print_error("Invalid paramters..")
         sys.exit()
 
-    run_objtracking_engine(sys.argv[1], sys.argv[2])
+    run_application_main(sys.argv[1], sys.argv[2])

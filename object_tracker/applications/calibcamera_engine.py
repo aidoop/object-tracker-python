@@ -17,6 +17,8 @@ from applications.etc.util import ObjectTrackerErrMsg, DisplayInfoText, PrintMsg
 from applications.keyhandler.calibcamera_keyhandler import CalibCameraKeyHandler
 from applications.visiongql.visiongql_client import VisonGqlDataClient
 
+from applications.bridge.bridge_interprocess import BridgeInterprocess
+
 
 def makeFrameImageDirectory():
     now = datetime.datetime.now()
@@ -43,8 +45,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
         PrintMsg.print_error("Input camera name is not available.")
         sys.exit()
 
-    video_interproc_e = ve
-    cmd_interproc_q = cq
+    bridge_ip = BridgeInterprocess(interproc_dict, ve, cq)
 
     try:
         gqlDataClient = VisonGqlDataClient()
@@ -106,7 +107,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
         sys.exit(0)
 
     # setup an opencv window
-    if video_interproc_e is None:
+    if bridge_ip.availability() is False:
         cv2.namedWindow(cameraName, cv2.WINDOW_NORMAL)
         cv2.setWindowProperty(
             cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
@@ -117,32 +118,40 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
             # Wait for a coherent pair of frames: depth and color
             color_image = vcap.get_video_frame()
 
-            # change the format to BGR format for opencv
-            if cameraObject.type == "realsense-camera":
-                color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
-
             if (
                 ObjectTrackerErrMsg.check_value_none(color_image, "video color frame")
                 == False
             ):
+                bridge_ip.send_dict_data(
+                    "error",
+                    {
+                        "name": "cameracalib:" + cameraName,
+                        "message": "camera initialization failed",
+                    },
+                )
                 break
+
+            # change the format to BGR format for opencv
+            if cameraObject.type == "realsense-camera":
+                color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
             # create info text
             infoText.draw(color_image)
 
             # display the captured image
-            if video_interproc_e is not None:
+            if bridge_ip.availability() is True:
                 color_image_resized = cv2.resize(
                     color_image, dsize=(640, 480), interpolation=cv2.INTER_AREA
                 )
-                if interproc_dict is not None:
-                    interproc_dict["video"] = {
+                bridge_ip.send_dict_data(
+                    "video",
+                    {
                         "name": "cameracalib" + ":" + cameraName,
                         "width": 640,
                         "height": 480,
                         "frame": color_image_resized,
-                    }
-                    video_interproc_e.set()
+                    },
+                )
             else:
                 cv2.imshow(cameraName, color_image)
 
@@ -150,8 +159,8 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
             # handle key inputs
             # pressedKey = (cv2.waitKey(1) & 0xFF)
             try:
-                if cmd_interproc_q is not None:
-                    (name, cmd) = cmd_interproc_q.get_nowait()
+                if bridge_ip.availability() is True:
+                    (name, cmd) = bridge_ip.get_cmd_queue_no_wait()
                     if name != "cameracalib:" + cameraName:
                         continue
 
@@ -174,8 +183,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 cameraObject.endpoint,
                 infoText,
                 cameraName,
-                interproc_dict,
-                video_interproc_e,
+                bridge_ip,
             ):
                 break
 
@@ -187,10 +195,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
         vcap.stop()
         # cv2.destroyAllWindows()
 
-        if interproc_dict is not None:
-            interproc_dict["app_exit"] = True
-            if video_interproc_e is not None:
-                video_interproc_e.set()
+        bridge_ip.send_dict_data("app_exit", True)
 
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@ import json
 from applications.keyhandler.keyhandlerdev import KeyHandler
 from applications.data_update.calibcamera_update import CalibCameraUpdate
 from applications.etc.util import PrintMsg
+from applications.bridge.bridge_interprocess import BridgeInterprocess
 
 
 class CalibCameraKeyHandler(KeyHandler):
@@ -41,25 +42,12 @@ class CalibCameraKeyHandler(KeyHandler):
         self.interation = 0
 
     def processG(self, *args):
-
-        # cameraParameter = {
-        #     "distortionCoefficient": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
-        #     "cameraMatrix": {
-        #         "rows": 3,
-        #         "columns": 3,
-        #         "data": [0.0, 1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7,
-        #                 8.8]
-        #     }
-        # }
-        # print(json.dumps(cameraParameter))
-
         dirFrameImage = args[1]
         calibcam = args[2]
         camIndex = args[3]
         infoText = args[4]
         cameraName = args[5]
-        interproc_dict = args[6]
-        video_interproc_e = args[7]
+        bridge_ip = args[6]
 
         # get image file names
         images = glob.glob(dirFrameImage + "/*.jpg")
@@ -82,17 +70,15 @@ class CalibCameraKeyHandler(KeyHandler):
             )
 
             # get the result data and throw into the websocket process
-            if interproc_dict is not None:
-                interproc_dict["object"] = {
+            bridge_ip.send_dict_data(
+                "object",
+                {
                     "name": "cameracalib:" + cameraName,
                     "objectData": calibResult,
-                }
-                video_interproc_e.set()
+                },
+            )
         else:
             strInfoText = "Calibration failed."
 
         # PrintMsg.print_error(strInfoText)
         infoText.set_info_text(strInfoText)
-
-        # if interproc_dict is not None:
-        #     super().enableExitFlag()

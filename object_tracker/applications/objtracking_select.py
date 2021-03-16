@@ -32,7 +32,7 @@ class ObjectTrackingAppData:
             interproc_dict["app_args"] = None
 
 
-def objtracking_select_start(interproc_dict, ve, cq):
+def process_application_selection(interproc_dict, ve, cq):
     while True:
         if interproc_dict["app_type"] == ObjectTrackingAppType.NOSELECTED:
             sleep(1)
