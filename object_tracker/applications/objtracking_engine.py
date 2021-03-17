@@ -14,16 +14,29 @@ from applications.keyhandler.objecttracking_keyhandler import ObjectTrackingKeyH
 from applications.data_update.objecttracking_updatestatus import ObjectUpdateStatus
 from applications.etc.util import ObjectTrackerErrMsg
 
+from applications.bridge.bridge_interprocess import BridgeInterprocess
+
 ###############################################################################
 # Hand-eye calibration process
 #   -
 ###############################################################################
 
 
+def objecttracking_update_status(bridge_ip, current_status):
+    bridge_ip.send_dict_data(
+        "object",
+        {
+            "name": "objtracking",
+            "objectData": current_status,
+        },
+    )
+
+
 def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
-    # prepare inter-process queues
-    video_interproc_e = ve
-    cmd_interproc_q = cq
+
+    bridge_ip = BridgeInterprocess(interproc_dict, ve, cq)
+
+    objecttracking_update_status(bridge_ip, "Fetching Data")
 
     # create application data
     app_data = ObjectTrakcingAppData()
@@ -38,6 +51,8 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
     app_data.parse()
 
+    objecttracking_update_status(bridge_ip, "Preparing Data")
+
     #########################################################################
     # create key handler
     keyhandler = ObjectTrackingKeyHandler()
@@ -46,13 +61,15 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
     # prepare object update status
     objStatusUpdate = ObjectUpdateStatus(app_data.get_gql_client())
 
-    if app_data.tracking_method == ObjectTrackingMethod.BOX:
-        cams = app_data.get_camera_list()
-        for cam in cams:
-            cv2.namedWindow(cam.camera_name, cv2.WINDOW_NORMAL)
-            cv2.setWindowProperty(
-                cam.camera_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
-            )
+    # if app_data.tracking_method == ObjectTrackingMethod.BOX:
+    #     cams = app_data.get_camera_list()
+    #     for cam in cams:
+    #         cv2.namedWindow(cam.camera_name, cv2.WINDOW_NORMAL)
+    #         cv2.setWindowProperty(
+    #             cam.camera_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
+    #         )
+
+    objecttracking_update_status(bridge_ip, "Processing")
 
     try:
         while True:
@@ -178,6 +195,9 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 #         color_image, (ROIRegion[0], ROIRegion[1]), (ROIRegion[2], ROIRegion[3]), (255, 0, 0), 3)
 
                 # display a frame image
+                show_width = 640
+                show_height = 360
+
                 if app_data.tracking_method == ObjectTrackingMethod.ARUCO:
                     color_image_half = (
                         cv2.resize(
@@ -211,14 +231,15 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                     vtc.objectMarkTracker.put_info_text(color_image_view)
 
                     # display both color image and mask image
-                    vtc_image_buffers.append(np.vstack((color_image_view, sub_image)))
+                    vtc_image_buffers.append(np.hstack((color_image_view, sub_image)))
+
+                    show_width = 1280
+                    show_height = 360
 
                     # cv2.imshow(vtc.camera_name, images)
 
             #########################################
             # diplay or send image buffer
-            show_width = 640
-            show_height = 360
             if len(vtc_image_buffers) == 1:
                 image_show_buffer = vtc_image_buffers[0]
             elif len(vtc_image_buffers) == 2:
@@ -241,24 +262,21 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 image_show_buffer = None
 
             # display the captured image
-            if video_interproc_e is not None:
+            if bridge_ip.availability() is True:
                 color_image_resized = cv2.resize(
                     image_show_buffer,
                     dsize=(show_width, show_height),
                     interpolation=cv2.INTER_AREA,
                 )
-                if interproc_dict is not None:
-                    interproc_dict["video"] = {
+                bridge_ip.send_dict_data(
+                    "video",
+                    {
                         "name": "objtracking",
                         "width": show_width,
                         "height": show_height,
                         "frame": color_image_resized,
-                    }
-                    video_interproc_e.set()
-
-                cv2.imshow(
-                    "Object Tracking", image_show_buffer
-                ) if image_show_buffer is not None else None
+                    },
+                )
             else:
                 cv2.imshow(
                     "Object Tracking", image_show_buffer
@@ -279,17 +297,17 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 break
 
     except Exception as ex:
+        objecttracking_update_status(bridge_ip, f"Error: {ex}")
         print("Error :", ex, file=sys.stderr)
 
     finally:
+
         if vtcList is not None:
             for vtc in vtcList:
                 vtc.vcap.stop()
 
-        if interproc_dict is not None:
-            interproc_dict["app_exit"] = True
-            if video_interproc_e is not None:
-                video_interproc_e.set()
+        objecttracking_update_status(bridge_ip, "Exit")
+        bridge_ip.send_dict_data("app_exit", True)
 
     cv2.destroyAllWindows()
 
