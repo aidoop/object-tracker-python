@@ -58,6 +58,7 @@ class HandEyeAruco:
                         ids[idx] == self.testMarkerID
                     ):
                         if (rvec[idx].shape == (1, 3)) or (rvec[idx].shape == (3, 1)):
+                            # # draw the point to check the center of marker
                             # inputObjPts = np.float32([[0.0,0.0,0.0]]).reshape(-1,3)
                             # imgpts, jac = cv2.projectPoints(inputObjPts, rvec[idx], tvec[idx], mtx, dist)
                             # centerPoint = tuple(imgpts[0][0])
@@ -93,8 +94,13 @@ class HandEyeAruco:
         return (self.flagFindMainAruco, ids, rvec, tvec)
 
 
+class HandEyeCalibrationMode:
+    HAND_TO_EYE = 0
+    HAND_IN_EYE = 1
+
+
 class HandEyeCalibration:
-    def __init__(self):
+    def __init__(self, calibration_mode=HandEyeCalibrationMode.HAND_TO_EYE):
         # input variables for handeye calibration
         self.R_gripper2base = []
         self.t_gripper2base = []
@@ -115,87 +121,8 @@ class HandEyeCalibration:
         # distance
         self.distance = 0.0
 
-    # deperecated
-    # Ref) https://stackoverflow.com/questions/27546081/determining-a-homogeneous-affine-transformation-matrix-from-six-points-in-3d-usi
-    #      https://math.stackexchange.com/questions/222113/given-3-points-of-a-rigid-body-in-space-how-do-i-find-the-corresponding-orienta/222170#222170
-
-    def calculateTransformMatrixUsing3Points(self, p, p_prime):
-        # construct intermediate matrix
-        Q = p[1:] - p[0]
-        Q_prime = p_prime[1:] - p_prime[0]
-
-        # calculate rotation matrix
-        R = np.dot(
-            np.linalg.inv(np.row_stack((Q, np.cross(*Q)))),
-            np.row_stack((Q_prime, np.cross(*Q_prime))),
-        )
-
-        # calculate translation vector
-        t = p_prime[0] - np.dot(p[0], R)
-
-        # calculate affine transformation matrix
-        return np.column_stack((np.row_stack((R, t)), (0, 0, 0, 1)))
-
-    # deprecated...
-    def calculateTransformMatrix(self, srcPoints, dstPoints):
-        assert len(srcPoints) == len(dstPoints)
-
-        p = np.ones([len(srcPoints), 4])
-        p_prime = np.ones([len(dstPoints), 4])
-        for idx in range(len(srcPoints)):
-            p[idx][0] = srcPoints[idx][0]
-            p[idx][1] = srcPoints[idx][1]
-            p[idx][2] = srcPoints[idx][2]
-
-            p_prime[idx][0] = dstPoints[idx][0]
-            p_prime[idx][1] = dstPoints[idx][1]
-            p_prime[idx][2] = dstPoints[idx][2]
-
-        trMatrix = cv2.solve(p, p_prime, flags=cv2.DECOMP_SVD)
-        return trMatrix
-
-    # handeye calibration test function
-    def calibrateHandEyeTest(self, HMBase2TCPs, HMTarget2Cams):
-        # assert (HMBase2TCPs.len() == HMTarget2Cams.len())
-        for hmmat in HMBase2TCPs:
-            rotataion = hmmat[0:3, 0:3]
-            self.R_gripper2base.append(rotataion)
-            translation = hmmat[0:3, 3]
-            self.t_gripper2base.append(translation)
-
-        for hmmat in HMTarget2Cams:
-            rotataion = hmmat[0:3, 0:3]
-            self.R_target2cam.append(rotataion)
-            translation = hmmat[0:3, 3]
-            self.t_target2cam.append(translation)
-
-        methodHE = [
-            cv2.CALIB_HAND_EYE_TSAI,
-            cv2.CALIB_HAND_EYE_PARK,
-            cv2.CALIB_HAND_EYE_HORAUD,
-            cv2.CALIB_HAND_EYE_ANDREFF,
-            cv2.CALIB_HAND_EYE_DANIILIDIS,
-        ]
-
-        for mth in methodHE:
-            self.R_cam2gripper, self.t_cam2gripper = cv2.calibrateHandEye(
-                self.R_gripper2base,
-                self.t_gripper2base,
-                self.R_target2cam,
-                self.t_target2cam,
-                None,
-                None,
-                mth,
-            )
-            cv2.calibrateHandEye(
-                self.R_gripper2base,
-                self.t_gripper2base,
-                self.R_target2cam,
-                self.t_target2cam,
-                None,
-                None,
-                mth,
-            )
+        # mode setting
+        self.calibration_mode = calibration_mode
 
     def captureHandEyeInputs(self, robotXYZABC, camRVec, camTVec):
         # prepare Gripper2Base inputs
@@ -207,7 +134,11 @@ class HandEyeCalibration:
         camRMatrix = np.zeros(shape=(3, 3))
         cv2.Rodrigues(camRVec, camRMatrix)
         hmCam = HMUtil.create_homogeneous_matrix(camRMatrix, camTVec)
-        hmCam = HMUtil.inverse_homogeneous_matrix(hmCam)
+        hmCam = (
+            HMUtil.inverse_homogeneous_matrix(hmCam)
+            if self.calibration_mode == HandEyeCalibrationMode.HAND_TO_EYE
+            else hmCam
+        )
         self.R_target2cam.append(hmCam[0:3, 0:3])
         self.t_target2cam.append(hmCam[0:3, 3])
         self.cntInputData += 1
@@ -254,19 +185,6 @@ class HandEyeCalibration:
         )
 
         xyzabc_temp = HMUtil.convert_hm_to_xyzabc_by_deg(hmTemp)
-        # print(xyzabc_temp, file=sys.stderr)
-
-    def getPredefinedHandeye(self):
-
-        ############################################################
-        # TODO: get predefined data from server
-        prdefined_matrix = [0.001, 0.100, 0.001, 180, 0, 180]
-        # prdefined_matrix = [0.00165360882730919, 0.10332931833889342,
-        #                     0.001752356149939573, -179.52921594383568, 0.24227911479934125, 179.77335961667296]
-
-        self.predefined_hm = HMUtil.convert_xyzabc_to_hm_by_deg(prdefined_matrix)
-
-        return self.predefined_hm
 
     def getHandEyeResultMatrixUsingOpenCV(self):
 
@@ -287,24 +205,29 @@ class HandEyeCalibration:
                 ),
             )
 
-        # select HORAUD algorithm on temporary
-        # make a homogeneous matrix from Target(Calibration) to Gripper(TCP)
-        hmT2G = HMUtil.create_homogeneous_matrix(
-            self.R_cam2gripper, self.t_cam2gripper.T
-        )
-        # make a homogeneous matrix from Gripper(TCP) to Robot Base
-        hmG2B = HMUtil.create_homogeneous_matrix(
-            self.R_gripper2base[0], self.t_gripper2base[0].reshape(1, 3)
-        )
-        # make a homogeneous matrix from Camera to Target(Target)
-        hmC2T = HMUtil.create_homogeneous_matrix(
-            self.R_target2cam[0], self.t_target2cam[0].reshape(1, 3)
-        )
+        if self.calibration_mode == HandEyeCalibrationMode.HAND_TO_EYE:
+            # select HORAUD algorithm on temporary
+            # make a homogeneous matrix from Target(Calibration) to Gripper(TCP)
+            hmT2G = HMUtil.create_homogeneous_matrix(
+                self.R_cam2gripper, self.t_cam2gripper.T
+            )
+            # make a homogeneous matrix from Gripper(TCP) to Robot Base
+            hmG2B = HMUtil.create_homogeneous_matrix(
+                self.R_gripper2base[0], self.t_gripper2base[0].reshape(1, 3)
+            )
+            # make a homogeneous matrix from Camera to Target(Target)
+            hmC2T = HMUtil.create_homogeneous_matrix(
+                self.R_target2cam[0], self.t_target2cam[0].reshape(1, 3)
+            )
 
-        # Final HM(Camera to Robot Base)
-        # H(C2B) = H(G2B)H(T2G)H(C2T)
-        hmResultTransform = np.dot(hmG2B, hmT2G)
-        hmResultTransform = np.dot(hmResultTransform, hmC2T)
+            # Final HM(Camera to Robot Base)
+            # H(C2B) = H(G2B)H(T2G)H(C2T)
+            hmResultTransform = np.dot(hmG2B, hmT2G)
+            hmResultTransform = np.dot(hmResultTransform, hmC2T)
+        else:
+            hmResultTransform = HMUtil.create_homogeneous_matrix(
+                self.R_cam2gripper, self.t_cam2gripper.T
+            )
 
         if self.AlgorithmTest == True:
             fsHandEyeTest.release()
@@ -312,6 +235,20 @@ class HandEyeCalibration:
         print("Result Transform: ", file=sys.stderr)
         print(hmResultTransform, file=sys.stderr)
         return hmResultTransform
+
+    ################################################################33
+    # Using Predefined Matrix(experimental)
+    def getPredefinedHandeye(self):
+
+        ############################################################
+        # TODO: get predefined data from server
+        prdefined_matrix = [0.001, 0.100, 0.001, 180, 0, 180]
+        # prdefined_matrix = [0.00165360882730919, 0.10332931833889342,
+        #                     0.001752356149939573, -179.52921594383568, 0.24227911479934125, 179.77335961667296]
+
+        self.predefined_hm = HMUtil.convert_xyzabc_to_hm_by_deg(prdefined_matrix)
+
+        return self.predefined_hm
 
     def getHandEyeMatUsingMarker(self, robotXYZABC, camRVec, camTVec):
         # get the predefined handeye matrix
