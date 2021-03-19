@@ -39,14 +39,12 @@ class ObjectTrakcingAppData(object):
                 self.gqlDataClient.fetch_robot_arm_all()
                 self.gqlDataClient.fetch_trackable_objects_all()
 
-            # print('***********************')
-            # print('self.gqlDataClient.detectionMethod: ',
-            #       self.gqlDataClient.detectionMethod)
             self.tracking_method = self.get_detection_method(
                 self.gqlDataClient.detectionMethod
             )
-            # print('self.tracking_method: ',
-            #       self.tracking_method)
+
+            self.camera_streaming = self.gqlDataClient.checkVideoStream
+
             if self.tracking_method == ObjectTrackingMethod.BOX:
                 from applications.objtracking.objecttracking_box import (
                     BoxObject,
@@ -69,7 +67,9 @@ class ObjectTrakcingAppData(object):
                 # set robot name
                 if AppConfig.ObjTrackingDebugWoRobot == False:
                     if (
-                        ObjectTypeCheck.check_value_available(trackingCamera.baseRobotArm)
+                        ObjectTypeCheck.check_value_available(
+                            trackingCamera.baseRobotArm
+                        )
                         == False
                     ):
                         print("robot arm is not detected..")

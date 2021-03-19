@@ -106,9 +106,9 @@ def process_bridge_data(interproc_dict, ve, cq):
             PrintMsg.print_error(e)
             break
 
-        interproc_dict["object"].clear()
-        interproc_dict["video"].clear()
-        interproc_dict["error"].clear()
+        interproc_dict["object"] = {}
+        interproc_dict["video"] = {}
+        interproc_dict["error"] = {}
 
     # close socket and terminate the recv thread
     ws_recv_thread.do_run = False

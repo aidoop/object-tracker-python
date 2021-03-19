@@ -1,10 +1,12 @@
 from .queries import QUERIES, MUTATION
 
-QUERY_TRACKING_WORKSPACE = 'trackingWorkspace'
-QUERY_TRACKING_WORKSPACES = 'trackingWorkspaces'
-MUTATION_UPDATE_WORKSPACE_STATUS = 'updateTrackingWorkspaceStatus'
+QUERY_TRACKING_WORKSPACE = "trackingWorkspace"
+QUERY_TRACKING_WORKSPACES = "trackingWorkspaces"
+MUTATION_UPDATE_WORKSPACE_STATUS = "updateTrackingWorkspaceStatus"
 
-QUERIES[QUERY_TRACKING_WORKSPACE] = '''
+QUERIES[
+    QUERY_TRACKING_WORKSPACE
+] = """
 query trackingWorkspace($name: String!) {
     trackingWorkspace(name:$name) {
         id
@@ -16,6 +18,7 @@ query trackingWorkspace($name: String!) {
         type
         endpoint
         active
+        checkVideoStream
         detectionMethod
         robotArms {
             id
@@ -52,9 +55,11 @@ query trackingWorkspace($name: String!) {
         createdAt
     }
 }
-'''
+"""
 
-QUERIES[QUERY_TRACKING_WORKSPACES] = '''
+QUERIES[
+    QUERY_TRACKING_WORKSPACES
+] = """
 query {
     trackingWorkspaces {
         items {
@@ -67,6 +72,7 @@ query {
             type
             endpoint
             active
+            checkVideoStream
             detectionMethod
             robotArms {
                 id
@@ -105,10 +111,12 @@ query {
         total
     }
 }
-'''
+"""
 
-MUTATION[MUTATION_UPDATE_WORKSPACE_STATUS] = '''
+MUTATION[
+    MUTATION_UPDATE_WORKSPACE_STATUS
+] = """
 mutation updateTrackingWorkspaceStatus($name: String!, $status: TrackingWorkspaceStatusInput!) {
     updateTrackingWorkspaceStatus(name:$name, status:$status)
 }
-'''
+"""

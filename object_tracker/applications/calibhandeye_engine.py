@@ -89,7 +89,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
         flagFindMainAruco = False
 
         # create a handeye calib. object
-        handeye = HandEyeCalibration()
+        handeye = HandEyeCalibration(cameraObject.handEyeMode)
 
         # auto handeye calibration mode
         handeye_automove = HandEyeAutoMove()

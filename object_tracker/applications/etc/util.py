@@ -32,11 +32,19 @@ class ObjectTrackerErrMsg:
             return False
         return True
 
+    @staticmethod
+    def check_value_zero(var, varname):
+        if var == 0:
+            print("Error: " + varname + " is zero..", file=sys.stderr)
+            return False
+        return True
+
 
 class PrintMsg:
     @staticmethod
     def print_error(*args, **kwargs):
         return print(*args, **kwargs, file=sys.stderr)
+
 
 # Info Text
 

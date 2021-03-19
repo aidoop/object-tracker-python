@@ -95,8 +95,8 @@ class HandEyeAruco:
 
 
 class HandEyeCalibrationMode:
-    HAND_TO_EYE = 0
-    HAND_IN_EYE = 1
+    HAND_TO_EYE = "hand-to-eye"
+    HAND_IN_EYE = "hand-in-eye"
 
 
 class HandEyeCalibration:

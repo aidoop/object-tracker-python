@@ -40,6 +40,7 @@ class TrackingCamera:
         self.camObjOffset = None
         self.width = None
         self.height = None
+        self.handEyeMode = None
         self.autoHandeyeTotalIterations = None
         self.autoHandeyeMoveXyz = None
         self.autoHandeyeMoveUvw = None

@@ -14,6 +14,7 @@ from aidoop.visionclient.operato_vision import Client
 class VisonGqlDataClient:
     def __init__(self):
         self.visonWorkspace = None
+        self.checkVideoStream = None
         self.detectionMethod = None
         self.robotArms = dict()
         self.trackingCameras = dict()
@@ -81,19 +82,25 @@ class VisonGqlDataClient:
                 int(cameraData["height"]) if cameraData["height"] is not None else 1080
             )
 
+            cameraObject.handEyeMode = (
+                cameraData["handEyeConfig"]["mode"]
+                if cameraData["handEyeConfig"] is not None
+                else "hand-to-eye"
+            )
+
             cameraObject.autoHandeyeTotalIterations = (
-                int(cameraData["autoHandeyeTotalIterations"])
-                if cameraData["autoHandeyeTotalIterations"] is not None
-                else 50
+                int(cameraData["handEyeConfig"]["autoTotalIter"])
+                if cameraData["handEyeConfig"] is not None
+                else 30
             )
             cameraObject.autoHandeyeMoveXyz = (
-                float(cameraData["autoHandeyeMoveXyz"])
-                if cameraData["autoHandeyeMoveXyz"] is not None
+                float(cameraData["handEyeConfig"]["autoMoveXyz"])
+                if cameraData["handEyeConfig"] is not None
                 else 0.05
             )
             cameraObject.autoHandeyeMoveUvw = (
-                float(cameraData["autoHandeyeMoveUvw"])
-                if cameraData["autoHandeyeMoveUvw"] is not None
+                float(cameraData["handEyeConfig"]["autoMoveUvw"])
+                if cameraData["handEyeConfig"] is not None
                 else 10
             )
 
@@ -158,6 +165,9 @@ class VisonGqlDataClient:
 
         # set the properties of vision workspace
         self.visonWorkspace.name = vision_workspace["name"]
+
+        # fetch video stream
+        self.checkVideoStream = vision_workspace["checkVideoStream"]
 
         # fetch detection methond
         self.detectionMethod = vision_workspace["detectionMethod"]

@@ -28,6 +28,12 @@ query trackingCamera($name: String!) {
             data
         }
         distortionCoefficient
+        handEyeConfig {
+            mode
+            autoTotalIter
+            autoMoveXyz
+            autoMoveUvw
+        }
         handEyeMatrix {
             rows
             columns
@@ -56,9 +62,6 @@ query trackingCamera($name: String!) {
         }    
         width
         height
-        autoHandeyeTotalIterations
-        autoHandeyeMoveXyz
-        autoHandeyeMoveUvw
         updater {
             email
         }
@@ -96,6 +99,13 @@ query {
                 columns
                 data
             }
+            distortionCoefficient
+            handEyeConfig {
+                mode
+                autoTotalIter
+                autoMoveXyz
+                autoMoveUvw
+            }
             handEyeMatrix {
                 rows
                 columns
@@ -124,9 +134,6 @@ query {
             }    
             width
             height
-            autoHandeyeTotalIterations
-            autoHandeyeMoveXyz
-            autoHandeyeMoveUvw
             updater {
                 email
             }
