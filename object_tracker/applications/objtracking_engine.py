@@ -78,6 +78,14 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
             tobjIDList = app_data.get_mark_id_list_of_camera(0).copy()
 
             vtcList = app_data.get_camera_list()
+            if (
+                ObjectTrackerErrMsg.check_value_zero(
+                    len(vtcList), "the number of registered camera"
+                )
+                == False
+            ):
+                break
+
             vtc_image_index = 0
             vtc_image_buffers = list()
             for vtc in vtcList:
@@ -262,21 +270,22 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 image_show_buffer = None
 
             # display the captured image
-            if bridge_ip.availability() is True:
-                color_image_resized = cv2.resize(
-                    image_show_buffer,
-                    dsize=(show_width, show_height),
-                    interpolation=cv2.INTER_AREA,
-                )
-                bridge_ip.send_dict_data(
-                    "video",
-                    {
-                        "name": "objtracking",
-                        "width": show_width,
-                        "height": show_height,
-                        "frame": color_image_resized,
-                    },
-                )
+            if app_data.camera_streaming is True:
+                if bridge_ip.availability() is True:
+                    color_image_resized = cv2.resize(
+                        image_show_buffer,
+                        dsize=(show_width, show_height),
+                        interpolation=cv2.INTER_AREA,
+                    )
+                    bridge_ip.send_dict_data(
+                        "video",
+                        {
+                            "name": "objtracking",
+                            "width": show_width,
+                            "height": show_height,
+                            "frame": color_image_resized,
+                        },
+                    )
             else:
                 cv2.imshow(
                     "Object Tracking", image_show_buffer
