@@ -1,6 +1,6 @@
-numpy
-opencv-python
-opencv-contrib-python
+numpy==1.18.5
+opencv-python==4.2.0.34
+opencv-contrib-python==4.2.0.34
 pyrealsense2==2.35.2.1937
 requests
 gql
