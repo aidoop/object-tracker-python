@@ -327,6 +327,13 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 break
     except Exception as ex:
         print("Error :", ex, file=sys.stderr)
+        bridge_ip.send_dict_data(
+            "error",
+            {
+                "name": "handeyelib:" + cameraName,
+                "message": f"Error: {ex}",
+            },
+        )
 
     finally:
         # direct teaching mode is disalbe before exit

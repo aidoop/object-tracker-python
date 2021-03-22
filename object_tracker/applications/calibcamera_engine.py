@@ -129,6 +129,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
                         "message": "camera initialization failed",
                     },
                 )
+                raise Exception("camera initialization failed")
                 break
 
             # change the format to BGR format for opencv
@@ -189,6 +190,13 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
     except Exception as ex:
         print("Main Loop Error :", ex, file=sys.stderr)
+        bridge_ip.send_dict_data(
+            "error",
+            {
+                "name": "cameracalib:" + cameraName,
+                "message": f"Error: {ex}",
+            },
+        )
 
     finally:
         # Stop streaming
