@@ -32,6 +32,16 @@ def objecttracking_update_status(bridge_ip, current_status):
     )
 
 
+def objecttracking_alert_error(bridge_ip, error_msg):
+    bridge_ip.send_dict_data(
+        "error",
+        {
+            "name": "objtracking",
+            "message": error_msg,
+        },
+    )
+
+
 def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
     bridge_ip = BridgeInterprocess(interproc_dict, ve, cq)
@@ -119,6 +129,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                     ObjectTrackerErrMsg.check_value_none(vtc.handeye, "hand eye matrix")
                     == False
                 ):
+                    raise Exception("Hand Eye Matrix is not found.")
                     break
 
                 if AppConfig.ObjTrackingDebugWoRobot == False:
@@ -306,7 +317,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 break
 
     except Exception as ex:
-        objecttracking_update_status(bridge_ip, f"Error: {ex}")
+        objecttracking_alert_error(bridge_ip, f"Error: {ex}")
         print("Error :", ex, file=sys.stderr)
 
     finally:

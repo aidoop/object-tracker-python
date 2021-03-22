@@ -76,10 +76,15 @@ class VisonGqlDataClient:
             )
 
             cameraObject.width = (
-                int(cameraData["width"]) if cameraData["width"] is not None else 1920
+                int(cameraData["width"])
+                if (cameraData["width"] is not None) and (cameraData["width"] is not "")
+                else 1920
             )
             cameraObject.height = (
-                int(cameraData["height"]) if cameraData["height"] is not None else 1080
+                int(cameraData["height"])
+                if (cameraData["height"] is not None)
+                and (cameraData["height"] is not "")
+                else 1080
             )
 
             cameraObject.handEyeMode = (
