@@ -3,6 +3,7 @@ import sys
 import logging
 import logging.handlers
 import datetime
+from aidoop.log.custom_timed_rotating_handler import CustomTimedRotatingFileHandler
 
 
 class LoggerObject:
@@ -23,7 +24,7 @@ class LoggerObject:
         # create rotating file hander with level
         log_file_path = LoggerObject.LOG_FILE_PATH
         os.makedirs(log_file_path, exist_ok=True)
-        self.rotating_handler = logging.handlers.TimedRotatingFileHandler(
+        self.rotating_handler = CustomTimedRotatingFileHandler(
             filename=f"{log_file_path}/object-tracking",
             when="H",
             interval=1,
