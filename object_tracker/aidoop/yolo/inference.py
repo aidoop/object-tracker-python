@@ -148,12 +148,10 @@ class YoloDetect:
             images_data.append(image_resize_data)
         images_data = np.asarray(images_data).astype(np.float32)
 
-        start_time = time.time()
         # detect objects
         (self.boxes, self.pred_conf) = self.process_detect(images_data)
 
         pred_bbox = self.postprocess(self.boxes, self.pred_conf)
-        print("detection time: ", (time.time() - start_time) * 1000)
 
         return pred_bbox
 
