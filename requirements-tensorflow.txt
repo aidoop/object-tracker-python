@@ -30,3 +30,7 @@ tensorflow==2.4.1
 h5py
 imgaug
 IPython[all]
+lxml
+tqdm
+absl-py
+easydict

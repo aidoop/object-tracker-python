@@ -4,6 +4,7 @@ Captured/
 splash*.png
 logs/
 dataset/
+examples/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
