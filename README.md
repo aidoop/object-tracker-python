@@ -31,3 +31,6 @@
     0 : Intel RealSense D435 #001622071306
     1 : Intel RealSense D435 #001622072547
   ```
+
+- Refernces
+  - test codes: https://github.com/vincent841/opencv_marker_test.git
