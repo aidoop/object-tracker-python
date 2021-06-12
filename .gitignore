@@ -5,6 +5,7 @@ splash*.png
 logs/
 dataset/
 examples/
+temp/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
