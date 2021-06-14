@@ -3,8 +3,8 @@ import cv2
 from applications.config.appconfig import AppConfig
 from applications.keyhandler.keyhandlerdev import KeyHandler
 from applications.etc.util import PrintMsg
-from aidoop.etc.hm_util import *
-from aidoop.calibration.calibhandeye_handeye import *
+from pyaidoop.etc.hm_util import *
+from pyaidoop.calibration.calibhandeye_handeye import *
 from applications.data_update.calibhandeye_update import CalibHandeyeUpdate
 from applications.bridge.bridge_interprocess import BridgeInterprocess
 

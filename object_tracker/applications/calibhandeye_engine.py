@@ -8,10 +8,10 @@ import sys
 import multiprocessing as mp
 import queue
 
-from aidoop.camera.camera_videocapture import VideoCaptureFactory
-from aidoop.etc.hm_util import *
-from aidoop.calibration.calibhandeye_handeye import *
-from aidoop.calibration.calibhandeye_auto_move import HandEyeAutoMove
+from pyaidoop.camera.camera_videocapture import VideoCaptureFactory
+from pyaidoop.etc.hm_util import *
+from pyaidoop.calibration.calibhandeye_handeye import *
+from pyaidoop.calibration.calibhandeye_auto_move import HandEyeAutoMove
 
 from applications.config.appconfig import AppConfig
 from applications.etc.util import ObjectTrackerErrMsg, DisplayInfoText

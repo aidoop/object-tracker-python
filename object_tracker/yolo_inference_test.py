@@ -5,8 +5,8 @@ from PIL import Image
 
 import time
 
-from aidoop.yolo.inference import YoloDetect
-import aidoop.yolo.utils as utils
+from pyaidoop.models.yolo.inference import YoloDetect
+import pyaidoop.models.yolo.utils as utils
 
 
 if __name__ == "__main__":

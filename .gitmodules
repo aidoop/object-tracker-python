@@ -1,3 +1,0 @@
-[submodule "visionclient"]
-	path = object_tracker/visionclient
-	url = https://github.com/aidoop/vision-client-python.git

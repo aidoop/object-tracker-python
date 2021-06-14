@@ -1,2 +1,0 @@
-QUERIES = {}
-MUTATION = {}

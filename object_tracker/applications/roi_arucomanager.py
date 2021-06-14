@@ -4,7 +4,7 @@ from typing import NamedTuple
 import cv2
 import cv2.aruco as aruco
 
-from aidoop.aruco.aruco_detect import ArucoDetect
+from pyaidoop.aruco.aruco_detect import ArucoDetect
 from applications.config.appconfig import AppConfig
 
 

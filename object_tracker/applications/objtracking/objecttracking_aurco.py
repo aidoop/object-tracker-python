@@ -4,10 +4,10 @@ import numpy as np
 import sys
 import os
 
-from aidoop.calibration.calibhandeye_handeye import HandEyeCalibration
-from aidoop.etc.hm_util import HMUtil
-from aidoop.aruco.aruco_detect import ArucoDetect
-from aidoop.aruco.aruco_advanced_pose import ArucoAdvPose
+from pyaidoop.calibration.calibhandeye_handeye import HandEyeCalibration
+from pyaidoop.etc.hm_util import HMUtil
+from pyaidoop.aruco.aruco_detect import ArucoDetect
+from pyaidoop.aruco.aruco_advanced_pose import ArucoAdvPose
 
 from applications.objtracking.objecttracking_base import ObjectTracker
 

@@ -5,7 +5,7 @@ import sys
 import os
 from enum import Enum, unique
 
-from aidoop.camera.camera_videocapture import VideoCaptureFactory
+from pyaidoop.camera.camera_videocapture import VideoCaptureFactory
 
 from applications.config.appconfig import AppConfig, ObjectTrackingMethod
 from applications.etc.util import ObjectTypeCheck

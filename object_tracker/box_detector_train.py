@@ -21,8 +21,8 @@ import skimage.draw
 import time
 import imgaug
 
-from aidoop.mask_rcnn import model as modellib, utils
-from aidoop.mask_rcnn.config import Config
+from pyaidoop.models.mask_rcnn import model as modellib, utils
+from pyaidoop.models.mask_rcnn.config import Config
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../")

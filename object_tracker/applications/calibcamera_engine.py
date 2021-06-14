@@ -8,9 +8,9 @@ import time
 import multiprocessing as mp
 import queue
 
-from aidoop.camera.camera_videocapture import VideoCaptureFactory
-from aidoop.calibration.calibcamera import CalibrationCamera
-from aidoop.calibration.calibcamera_aruco import CalibrationCameraAruco
+from pyaidoop.camera.camera_videocapture import VideoCaptureFactory
+from pyaidoop.calibration.calibcamera import CalibrationCamera
+from pyaidoop.calibration.calibcamera_aruco import CalibrationCameraAruco
 
 from applications.config.appconfig import AppConfig
 from applications.etc.util import ObjectTrackerErrMsg, DisplayInfoText, PrintMsg

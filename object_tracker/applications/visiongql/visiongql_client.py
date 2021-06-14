@@ -8,7 +8,7 @@ from applications.visiongql.visiongql_data import (
     VisionGqlUtil,
 )
 from applications.etc.util import ObjectTypeCheck
-from aidoop.visionclient.operato_vision import Client
+from pyaidoop_graphql_client.api import Client
 
 
 class VisonGqlDataClient:

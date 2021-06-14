@@ -9,7 +9,7 @@ import sys
 import argparse
 import json
 
-from aidoop.camera.camera_videocapture import VideoCaptureFactory
+from pyaidoop.camera.camera_videocapture import VideoCaptureFactory
 
 from applications.config.appconfig import AppConfig
 from applications.etc.util import ObjectTrackerErrMsg, PrintMsg, DisplayInfoText
