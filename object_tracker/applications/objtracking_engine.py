@@ -57,6 +57,9 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
     app_data.parse()
 
+    # get workspace name
+    vision_workspace_name = app_data.get_workspace().name
+
     objecttracking_update_status(bridge_ip, "Preparing Data")
 
     #########################################################################
@@ -65,9 +68,11 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
     #########################################################################
     # prepare object update status
-    objStatusUpdate = ObjectUpdateStatus(app_data.get_gql_client())
+    objStatusUpdate = ObjectUpdateStatus(
+        app_data.get_gql_client(), vision_workspace_name
+    )
 
-    # if app_data.tracking_method == ObjectTrackingMethod.BOX:
+    # if app_data.tracking_method == ObjectTrackingMethod.AI:
     #     cams = app_data.get_camera_list()
     #     for cam in cams:
     #         cv2.namedWindow(cam.camera_name, cv2.WINDOW_NORMAL)

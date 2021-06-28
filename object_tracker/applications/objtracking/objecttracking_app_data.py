@@ -40,7 +40,7 @@ class ObjectTrakcingAppData(object):
 
             self.camera_streaming = self.gqlDataClient.checkVideoStream
 
-            if self.tracking_method == ObjectTrackingMethod.BOX:
+            if self.tracking_method == ObjectTrackingMethod.AI:
                 from applications.objtracking.objecttracking_box import (
                     BoxObject,
                     BoxObjectTracker,
@@ -131,7 +131,7 @@ class ObjectTrakcingAppData(object):
                 # create an object tracker
                 objTracker = (
                     BoxObjectTracker()
-                    if self.tracking_method == ObjectTrackingMethod.BOX
+                    if self.tracking_method == ObjectTrackingMethod.AI
                     else ArucoMarkerTracker()
                     if self.tracking_method == ObjectTrackingMethod.ARUCO
                     else None
@@ -185,7 +185,7 @@ class ObjectTrakcingAppData(object):
                 # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
                 obj = (
                     BoxObject(trackableMark.endpoint, trackableMark.poseOffset)
-                    if self.tracking_method == ObjectTrackingMethod.BOX
+                    if self.tracking_method == ObjectTrackingMethod.AI
                     else ArucoMarkerObject(
                         int(trackableMark.endpoint), trackableMark.poseOffset
                     )
@@ -225,6 +225,9 @@ class ObjectTrakcingAppData(object):
                 return method
         # return default detection method
         return AppConfig.APP_TRACKING_METHOD
+
+    def get_workspace(self):
+        return self.gqlDataClient.visonWorkspace
 
     class ObjectTrakcingCamera:
         def __init__(self):

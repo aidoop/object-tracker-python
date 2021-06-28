@@ -68,8 +68,6 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
             robotName = cameraObject.baseRobotArm["name"]
             robotObject = gqlDataClient.robotArms[robotName]
             robotIP = robotObject.endpoint
-        else:
-            robotIP = AppConfig.INDY_SERVER_IP
 
         # create an indy7 object
         # TODO: should check here if auto-mode will be used..

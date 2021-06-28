@@ -184,7 +184,7 @@ class CalibHandEyeKeyHandler(KeyHandler):
         cameraName = args[13]
 
         if handeye.cntInputData < 3:
-            if interproc_dict is not None:
+            if bridge_ip.ip_dict is not None:
                 super().enableExitFlag()
             return
 

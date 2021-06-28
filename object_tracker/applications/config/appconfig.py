@@ -1,22 +1,16 @@
-import cv2
 import cv2.aruco as aruco
 from enum import Enum, unique
 
 
 @unique
 class ObjectTrackingMethod(Enum):
-    ARUCO = "Aruco"
-    BOX = "Box"
+    ARUCO = "Aruco-based"
+    AI = "AI-based"
 
 
 class AppConfig:
 
     APP_TRACKING_METHOD = ObjectTrackingMethod.ARUCO
-
-    # robot parameters
-    # INDY_SERVER_IP = "192.168.0.104"
-    INDY_SERVER_IP = "192.168.0.25"
-    INDY_SERVER_NAME = "NRMK-Indy7"
 
     # realsense camera parameters
     UseRealSenseInternalMatrix = False

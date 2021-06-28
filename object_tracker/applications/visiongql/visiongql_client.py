@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 
 from applications.visiongql.visiongql_data import (
@@ -159,7 +160,7 @@ class VisonGqlDataClient:
         wskpCnt = self.client.get_tracking_workspaces()["total"]
         workspaces = self.client.get_tracking_workspaces()["items"]
         if wskpCnt >= 2:
-            print("one more workspaces found..")
+            print("one more workspaces found..", file=sys.stderr)
             return (False, None)
 
         # fetch a vision workspace

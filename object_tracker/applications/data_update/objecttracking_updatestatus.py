@@ -5,9 +5,10 @@ class ObjectUpdateStatus(object):
     ObjStatusList = list()
     gqlClient = None
 
-    def __init__(self, client):
+    def __init__(self, client, vision_workspace_name):
         self.ObjStatusList.clear()
         self.gqlClient = client
+        self.vision_workspace_name = vision_workspace_name
 
     def add_tracking_object_status(self, id, rois, x, y, z, u, v, w):
         for roi in rois:
@@ -62,7 +63,7 @@ class ObjectUpdateStatus(object):
             # print('-------------------')
             # print(status)
             self.gqlClient.update_tracking_workspace_status(
-                name="workspace", status=status
+                name=self.vision_workspace_name, status=status
             )
         else:
             print("\n", status, "\n")
