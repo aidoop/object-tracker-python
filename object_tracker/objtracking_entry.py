@@ -1,6 +1,4 @@
-import time
 import multiprocessing as mp
-from queue import Queue
 import cv2
 import numpy as np
 import json
@@ -9,12 +7,10 @@ import sys
 import socket
 from websocket import create_connection, WebSocket
 import threading
-from time import sleep
 
 from applications.calibcamera_engine import calibcamera_engine
 from applications.objtracking_select import (
     process_application_selection,
-    ObjectTrackingAppType,
 )
 from applications.etc.util import PrintMsg
 from applications.bridge.bridge_data import (

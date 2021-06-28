@@ -2,7 +2,6 @@ from abc import *
 
 from applications.objtracking.objecttracking_roimgr_base import ROIManager
 
-
 class ROIRetangleManager(ROIManager):
     def __init__(self):
         self.RectangleROIList = []

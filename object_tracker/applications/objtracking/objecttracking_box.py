@@ -1,8 +1,6 @@
 import cv2
-import cv2.aruco as aruco
 import numpy as np
 import sys
-import os
 import math
 
 

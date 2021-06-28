@@ -1,11 +1,8 @@
 import cv2
 
 from time import sleep
-import os
-import argparse
 import sys
 
-import multiprocessing as mp
 import queue
 
 from pyaidoop.camera.camera_videocapture import VideoCaptureFactory

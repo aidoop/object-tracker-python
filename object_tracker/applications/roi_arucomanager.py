@@ -1,11 +1,7 @@
-import os
 import numpy as np
-from typing import NamedTuple
 import cv2
-import cv2.aruco as aruco
 
 from pyaidoop.aruco.aruco_detect import ArucoDetect
-from applications.config.appconfig import AppConfig
 
 
 class ROIAruco2DManager:

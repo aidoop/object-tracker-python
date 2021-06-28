@@ -1,11 +1,7 @@
-import numpy as np
 import cv2
 import os
 import sys
 import datetime
-import argparse
-import time
-import multiprocessing as mp
 import queue
 
 from pyaidoop.camera.camera_videocapture import VideoCaptureFactory
@@ -27,7 +23,7 @@ def makeFrameImageDirectory():
         if not (os.path.isdir(dirString)):
             os.makedirs(os.path.join("./", "Captured", dirString))
     except OSError as e:
-        print(f"Can't make the directory: {dirFrameImage}")
+        print(f"Can't make new generated directory")
         raise
     return os.path.join("./", "Captured", dirString)
 

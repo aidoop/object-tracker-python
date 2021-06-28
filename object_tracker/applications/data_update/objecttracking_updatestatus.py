@@ -1,8 +1,3 @@
-import sys
-import os
-import json
-from random import choice, random
-
 from applications.config.appconfig import AppConfig
 
 

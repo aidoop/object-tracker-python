@@ -1,6 +1,5 @@
 from time import sleep
 from enum import Enum, unique
-from typing import NamedTuple
 
 from applications.calibcamera_engine import calibcamera_engine
 from applications.calibhandeye_engine import calibhandeye_engine

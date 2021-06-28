@@ -1,8 +1,3 @@
-import cv2
-import cv2.aruco as aruco
-import numpy as np
-import sys
-import os
 from enum import Enum, unique
 
 from pyaidoop.camera.camera_videocapture import VideoCaptureFactory

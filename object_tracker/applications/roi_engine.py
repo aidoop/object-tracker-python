@@ -1,20 +1,12 @@
-import numpy as np
 import cv2
-import cv2.aruco as aruco
-import os
 import time
-import datetime
-import glob
 import sys
-import argparse
-import json
 
 from pyaidoop.camera.camera_videocapture import VideoCaptureFactory
 
 from applications.config.appconfig import AppConfig
-from applications.etc.util import ObjectTrackerErrMsg, PrintMsg, DisplayInfoText
+from applications.etc.util import ObjectTrackerErrMsg, DisplayInfoText
 from applications.keyhandler.roi_keyhandler import ROIKeyHandler
-from applications.data_update.roi_update_regions import ROIUpdateRegions
 from applications.visiongql.visiongql_client import VisonGqlDataClient
 from applications.roi_arucomanager import ROIAruco2DManager
 

@@ -1,10 +1,7 @@
 import cv2
-import cv2.aruco as aruco
 
 import sys
-import os
-import argparse
-import time
+#import time
 import numpy as np
 
 

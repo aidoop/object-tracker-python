@@ -1,10 +1,7 @@
 import cv2
 import cv2.aruco as aruco
 import numpy as np
-import sys
-import os
 
-from pyaidoop.calibration.calibhandeye_handeye import HandEyeCalibration
 from pyaidoop.etc.hm_util import HMUtil
 from pyaidoop.aruco.aruco_detect import ArucoDetect
 from pyaidoop.aruco.aruco_advanced_pose import ArucoAdvPose

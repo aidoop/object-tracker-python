@@ -7,7 +7,6 @@ import json
 from applications.keyhandler.keyhandlerdev import KeyHandler
 from applications.data_update.calibcamera_update import CalibCameraUpdate
 from applications.etc.util import PrintMsg
-from applications.bridge.bridge_interprocess import BridgeInterprocess
 
 
 class CalibCameraKeyHandler(KeyHandler):
