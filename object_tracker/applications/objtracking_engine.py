@@ -283,7 +283,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
             # display the captured image
             if app_data.camera_streaming is True:
-                if bridge_ip.availability() is True:
+                if bridge_ip.isActive() is True:
                     color_image_resized = cv2.resize(
                         image_show_buffer,
                         dsize=(show_width, show_height),

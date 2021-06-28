@@ -17,6 +17,8 @@ class VisonGqlDataClient:
         self.visonWorkspace = None
         self.checkVideoStream = None
         self.detectionMethod = None
+        self.aiDetectionModel = None
+        self.modelWeightPath = None
         self.robotArms = dict()
         self.trackingCameras = dict()
         self.trackableObjects = dict()
@@ -177,6 +179,13 @@ class VisonGqlDataClient:
 
         # fetch detection methond
         self.detectionMethod = vision_workspace["detectionMethod"]
+
+        # fetch ai detection model
+        self.aiDetectionModel = vision_workspace["aiDetectionModel"]
+
+        # fetch ai detection model
+        self.modelWeightPath = vision_workspace["modelWeightPath"]
+
 
         # fetch robot arms
         robot_arms = vision_workspace["robotArms"]

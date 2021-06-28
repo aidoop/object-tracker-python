@@ -21,6 +21,10 @@ class ObjectTrakcingAppData(object):
         self.obj_tracking_camera_list = list()
         self.robot_arm_list = list()
 
+        self.camera_streaming = False
+        self.ai_detection_model = ""
+        self.model_weight_path = ""
+
     def connect_server(self, url, domain, id, pw):
         return self.gqlDataClient.connect(url, domain, id, pw)
 
@@ -38,7 +42,10 @@ class ObjectTrakcingAppData(object):
                 self.gqlDataClient.detectionMethod
             )
 
+            # set vision workspace paramters
             self.camera_streaming = self.gqlDataClient.checkVideoStream
+            self.ai_detection_model = self.gqlDataClient.aiDetectionModel
+            self.model_weight_path = self.gqlDataClient.modelWeightPath
 
             if self.tracking_method == ObjectTrackingMethod.AI:
                 from applications.objtracking.objecttracking_box import (
