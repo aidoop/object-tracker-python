@@ -57,9 +57,6 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
     app_data.parse()
 
-    # get workspace name
-    vision_workspace_name = app_data.get_workspace().name
-
     objecttracking_update_status(bridge_ip, "Preparing Data")
 
     #########################################################################
@@ -68,6 +65,9 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
     #########################################################################
     # prepare object update status
+    vision_workspace_name = (
+        app_data.get_workspace().name if app_data.get_workspace() is not None else None
+    )
     objStatusUpdate = ObjectUpdateStatus(
         app_data.get_gql_client(), vision_workspace_name
     )
