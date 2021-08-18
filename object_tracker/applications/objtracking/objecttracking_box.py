@@ -9,7 +9,7 @@ from pyaidoop.etc.hm_util import HMUtil
 from applications.objtracking.objecttracking_base import ObjectTracker
 
 # mask rcnn detector
-from pyaidoop.models.mask_rcnn import inference as mo
+from pyaidoop_dl_models.mask_rcnn import inference as mo
 
 
 def get_line_length(x1, y1, x2, y2):
