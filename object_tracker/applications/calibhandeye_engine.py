@@ -161,7 +161,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
         )
 
         # setup an opencv window
-        if bridge_ip.availability() is False:
+        if bridge_ip.isActive() is False:
             cv2.namedWindow(cameraName, cv2.WINDOW_NORMAL)
             cv2.setWindowProperty(
                 cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
@@ -268,7 +268,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
                         pass
 
             # display the captured image
-            if bridge_ip.availability() is True:
+            if bridge_ip.isActive() is True:
                 color_image_resized = cv2.resize(
                     color_image, dsize=(640, 480), interpolation=cv2.INTER_AREA
                 )
@@ -286,7 +286,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
             # handle key inputs
             try:
-                if bridge_ip.availability() is True:
+                if bridge_ip.isActive() is True:
                     (name, cmd) = bridge_ip.get_cmd_queue_no_wait()
                     if name != "handeyecalib:" + cameraName:
                         continue

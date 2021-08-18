@@ -4,7 +4,7 @@ class BridgeInterprocess:
         self.ip_event = ip_event
         self.ip_cmd_queue = ip_cmd_queue
 
-    def availability(self):
+    def isActive(self):
         return (
             (self.ip_dict is not None)
             and (self.ip_event is not None)
@@ -12,7 +12,7 @@ class BridgeInterprocess:
         )
 
     def send_dict_data(self, key, value):
-        can_do = self.availability()
+        can_do = self.isActive()
         if can_do is True:
             self.ip_dict[key] = value
             self.ip_event.set()
