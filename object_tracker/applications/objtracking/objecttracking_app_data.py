@@ -44,8 +44,8 @@ class ObjectTrakcingAppData(object):
 
             # set vision workspace paramters
             self.camera_streaming = self.gqlDataClient.checkVideoStream
-            self.ai_detection_model = self.gqlDataClient.aiDetectionModel
-            self.model_weight_path = self.gqlDataClient.modelWeightPath
+            # self.ai_detection_model = self.gqlDataClient.aiDetectionModel
+            # self.model_weight_path = self.gqlDataClient.modelWeightPath
 
             if self.tracking_method == ObjectTrackingMethod.AI:
                 from applications.objtracking.objecttracking_box import (
