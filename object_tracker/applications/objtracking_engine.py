@@ -3,6 +3,7 @@ import cv2
 import sys
 import numpy as np
 
+from pyaidoop.log import Logger
 
 from applications.config.appconfig import AppConfig, ObjectTrackingMethod
 from applications.objtracking.objecttracking_app_data import ObjectTrakcingAppData
@@ -11,6 +12,9 @@ from applications.data_update.objecttracking_updatestatus import ObjectUpdateSta
 from applications.etc.util import ObjectTrackerErrMsg
 
 from applications.bridge.bridge_interprocess import BridgeInterprocess
+
+objtracking_info = Logger.get("objtracking").info
+objtracking_err = Logger.get("objtracking").error
 
 ###############################################################################
 # Hand-eye calibration process
@@ -40,48 +44,60 @@ def objecttracking_alert_error(bridge_ip, error_msg):
 
 def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
+    objtracking_info("object tracking started..")
+
     bridge_ip = BridgeInterprocess(interproc_dict, ve, cq)
 
     objecttracking_update_status(bridge_ip, "Fetching Data")
 
     # create application data
-    app_data = ObjectTrakcingAppData()
-    if (
-        app_data.connect_server(
-            "http://localhost:3000", "system", "admin@hatiolab.com", "admin"
+    try:
+        objtracking_info("grpahql client parsing started..")
+        app_data = ObjectTrakcingAppData()
+        if (
+            app_data.connect_server(
+                "http://localhost:3000", "system", "admin@hatiolab.com", "admin"
+            )
+            == False
+        ):
+            print("Can't connect operato vision server.")
+            objtracking_err("grpahql client connection error..")
+            sys.exit()
+
+        app_data.parse()
+
+        objecttracking_update_status(bridge_ip, "Preparing Data")
+
+        #########################################################################
+        # create key handler
+        keyhandler = ObjectTrackingKeyHandler()
+
+        #########################################################################
+        # prepare object update status
+        objtracking_info("object update status being created..")
+        vision_workspace_name = (
+            app_data.get_workspace().name
+            if app_data.get_workspace() is not None
+            else None
         )
-        == False
-    ):
-        print("Can't connect operato vision server.")
-        sys.exit()
+        objStatusUpdate = ObjectUpdateStatus(
+            app_data.get_gql_client(), vision_workspace_name
+        )
 
-    app_data.parse()
+        # if app_data.tracking_method == ObjectTrackingMethod.AI:
+        #     cams = app_data.get_camera_list()
+        #     for cam in cams:
+        #         cv2.namedWindow(cam.camera_name, cv2.WINDOW_NORMAL)
+        #         cv2.setWindowProperty(
+        #             cam.camera_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
+        #         )
 
-    objecttracking_update_status(bridge_ip, "Preparing Data")
+        objecttracking_update_status(bridge_ip, "Processing")
+    except Exception as ex:
+        objtracking_err(f"Prepartion stage error: {ex}")
+        print(f"Prepartion stage error: {ex}")
 
-    #########################################################################
-    # create key handler
-    keyhandler = ObjectTrackingKeyHandler()
-
-    #########################################################################
-    # prepare object update status
-    vision_workspace_name = (
-        app_data.get_workspace().name if app_data.get_workspace() is not None else None
-    )
-    objStatusUpdate = ObjectUpdateStatus(
-        app_data.get_gql_client(), vision_workspace_name
-    )
-
-    # if app_data.tracking_method == ObjectTrackingMethod.AI:
-    #     cams = app_data.get_camera_list()
-    #     for cam in cams:
-    #         cv2.namedWindow(cam.camera_name, cv2.WINDOW_NORMAL)
-    #         cv2.setWindowProperty(
-    #             cam.camera_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
-    #         )
-
-    objecttracking_update_status(bridge_ip, "Processing")
-
+    objtracking_info("video frame processing starts..")
     try:
         while True:
 
@@ -320,6 +336,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
     except Exception as ex:
         objecttracking_alert_error(bridge_ip, f"Error: {ex}")
         print("Error :", ex, file=sys.stderr)
+        objtracking_err(f"Main loop error: {ex}")
 
     finally:
 
@@ -329,6 +346,8 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
         objecttracking_update_status(bridge_ip, "Exit")
         bridge_ip.send_dict_data("app_exit", True)
+
+        objtracking_info("object tracking ends..")
 
     cv2.destroyAllWindows()
 

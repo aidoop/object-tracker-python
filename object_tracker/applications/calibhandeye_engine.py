@@ -9,6 +9,7 @@ from pyaidoop.camera.camera_videocapture import VideoCaptureFactory
 from pyaidoop.etc.hm_util import *
 from pyaidoop.calibration.calibhandeye_handeye import *
 from pyaidoop.calibration.calibhandeye_auto_move import HandEyeAutoMove
+from pyaidoop.log import Logger
 
 from applications.config.appconfig import AppConfig
 from applications.etc.util import ObjectTrackerErrMsg, DisplayInfoText
@@ -16,6 +17,9 @@ from applications.keyhandler.calibhandeye_keyhandler import CalibHandEyeKeyHandl
 from applications.visiongql.visiongql_client import VisonGqlDataClient
 
 from applications.bridge.bridge_interprocess import BridgeInterprocess
+
+handeyecalib_info = Logger.get("handeyecalib").info
+handeyecalib_err = Logger.get("handeyecalib").error
 
 
 #####################################################################################
@@ -34,6 +38,8 @@ def drawText(img, text, imgpt):
 
 def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
+    handeyecalib_info("handeye calibration started..")
+
     cameraName = app_args
     if cameraName is "":
         PrintMsg.print_error("Input camera name is not available.")
@@ -44,7 +50,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
     cmd_interproc_q = cq
 
     try:
-
+        handeyecalib_info("grpahql client parsing started..")
         gqlDataClient = VisonGqlDataClient()
         if (
             gqlDataClient.connect(
@@ -53,6 +59,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
             is False
         ):
             # print("Can't connect operato vision server.")
+            handeyecalib_err("grpahql client connection error..")
             sys.exit()
 
         gqlDataClient.fetch_tracking_camera_all()
@@ -87,6 +94,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
         handeye = HandEyeCalibration(cameraObject.handEyeMode)
 
         # auto handeye calibration mode
+        handeyecalib_info("handeye automove being configured..")
         handeye_automove = HandEyeAutoMove()
         if cameraObject.handEyeAutoMode == True:
             autohandeye_total_move = cameraObject.autoHandeyeTotalIterations
@@ -111,6 +119,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
         #     rsCamDev = RealsenseCapture(args.camIndex)
         # elif(args.camType == 'uvc'):
         #     rsCamDev = OpencvCapture(args.camIndex)
+        handeyecalib_info("video capture started..")
         AppConfig.VideoFrameWidth = cameraObject.width or AppConfig.VideoFrameWidth
         AppConfig.VideoFrameHeight = cameraObject.height or AppConfig.VideoFrameHeight
         (AppConfig.VideoFrameWidth, AppConfig.VideoFrameHeight) = (
@@ -141,6 +150,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
             dist = cameraObject.distCoeff
 
         # create key handler
+        handeyecalib_info("handeye calibration configuration started..")
         keyhandler = CalibHandEyeKeyHandler()
 
         # create handeye object
@@ -168,9 +178,11 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
             )
     except Exception as ex:
         print("Preparation Exception:", ex, file=sys.stderr)
+        handeyecalib_err(f"Preparation Exception: {ex}")
         sys.exit(0)
 
     # get frames and process a key event
+    handeyecalib_info("video frame processing starts..")
     try:
         while True:
             # Wait for a coherent pair of frames: depth and color
@@ -293,10 +305,13 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
                     if cmd == "start":
                         pressedKey = 0x61  # 'a' key
+                        handeyecalib_info("call start handler")
                     elif cmd == "result":
                         pressedKey = 0x67  # 'g' key
+                        handeyecalib_info("call result handler")
                     elif cmd == "exit":
                         pressedKey = 0x71  # 'q' key
+                        handeyecalib_info("call exit handler")
                 else:
                     pressedKey = cv2.waitKey(1) & 0xFF
             except queue.Empty:
@@ -322,6 +337,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 break
     except Exception as ex:
         print("Error :", ex, file=sys.stderr)
+        handeyecalib_err(f"Main Loop Error : {ex}")
         bridge_ip.send_dict_data(
             "error",
             {
@@ -339,6 +355,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
         bridge_ip.send_dict_data("app_exit", True)
 
+        handeyecalib_info("handeye calibration ends..")
     # arrange all to finitsh this application here
     # cv2.destroyAllWindows()
     # indy7.finalize()

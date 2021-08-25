@@ -7,6 +7,7 @@ import queue
 from pyaidoop.camera.camera_videocapture import VideoCaptureFactory
 from pyaidoop.calibration.calibcamera import CalibrationCamera
 from pyaidoop.calibration.calibcamera_aruco import CalibrationCameraAruco
+from pyaidoop.log import Logger
 
 from applications.config.appconfig import AppConfig
 from applications.etc.util import ObjectTrackerErrMsg, DisplayInfoText, PrintMsg
@@ -14,6 +15,9 @@ from applications.keyhandler.calibcamera_keyhandler import CalibCameraKeyHandler
 from applications.visiongql.visiongql_client import VisonGqlDataClient
 
 from applications.bridge.bridge_interprocess import BridgeInterprocess
+
+camcalib_info = Logger.get("camcalib").info
+camcalib_err = Logger.get("camcalib").error
 
 
 def makeFrameImageDirectory():
@@ -36,6 +40,8 @@ def makeFrameImageDirectory():
 
 def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
+    camcalib_info("camera calibration started..")
+
     cameraName = app_args
     if cameraName is "":
         PrintMsg.print_error("Input camera name is not available.")
@@ -44,6 +50,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
     bridge_ip = BridgeInterprocess(interproc_dict, ve, cq)
 
     try:
+        camcalib_info("grpahql client parsing started..")
         gqlDataClient = VisonGqlDataClient()
         if (
             gqlDataClient.connect(
@@ -51,12 +58,14 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
             )
             is False
         ):
+            camcalib_err("grpahql client connection error..")
             sys.exit()
 
         # get camera data from operato
         gqlDataClient.fetch_tracking_camera_all()
         cameraObject = gqlDataClient.trackingCameras[cameraName]
 
+        camcalib_info("video capture started..")
         AppConfig.VideoFrameWidth = cameraObject.width or AppConfig.VideoFrameWidth
         AppConfig.VideoFrameHeight = cameraObject.height or AppConfig.VideoFrameHeight
         (AppConfig.VideoFrameWidth, AppConfig.VideoFrameHeight) = (
@@ -77,6 +86,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
         # Start streaming
         vcap.start()
 
+        camcalib_info("camera calibration configuration started..")
         # create a camera calqibration object
         if AppConfig.UseCalibChessBoard == True:
             calibcam = CalibrationCamera(AppConfig.ChessWidth, AppConfig.ChessHeight)
@@ -100,6 +110,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
         )
     except Exception as ex:
         print("Preparation Exception:", ex, file=sys.stderr)
+        camcalib_err(f"Preparation Exception: {ex}")
         sys.exit(0)
 
     # setup an opencv window
@@ -109,6 +120,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
             cameraName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
         )
 
+    camcalib_info("video frame processing starts..")
     try:
         while True:
             # Wait for a coherent pair of frames: depth and color
@@ -163,9 +175,12 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
                     if cmd == "snapshot":
                         pressedKey = 0x63  # 'c' key
+                        camcalib_info("call snapshot handler")
                     elif cmd == "result":
                         pressedKey = 0x67  # 'g' key
+                        camcalib_info("call get-reseult handler")
                     elif cmd == "exit":
+                        camcalib_info("call exit handler")
                         pressedKey = 0x71  # 'q' key
                 else:
                     pressedKey = cv2.waitKey(1) & 0xFF
@@ -186,6 +201,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
     except Exception as ex:
         print("Main Loop Error :", ex, file=sys.stderr)
+        camcalib_err(f"Main Loop Error : {ex}")
         bridge_ip.send_dict_data(
             "error",
             {
@@ -200,6 +216,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
         # cv2.destroyAllWindows()
 
         bridge_ip.send_dict_data("app_exit", True)
+        camcalib_info("camera calibration ends..")
 
 
 if __name__ == "__main__":
