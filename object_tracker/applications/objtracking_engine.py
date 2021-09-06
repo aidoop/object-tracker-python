@@ -84,7 +84,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
             app_data.get_gql_client(), vision_workspace_name
         )
 
-        # if app_data.tracking_method == ObjectTrackingMethod.AI:
+        # if app_data.tracking_method == ObjectTrackingMethod.COUNTOUR:
         #     cams = app_data.get_camera_list()
         #     for cam in cams:
         #         cv2.namedWindow(cam.camera_name, cv2.WINDOW_NORMAL)
@@ -247,7 +247,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                     vtc_image_buffers.append(color_image_half)
                     vtc_image_index += 1
                     # cv2.imshow(vtc.camera_name, color_image_half)
-                else:
+                elif app_data.tracking_method == ObjectTrackingMethod.COUNTOUR:
                     # BGR to RGB for opencv imshow function
                     color_image_view = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
@@ -265,6 +265,26 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
                     # show scores
                     vtc.objectMarkTracker.put_info_text(color_image_view)
+
+                    # display both color image and mask image
+                    vtc_image_buffers.append(np.hstack((color_image_view, sub_image)))
+
+                    show_width = 1280
+                    show_height = 360
+                elif app_data.tracking_method == ObjectTrackingMethod.ODAPI:
+                    # BGR to RGB for opencv imshow function
+                    color_image_view = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
+
+                    # create images to show
+                    # sub_image = cv2.applyColorMap(cv2.convertScaleAbs(
+                    #     depth_image, alpha=0.07), cv2.COLORMAP_JET)
+                    sub_image = vtc.objectMarkTracker.get_boxed_image(color_image)
+                    # sub_image = maskcv2.cvtColor(mask_image, cv2.COLOR_GRAY2RGB)
+
+                    # draw pose axis in the mask image
+
+                    # # show scores
+                    # vtc.objectMarkTracker.put_info_text(color_image_view)
 
                     # display both color image and mask image
                     vtc_image_buffers.append(np.hstack((color_image_view, sub_image)))

@@ -47,10 +47,15 @@ class ObjectTrakcingAppData(object):
             # self.ai_detection_model = self.gqlDataClient.aiDetectionModel
             # self.model_weight_path = self.gqlDataClient.modelWeightPath
 
-            if self.tracking_method == ObjectTrackingMethod.AI:
+            if self.tracking_method == ObjectTrackingMethod.COUNTOUR:
                 from applications.objtracking.objecttracking_box import (
                     BoxObject,
                     BoxObjectTracker,
+                )
+            elif self.tracking_method == ObjectTrackingMethod.ODAPI:
+                from applications.objtracking.objecttracking_odapi import (
+                    ODApiObject,
+                    ODApiObjectTracker,
                 )
 
             ###############################################################################
@@ -138,7 +143,9 @@ class ObjectTrakcingAppData(object):
                 # create an object tracker
                 objTracker = (
                     BoxObjectTracker()
-                    if self.tracking_method == ObjectTrackingMethod.AI
+                    if self.tracking_method == ObjectTrackingMethod.COUNTOUR
+                    else ODApiObjectTracker()
+                    if self.tracking_method == ObjectTrackingMethod.ODAPI
                     else ArucoMarkerTracker()
                     if self.tracking_method == ObjectTrackingMethod.ARUCO
                     else None
@@ -192,7 +199,9 @@ class ObjectTrakcingAppData(object):
                 # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
                 obj = (
                     BoxObject(trackableMark.endpoint, trackableMark.poseOffset)
-                    if self.tracking_method == ObjectTrackingMethod.AI
+                    if self.tracking_method == ObjectTrackingMethod.COUNTOUR
+                    else ODApiObject(trackableMark.endpoint, trackableMark.poseOffset)
+                    if self.tracking_method == ObjectTrackingMethod.ODAPI
                     else ArucoMarkerObject(
                         int(trackableMark.endpoint), trackableMark.poseOffset
                     )

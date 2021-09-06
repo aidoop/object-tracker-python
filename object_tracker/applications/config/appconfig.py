@@ -4,8 +4,9 @@ from enum import Enum, unique
 
 @unique
 class ObjectTrackingMethod(Enum):
-    ARUCO = "Aruco-based"
-    AI = "AI-based"
+    ARUCO = "Aruco"
+    COUNTOUR = "Countour"
+    ODAPI = "ODAPI"
 
 
 class AppConfig:
