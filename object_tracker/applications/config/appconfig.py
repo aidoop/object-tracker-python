@@ -11,7 +11,10 @@ class ObjectTrackingMethod(Enum):
 
 class AppConfig:
 
-    APP_TRACKING_METHOD = ObjectTrackingMethod.ARUCO
+    # Server IP
+    ServerIP = "localhost"
+
+    APP_TRACKING_METHOD = ObjectTrackingMethod.ODAPI
 
     # realsense camera parameters
     UseRealSenseInternalMatrix = False
@@ -45,6 +48,6 @@ class AppConfig:
     # Debug Parameters
     #################################################
     # debug without @things-factory (Default = False)
-    ObjTrackingDebugMode = False
+    ObjTrackingDebugMode = True
     # debug without robot (Default = False)
     ObjTrackingDebugWoRobot = False

@@ -100,12 +100,12 @@ class ObjectTrakcingAppData(object):
                 AppConfig.VideoFrameWidth = (
                     trackingCamera.width
                     if self.tracking_method is ObjectTrackingMethod.ARUCO
-                    else AppConfig.VideoFrameWidth
+                    else 1280
                 )
                 AppConfig.VideoFrameHeight = (
                     trackingCamera.height
                     if self.tracking_method is ObjectTrackingMethod.ARUCO
-                    else AppConfig.VideoFrameHeight
+                    else 720
                 )
                 vcap = VideoCaptureFactory.create_video_capture(
                     trackingCamera.type,

@@ -54,7 +54,10 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
         gqlDataClient = VisonGqlDataClient()
         if (
             gqlDataClient.connect(
-                "http://localhost:3000", "system", "admin@hatiolab.com", "admin"
+                f"http://{AppConfig.ServerIP}:3000",
+                "system",
+                "admin@hatiolab.com",
+                "admin",
             )
             is False
         ):

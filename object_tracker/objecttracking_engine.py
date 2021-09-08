@@ -23,7 +23,7 @@ def objecttracking_engine():
     app_data = ObjectTrakcingAppData()
     if (
         app_data.connect_server(
-            "http://localhost:3000", "system", "admin@hatiolab.com", "admin"
+            f"http://{AppConfig.ServerIP}:3000", "system", "admin@hatiolab.com", "admin"
         )
         == False
     ):

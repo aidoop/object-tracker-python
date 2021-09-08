@@ -56,7 +56,10 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
         app_data = ObjectTrakcingAppData()
         if (
             app_data.connect_server(
-                "http://localhost:3000", "system", "admin@hatiolab.com", "admin"
+                f"http://{AppConfig.ServerIP}:3000",
+                "system",
+                "admin@hatiolab.com",
+                "admin",
             )
             == False
         ):
@@ -117,8 +120,8 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
             vtc_image_buffers = list()
             for vtc in vtcList:
                 # get a frame
-                color_image = vtc.vcap.get_video_frame()
-                # (color_image, depth_image) = vtc.vcap.get_frames()
+                # color_image = vtc.vcap.get_video_frame()
+                (color_image, depth_image) = vtc.vcap.get_frames()
                 # assert color_image is not None, 'no captured frame'
                 if color_image is None:
                     continue
@@ -156,7 +159,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                         if ra.name == vtc.robot_name:
                             # detect markers here..
                             resultObjs = vtc.objectMarkTracker.find_tracking_object(
-                                color_image, vtc, ra.gripperOffset
+                                color_image, vtc, ra.gripperOffset, depth_image
                             )
 
                             if resultObjs == None:
@@ -194,7 +197,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 else:
                     # detect markers here..
                     resultObjs = vtc.objectMarkTracker.find_tracking_object(
-                        color_image, vtc, None
+                        color_image, vtc, None, depth_image
                     )
 
                     if resultObjs == None:
@@ -278,7 +281,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                     # create images to show
                     # sub_image = cv2.applyColorMap(cv2.convertScaleAbs(
                     #     depth_image, alpha=0.07), cv2.COLORMAP_JET)
-                    sub_image = vtc.objectMarkTracker.get_boxed_image(color_image)
+                    sub_image = vtc.objectMarkTracker.get_boxed_image(color_image_view)
                     # sub_image = maskcv2.cvtColor(mask_image, cv2.COLOR_GRAY2RGB)
 
                     # draw pose axis in the mask image

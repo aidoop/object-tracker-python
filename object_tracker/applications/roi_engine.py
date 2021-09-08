@@ -39,7 +39,10 @@ if __name__ == "__main__":
         gqlDataClient = VisonGqlDataClient()
         if (
             gqlDataClient.connect(
-                "http://localhost:3000", "system", "admin@hatiolab.com", "admin"
+                f"http://{AppConfig.ServerIP}:3000",
+                "system",
+                "admin@hatiolab.com",
+                "admin",
             )
             is False
         ):

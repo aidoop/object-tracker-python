@@ -28,10 +28,13 @@ class ODApiObjectTracker(ObjectTracker):
     DETECTION_THRESHOLD = 0.7  # 0.5
 
     def __init__(self):
+        # the list for input mark objects
         self.markerObjectList = []
         self.markerObjIDList = []
 
-        # maskrcnn addition data
+        # object addition data
+        self.detected_objects = list()
+
         self.center_point_list = []
         self.scores_list = []
         self.box_list = []
@@ -73,23 +76,89 @@ class ODApiObjectTracker(ObjectTracker):
         color_image = args[0]
         vtc = args[1]
         gripperOffset = args[2]
+        depth_image = args[3]
         # prepare list to give over the result objects
         resultList = list()
+
+        self.detected_objects.clear()
 
         ############################################################
         # detect objects
         if self.detector is not None:
             box_list = self.detector.detect_for_image(color_image)
             self.box_list = box_list
-            print(self.box_list)
-            # # how to parse box_list
-            # for idx in range(len(boxes_list)):
-            #     x_min = boxes_list[idx][0]
-            #     y_min = boxes_list[idx][1]
-            #     x_max = boxes_list[idx][2]
-            #     y_max = boxes_list[idx][3]
-            #     cls = str(boxes_list[idx][4])
-            #     score = str(np.round(boxes_list[idx][-1], 2))
+
+            for idx in range(len(box_list)):
+                x_min = box_list[idx][0]
+                y_min = box_list[idx][1]
+                x_max = box_list[idx][2]
+                y_max = box_list[idx][3]
+                cls = str(box_list[idx][4])
+                score = str(np.round(box_list[idx][-1], 2))
+
+                object_image = color_image[y_min:y_max, x_min:x_max]
+                object_depth_image = depth_image[y_min:y_max, x_min:x_max]
+
+                object_gray_image = cv2.cvtColor(object_image, cv2.COLOR_BGR2GRAY)
+
+                edge_image = cv2.Canny(object_gray_image, 75, 150)
+                lines = cv2.HoughLinesP(edge_image, 1, np.pi / 180, 30, maxLineGap=300)
+
+                line_depth_averages = list()
+                min_line_depth_average = 9999999  # set an enougth big value
+                for index, value in enumerate(lines):
+                    x1, y1, x2, y2 = value[0]
+                    line_iter = self.create_line_iterator(
+                        (x1, y1), (x2, y2), object_depth_image
+                    )
+
+                    line_depth_average = 0
+                    line_depth_average_index = 0
+                    for line_point in line_iter:
+                        if line_point[2] != 0:
+                            line_depth_average += line_point[2]
+                            line_depth_average_index += 1
+                        # else:
+                        #    line_depth_average_index = 0
+                        #    break
+
+                    if line_depth_average_index > 0:
+                        line_depth_average = (
+                            line_depth_average / line_depth_average_index
+                        )
+                        if line_depth_average_index > int(
+                            min(
+                                object_depth_image.shape[0], object_depth_image.shape[1]
+                            )
+                            / 2
+                        ):
+                            line_depth_averages.append(line_depth_average)
+                        else:
+                            line_depth_averages.append(999999)
+                    else:
+                        line_depth_averages.append(999999)
+
+                    min_value = min(line_depth_averages)
+                    # print(min_value)
+                    min_index = line_depth_averages.index(min_value)
+                    # print(min_index)
+
+                    detected_line = lines[min_index]
+                    x1_det, y1_det, x2_det, y2_det = detected_line[0]
+
+                self.detected_objects.append(
+                    {
+                        "line": (
+                            x1_det + x_min,
+                            y1_det + y_min,
+                            x2_det + x_min,
+                            y2_det + y_min,
+                        )
+                    }
+                )
+
+            # TODO: go next
+            # print(self.detected_objects)
 
             # # get the minArearect and angle for each mask
             # (self.mask_rect_list, self.mask_angle_list) = self.estimate_pose(mask_list)
@@ -203,27 +272,79 @@ class ODApiObjectTracker(ObjectTracker):
 
         return (box_list, angle_list)
 
-    def find_box_center_list(self, rect_list):
-        # assert self.maskdetect is not None
+    def create_line_iterator(self, P1, P2, img):
+        """
+        Produces and array that consists of the coordinates and intensities of each pixel in a line between two points
 
-        # center_point_list = []
+        Parameters:
+            -P1: a numpy array that consists of the coordinate of the first point (x,y)
+            -P2: a numpy array that consists of the coordinate of the second point (x,y)
+            -img: the image being processed
 
-        # for mask_rect in self.mask_rect_list:
-        #     mask_rect = np.int0(mask_rect)
+        Returns:
+            -it: a numpy array that consists of the coordinates and intensities of each pixel in the radii (shape: [numPixels, 3], row = [x,y,intensity])
+        """
+        # define local variables for readability
+        imageH = img.shape[0]
+        imageW = img.shape[1]
+        P1X = P1[0]
+        P1Y = P1[1]
+        P2X = P2[0]
+        P2Y = P2[1]
 
-        #     # get the points of two lines
-        #     xx1 = np.int0((mask_rect[0][0] + mask_rect[1][0]) / 2)
-        #     yy1 = np.int0((mask_rect[0][1] + mask_rect[1][1]) / 2)
-        #     xx2 = np.int0((mask_rect[2][0] + mask_rect[3][0]) / 2)
-        #     yy2 = np.int0((mask_rect[2][1] + mask_rect[3][1]) / 2)
+        # difference and absolute difference between points
+        # used to calculate slope and relative location between points
+        dX = P2X - P1X
+        dY = P2Y - P1Y
+        dXa = np.abs(dX)
+        dYa = np.abs(dY)
 
-        #     xx3 = np.int0((mask_rect[0][0] + mask_rect[3][0]) / 2)
-        #     yy3 = np.int0((mask_rect[0][1] + mask_rect[3][1]) / 2)
-        #     xx4 = np.int0((mask_rect[2][0] + mask_rect[1][0]) / 2)
-        #     yy4 = np.int0((mask_rect[2][1] + mask_rect[1][1]) / 2)
+        # predefine numpy array for output based on distance between points
+        itbuffer = np.empty(shape=(np.maximum(dYa, dXa), 3), dtype=np.float32)
+        itbuffer.fill(np.nan)
 
-        #     (cx, cy) = get_line_cross(xx1, yy1, xx2, yy2, xx3, yy3, xx4, yy4)
-        #     center_point_list.append((np.int0(cx), np.int0(cy)))
+        # Obtain coordinates along the line using a form of Bresenham's algorithm
+        negY = P1Y > P2Y
+        negX = P1X > P2X
+        if P1X == P2X:  # vertical line segment
+            itbuffer[:, 0] = P1X
+            if negY:
+                itbuffer[:, 1] = np.arange(P1Y - 1, P1Y - dYa - 1, -1)
+            else:
+                itbuffer[:, 1] = np.arange(P1Y + 1, P1Y + dYa + 1)
+        elif P1Y == P2Y:  # horizontal line segment
+            itbuffer[:, 1] = P1Y
+            if negX:
+                itbuffer[:, 0] = np.arange(P1X - 1, P1X - dXa - 1, -1)
+            else:
+                itbuffer[:, 0] = np.arange(P1X + 1, P1X + dXa + 1)
+        else:  # diagonal line segment
+            steepSlope = dYa > dXa
+            if steepSlope:
+                slope = dX.astype(np.float32) / dY.astype(np.float32)
+                if negY:
+                    itbuffer[:, 1] = np.arange(P1Y - 1, P1Y - dYa - 1, -1)
+                else:
+                    itbuffer[:, 1] = np.arange(P1Y + 1, P1Y + dYa + 1)
+                itbuffer[:, 0] = (slope * (itbuffer[:, 1] - P1Y)).astype(np.int) + P1X
+            else:
+                slope = dY.astype(np.float32) / dX.astype(np.float32)
+                if negX:
+                    itbuffer[:, 0] = np.arange(P1X - 1, P1X - dXa - 1, -1)
+                else:
+                    itbuffer[:, 0] = np.arange(P1X + 1, P1X + dXa + 1)
+                itbuffer[:, 1] = (slope * (itbuffer[:, 0] - P1X)).astype(np.int) + P1Y
 
-        # return center_point_list
-        return None
+        # Remove points outside of image
+        colX = itbuffer[:, 0]
+        colY = itbuffer[:, 1]
+        itbuffer = itbuffer[
+            (colX >= 0) & (colY >= 0) & (colX < imageW) & (colY < imageH)
+        ]
+
+        # Get intensities from img ndarray
+        itbuffer[:, 2] = img[
+            itbuffer[:, 1].astype(np.uint), itbuffer[:, 0].astype(np.uint)
+        ]
+
+        return itbuffer

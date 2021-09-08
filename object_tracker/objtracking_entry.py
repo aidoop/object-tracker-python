@@ -8,6 +8,7 @@ import socket
 from websocket import create_connection, WebSocket
 import threading
 
+from applications.config.appconfig import AppConfig
 from applications.calibcamera_engine import calibcamera_engine
 from applications.objtracking_select import (
     process_application_selection,
@@ -44,7 +45,8 @@ def thread_data_receive(sock, interproc_dict, command_queue):
 
 def process_bridge_data(interproc_dict, ve, cq):
     ws = create_connection(
-        "ws://localhost:34000", sockopt=((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),)
+        f"ws://{AppConfig.ServerIP}:34000",
+        sockopt=((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),),
     )
 
     ws_recv_thread = threading.Thread(
