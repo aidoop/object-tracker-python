@@ -71,6 +71,53 @@ class ODApiObjectTracker(ObjectTracker):
     def get_tracking_object_id_list(self):
         return self.markerObjIDList
 
+    def get_lines_from_image(self, input_image):
+        input_gray_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
+
+        edge_image = cv2.Canny(input_gray_image, 75, 150)
+        lines = cv2.HoughLinesP(edge_image, 1, np.pi / 180, 30, maxLineGap=300)
+        return lines
+
+    def find_optimal_line(self, lines, depth_image):
+        line_depth_averages = list()
+        min_line_depth_average = 9999999  # set an enougth big value
+        for index, value in enumerate(lines):
+            x1, y1, x2, y2 = value[0]
+            line_iter = self.create_line_iterator((x1, y1), (x2, y2), depth_image)
+
+            line_depth_average = 0
+            line_depth_average_index = 0
+            for line_point in line_iter:
+                if line_point[2] != 0:
+                    line_depth_average += line_point[2]
+                    line_depth_average_index += 1
+                # else:
+                #    line_depth_average_index = 0
+                #    break
+
+            if line_depth_average_index > 0:
+                line_depth_average = line_depth_average / line_depth_average_index
+
+                # check the length of detected line is longer than minimun value either width or height of the extracted imate
+                object_width, object_height = depth_image.shape
+                min_line_length = int(
+                    min(depth_image.shape[0], depth_image.shape[1]) / 2
+                )
+                if line_depth_average_index > min_line_length:
+                    line_depth_averages.append(line_depth_average)
+                else:
+                    line_depth_averages.append(min_line_depth_average)
+            else:
+                line_depth_averages.append(min_line_depth_average)
+
+            min_value = min(line_depth_averages)
+            # print(min_value)
+            min_index = line_depth_averages.index(min_value)
+            # print(min_index)
+
+        detected_line = lines[min_index]
+        return detected_line
+
     # set detectable features and return the 2D or 3D positons in case that objects are detected..
     def find_tracking_object(self, *args):
         color_image = args[0]
@@ -99,10 +146,7 @@ class ODApiObjectTracker(ObjectTracker):
                 object_image = color_image[y_min:y_max, x_min:x_max]
                 object_depth_image = depth_image[y_min:y_max, x_min:x_max]
 
-                object_gray_image = cv2.cvtColor(object_image, cv2.COLOR_BGR2GRAY)
-
-                edge_image = cv2.Canny(object_gray_image, 75, 150)
-                lines = cv2.HoughLinesP(edge_image, 1, np.pi / 180, 30, maxLineGap=300)
+                lines = self.get_lines_from_image(object_image)
 
                 line_depth_averages = list()
                 min_line_depth_average = 9999999  # set an enougth big value
@@ -126,25 +170,29 @@ class ODApiObjectTracker(ObjectTracker):
                         line_depth_average = (
                             line_depth_average / line_depth_average_index
                         )
-                        if line_depth_average_index > int(
+
+                        # check the length of detected line is longer than minimun value either width or height of the extracted imate
+                        object_width, object_height = object_depth_image.shape
+                        min_line_length = int(
                             min(
                                 object_depth_image.shape[0], object_depth_image.shape[1]
                             )
                             / 2
-                        ):
+                        )
+                        if line_depth_average_index > min_line_length:
                             line_depth_averages.append(line_depth_average)
                         else:
-                            line_depth_averages.append(999999)
+                            line_depth_averages.append(min_line_depth_average)
                     else:
-                        line_depth_averages.append(999999)
+                        line_depth_averages.append(min_line_depth_average)
 
                     min_value = min(line_depth_averages)
                     # print(min_value)
                     min_index = line_depth_averages.index(min_value)
                     # print(min_index)
 
-                    detected_line = lines[min_index]
-                    x1_det, y1_det, x2_det, y2_det = detected_line[0]
+                detected_line = lines[min_index]
+                x1_det, y1_det, x2_det, y2_det = detected_line[0]
 
                 self.detected_objects.append(
                     {

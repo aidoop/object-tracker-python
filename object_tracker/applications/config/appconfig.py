@@ -14,7 +14,7 @@ class AppConfig:
     # Server IP
     ServerIP = "localhost"
 
-    APP_TRACKING_METHOD = ObjectTrackingMethod.ODAPI
+    APP_TRACKING_METHOD = ObjectTrackingMethod.ARUCO
 
     # realsense camera parameters
     UseRealSenseInternalMatrix = False
@@ -48,6 +48,6 @@ class AppConfig:
     # Debug Parameters
     #################################################
     # debug without @things-factory (Default = False)
-    ObjTrackingDebugMode = True
+    ObjTrackingDebugMode = False
     # debug without robot (Default = False)
     ObjTrackingDebugWoRobot = False
