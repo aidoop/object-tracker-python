@@ -25,7 +25,7 @@ class ODApiObjectTracker(ObjectTracker):
     # a best candidate...
     MODEL_PATH = "/home/jinwon/Documents/github/pyaidoop-pickpoint-finder/exported_model/ssd_mobilenet_v2_kimchi_1/saved_model/"
     LABELMAP_PATH = "/home/jinwon/Documents/github/pyaidoop-pickpoint-finder/models/sample_labelmap.pbtxt"
-    DETECTION_THRESHOLD = 0.7  # 0.5
+    DETECTION_THRESHOLD = 0.9  # 0.5
 
     def __init__(self):
         # the list for input mark objects
@@ -80,40 +80,41 @@ class ODApiObjectTracker(ObjectTracker):
     def find_optimal_line(self, lines, depth_image):
         line_depth_averages = list()
         min_line_depth_average = 9999999  # set an enougth big value
-        for index, value in enumerate(lines):
-            x1, y1, x2, y2 = value[0]
-            line_iter = self.create_line_iterator((x1, y1), (x2, y2), depth_image)
+        if len(lines) > 0:
+            for index, value in enumerate(lines):
+                x1, y1, x2, y2 = value[0]
+                line_iter = self.create_line_iterator((x1, y1), (x2, y2), depth_image)
 
-            line_depth_average = 0
-            line_depth_average_index = 0
-            for line_point in line_iter:
-                if line_point[2] != 0:
-                    line_depth_average += line_point[2]
-                    line_depth_average_index += 1
-                # else:
-                #    line_depth_average_index = 0
-                #    break
+                line_depth_average = 0
+                line_depth_average_index = 0
+                for line_point in line_iter:
+                    if line_point[2] != 0:
+                        line_depth_average += line_point[2]
+                        line_depth_average_index += 1
+                    # else:
+                    #    line_depth_average_index = 0
+                    #    break
 
-            if line_depth_average_index > 0:
-                line_depth_average = line_depth_average / line_depth_average_index
+                if line_depth_average_index > 0:
+                    line_depth_average = line_depth_average / line_depth_average_index
 
-                # check the length of detected line is longer than minimun value either width or height of the extracted imate
-                min_line_length = int(
-                    min(depth_image.shape[0], depth_image.shape[1]) / 2
-                )
-                if line_depth_average_index > min_line_length:
-                    line_depth_averages.append(line_depth_average)
+                    # check the length of detected line is longer than minimun value either width or height of the extracted imate
+                    min_line_length = int(
+                        min(depth_image.shape[0], depth_image.shape[1]) / 2
+                    )
+                    if line_depth_average_index > min_line_length:
+                        line_depth_averages.append(line_depth_average)
+                    else:
+                        line_depth_averages.append(min_line_depth_average)
                 else:
                     line_depth_averages.append(min_line_depth_average)
-            else:
-                line_depth_averages.append(min_line_depth_average)
 
-            min_value = min(line_depth_averages)
-            # print(min_value)
-            min_index = line_depth_averages.index(min_value)
-            # print(min_index)
+                min_value = min(line_depth_averages)
+                # print(min_value)
+                min_index = line_depth_averages.index(min_value)
+                # print(min_index)
 
-        detected_line = lines[min_index]
+        detected_line = lines[min_index] if len(lines) > 0 else None
         return detected_line
 
     def find_best_box(self, box_list):
@@ -157,19 +158,20 @@ class ODApiObjectTracker(ObjectTracker):
                 detected_line = self.find_optimal_line(lines, object_depth_image)
 
                 # set the optimal line to member list variable
-                x1_det, y1_det, x2_det, y2_det = detected_line[0]
-                self.detected_objects.append(
-                    {
-                        "line": (
-                            x1_det + x_min,
-                            y1_det + y_min,
-                            x2_det + x_min,
-                            y2_det + y_min,
-                        ),
-                        "class": cls,
-                        "score": score,
-                    }
-                )
+                if detected_line is not None:
+                    x1_det, y1_det, x2_det, y2_det = detected_line[0]
+                    self.detected_objects.append(
+                        {
+                            "line": (
+                                x1_det + x_min,
+                                y1_det + y_min,
+                                x2_det + x_min,
+                                y2_det + y_min,
+                            ),
+                            "class": cls,
+                            "score": score,
+                        }
+                    )
 
             # TODO: go next
             print(self.detected_objects)
