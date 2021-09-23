@@ -2,6 +2,7 @@ import cv2
 
 import sys
 import numpy as np
+import traceback
 
 from pyaidoop.log import Logger
 
@@ -279,9 +280,13 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                     color_image_view = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
                     # create images to show
-                    # sub_image = cv2.applyColorMap(cv2.convertScaleAbs(
-                    #     depth_image, alpha=0.07), cv2.COLORMAP_JET)
-                    sub_image = vtc.objectMarkTracker.get_boxed_image(color_image_view)
+                    depth_image_view = cv2.applyColorMap(
+                        cv2.convertScaleAbs(depth_image, alpha=0.07), cv2.COLORMAP_JET
+                    )
+                    # sub_image = vtc.objectMarkTracker.get_boxed_image(color_image_view)
+                    sub_image = vtc.objectMarkTracker.get_pickpint_image(
+                        color_image_view
+                    )
                     # sub_image = maskcv2.cvtColor(mask_image, cv2.COLOR_GRAY2RGB)
 
                     # draw pose axis in the mask image
@@ -290,7 +295,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                     # vtc.objectMarkTracker.put_info_text(color_image_view)
 
                     # display both color image and mask image
-                    vtc_image_buffers.append(np.hstack((color_image_view, sub_image)))
+                    vtc_image_buffers.append(np.hstack((depth_image_view, sub_image)))
 
                     show_width = 1280
                     show_height = 360
@@ -360,6 +365,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
         objecttracking_alert_error(bridge_ip, f"Error: {ex}")
         print("Error :", ex, file=sys.stderr)
         objtracking_err(f"Main loop error: {ex}")
+        print(traceback.format_exc(), file=sys.stderr)
 
     finally:
 

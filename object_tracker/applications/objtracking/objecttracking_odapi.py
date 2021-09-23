@@ -35,13 +35,12 @@ class ODApiObjectTracker(ObjectTracker):
         # object addition data
         self.detected_objects = list()
 
-        self.center_point_list = []
         self.scores_list = []
         self.box_list = []
 
         # pose information
-        self.mask_rect_list = []
-        self.mask_angle_list = []
+        self.object_center_list = []
+        self.object_angle_list = []
 
     # initialize parameters for any camera operation
 
@@ -99,7 +98,6 @@ class ODApiObjectTracker(ObjectTracker):
                 line_depth_average = line_depth_average / line_depth_average_index
 
                 # check the length of detected line is longer than minimun value either width or height of the extracted imate
-                object_width, object_height = depth_image.shape
                 min_line_length = int(
                     min(depth_image.shape[0], depth_image.shape[1]) / 2
                 )
@@ -117,6 +115,12 @@ class ODApiObjectTracker(ObjectTracker):
 
         detected_line = lines[min_index]
         return detected_line
+
+    def find_best_box(self, box_list):
+        if len(box_list) > 0:
+            best_box = box_list[0]
+            for idx in range(len(box_list)):
+                score = np.round(box_list[idx][-1], 3)
 
     # set detectable features and return the 2D or 3D positons in case that objects are detected..
     def find_tracking_object(self, *args):
@@ -146,54 +150,14 @@ class ODApiObjectTracker(ObjectTracker):
                 object_image = color_image[y_min:y_max, x_min:x_max]
                 object_depth_image = depth_image[y_min:y_max, x_min:x_max]
 
+                # find the lines in this image
                 lines = self.get_lines_from_image(object_image)
 
-                line_depth_averages = list()
-                min_line_depth_average = 9999999  # set an enougth big value
-                for index, value in enumerate(lines):
-                    x1, y1, x2, y2 = value[0]
-                    line_iter = self.create_line_iterator(
-                        (x1, y1), (x2, y2), object_depth_image
-                    )
+                # find a line with minium average depth value in the lines of the image
+                detected_line = self.find_optimal_line(lines, object_depth_image)
 
-                    line_depth_average = 0
-                    line_depth_average_index = 0
-                    for line_point in line_iter:
-                        if line_point[2] != 0:
-                            line_depth_average += line_point[2]
-                            line_depth_average_index += 1
-                        # else:
-                        #    line_depth_average_index = 0
-                        #    break
-
-                    if line_depth_average_index > 0:
-                        line_depth_average = (
-                            line_depth_average / line_depth_average_index
-                        )
-
-                        # check the length of detected line is longer than minimun value either width or height of the extracted imate
-                        object_width, object_height = object_depth_image.shape
-                        min_line_length = int(
-                            min(
-                                object_depth_image.shape[0], object_depth_image.shape[1]
-                            )
-                            / 2
-                        )
-                        if line_depth_average_index > min_line_length:
-                            line_depth_averages.append(line_depth_average)
-                        else:
-                            line_depth_averages.append(min_line_depth_average)
-                    else:
-                        line_depth_averages.append(min_line_depth_average)
-
-                    min_value = min(line_depth_averages)
-                    # print(min_value)
-                    min_index = line_depth_averages.index(min_value)
-                    # print(min_index)
-
-                detected_line = lines[min_index]
+                # set the optimal line to member list variable
                 x1_det, y1_det, x2_det, y2_det = detected_line[0]
-
                 self.detected_objects.append(
                     {
                         "line": (
@@ -201,76 +165,80 @@ class ODApiObjectTracker(ObjectTracker):
                             y1_det + y_min,
                             x2_det + x_min,
                             y2_det + y_min,
-                        )
+                        ),
+                        "class": cls,
+                        "score": score,
                     }
                 )
 
             # TODO: go next
-            # print(self.detected_objects)
+            print(self.detected_objects)
 
-            # # get the minArearect and angle for each mask
-            # (self.mask_rect_list, self.mask_angle_list) = self.estimate_pose(mask_list)
-            # print(self.mask_rect_list)
-            # print(self.mask_angle_list)
+            (
+                self.object_center_list,
+                self.object_angle_list,
+                self.scores_list,
+            ) = self.estimate_pose(self.detected_objects)
 
-            # self.center_point_list = self.find_box_center_list(self.mask_rect_list)
-            # print(self.center_point_list)
+            for idx, (markerObject, object_center, object_angle) in enumerate(
+                zip(
+                    self.markerObjectList,
+                    self.object_center_list,
+                    self.object_angle_list,
+                )
+            ):
+                tvec = vtc.vcap.get_3D_pos(object_center[0], object_center[1])
+                # print("---------------------------------------------")
+                # print(vtc.vcap.get_3D_pos(cpoint[0], cpoint[1]))
+                # print("---------------------------------------------")
+                # NOTE: don't need to consider rotation here. we don't have any pose inforation except translation
+                rvec = np.array([0.0, 0.0, 0.0])
 
-            # self.scores_list = self.maskdetect.get_scores()
-            # assert self.scores_list is not None or self.center_point_list is not None
+                # change a rotation vector to a rotation matrix
+                rotMatrix = np.zeros(shape=(3, 3))
 
-            # for idx, (markerObject, cpoint, angle) in enumerate(
-            #     zip(self.markerObjectList, self.center_point_list, self.mask_angle_list)
-            # ):
-            #     tvec = vtc.vcap.get_3D_pos(cpoint[0], cpoint[1])
-            #     # print("---------------------------------------------")
-            #     # print(vtc.vcap.get_3D_pos(cpoint[0], cpoint[1]))
-            #     # print("---------------------------------------------")
-            #     # NOTE: don't need to consider rotation here. we don't have any pose inforation except translation
-            #     rvec = np.array([0.0, 0.0, 0.0])
+                cv2.Rodrigues(rvec, rotMatrix)
 
-            #     # change a rotation vector to a rotation matrix
-            #     rotMatrix = np.zeros(shape=(3, 3))
+                # make a homogeneous matrix using a rotation matrix and a translation matrix
+                hmCal2Cam = HMUtil.create_homogeneous_matrix(rotMatrix, tvec)
 
-            #     cv2.Rodrigues(rvec, rotMatrix)
+                # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
+                # hmWanted = HMUtil.convert_xyzabc_to_hm_by_deg(
+                #     offsetPoint) if offsetPoint is not None else np.eye(4)
+                # hmInput = np.dot(hmCal2Cam, hmWanted)
 
-            #     # make a homogeneous matrix using a rotation matrix and a translation matrix
-            #     hmCal2Cam = HMUtil.create_homogeneous_matrix(rotMatrix, tvec)
+                # get a final position
+                hmResult = np.dot(self.handEyeMat, hmCal2Cam)
+                xyzuvw_list = HMUtil.convert_hm_to_xyzabc_by_deg(hmResult)
+                xyzuvw_arr = np.array(xyzuvw_list)
 
-            #     # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
-            #     # hmWanted = HMUtil.convert_xyzabc_to_hm_by_deg(
-            #     #     offsetPoint) if offsetPoint is not None else np.eye(4)
-            #     # hmInput = np.dot(hmCal2Cam, hmWanted)
+                offsetPoint = (
+                    markerObject.pivotOffset + vtc.camObjOffset
+                    if vtc.camObjOffset is not None
+                    else markerObject.pivotOffset
+                )
 
-            #     # get a final position
-            #     hmResult = np.dot(self.handEyeMat, hmCal2Cam)
-            #     xyzuvw_list = HMUtil.convert_hm_to_xyzabc_by_deg(hmResult)
-            #     xyzuvw_arr = np.array(xyzuvw_list)
+                xyzuvw_arr += offsetPoint.tolist()
+                xyzuvw = xyzuvw_arr.tolist()
 
-            #     offsetPoint = (
-            #         markerObject.pivotOffset + vtc.camObjOffset
-            #         if vtc.camObjOffset is not None
-            #         else markerObject.pivotOffset
-            #     )
+                # this conversion is moved to Operato, but come back by making robot move policy consistent
+                if xyzuvw != None:
+                    [x, y, z, u, v, w] = xyzuvw
+                    # indy7 base position to gripper position
+                    # xyzuvw = [x, y, z, u*(-1), v+180.0, w]
+                    # NOTE: using the fixed rotation information
+                    # TODO: adjust 'w' value by input angle value
+                    object_angle = (
+                        object_angle + 180.0 if object_angle <= -90.0 else object_angle
+                    )  # TEST
+                    xyzuvw = [x, y, z, 180.0, 0.0, 180.0 - object_angle]
 
-            #     xyzuvw_arr += offsetPoint.tolist()
-            #     xyzuvw = xyzuvw_arr.tolist()
+                # set final target position..
+                markerObject.targetPos = xyzuvw
 
-            #     # this conversion is moved to Operato, but come back by making robot move policy consistent
-            #     if xyzuvw != None:
-            #         [x, y, z, u, v, w] = xyzuvw
-            #         # indy7 base position to gripper position
-            #         # xyzuvw = [x, y, z, u*(-1), v+180.0, w]
-            #         # NOTE: using the fixed rotation information
-            #         # TODO: adjust 'w' value by input angle value
-            #         angle = angle + 180.0 if angle <= -90.0 else angle  # TEST
-            #         xyzuvw = [x, y, z, 180.0, 0.0, 180.0 - angle]
-
-            #     # set final target position..
-            #     markerObject.targetPos = xyzuvw
-
-            #     # append this object to the list to be returned
-            #     resultList.append(markerObject)
+                # append this object to the list to be returned
+                print(resultList)
+                resultList.append(markerObject)
         else:
             pass
 
@@ -282,43 +250,51 @@ class ODApiObjectTracker(ObjectTracker):
     def get_boxed_image(self, input_image):
         return self.detector.get_bboxes_on_image(input_image, self.box_list)
 
-    def estimate_pose(self, mask_list):
-        box_list = list()
+    def get_pickpint_image(self, input_image):
+        boxed_image = self.detector.get_bboxes_on_image(input_image, self.box_list)
+
+        for detected_object in self.detected_objects:
+            x1 = detected_object["line"][0]
+            y1 = detected_object["line"][1]
+            x2 = detected_object["line"][2]
+            y2 = detected_object["line"][3]
+            boxed_image = cv2.line(boxed_image, (x1, y1), (x2, y2), (0, 0, 128), 3)
+
+        for center_point in self.object_center_list:
+            boxed_image = cv2.circle(boxed_image, center_point, 5, (128, 128, 0), -1)
+
+        return boxed_image
+
+    def estimate_pose(self, object_list):
+        center_list = list()
         angle_list = list()
+        score_list = list()
 
-        if len(mask_list) > 0:
-            for mask in mask_list:
-                mask_image = np.where(mask, 255, 0).astype(np.uint8)
-                contours, hierarchy = cv2.findContours(
-                    mask_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
-                )
+        if len(object_list) > 0:
+            for object_one in object_list:
+                # get a center point
+                p1_x = object_one["line"][0]
+                p1_y = object_one["line"][1]
+                p2_x = object_one["line"][2]
+                p2_y = object_one["line"][3]
+                center_list.append((int((p1_x + p2_x) / 2), int((p1_y + p2_y) / 2)))
 
-                if len(contours) > 0:
-                    for contour in contours:
-                        # get minimum-area rect of each contour
-                        areaRect = cv2.minAreaRect(contour)
+                # get a angle
+                angle = math.atan2(p1_y - p2_y, p1_x - p2_x)
+                angle = angle * 180 / math.pi
+                angle_list.append(angle)
 
-                        # get rotation angle and push into the list
-                        (rectWidth, rectHeight) = areaRect[1]
-                        angle = (
-                            (areaRect[2] - 90)
-                            if (rectWidth < rectHeight)
-                            else areaRect[2]
-                        )
-                        angle_list.append(angle)
-
-                        # get the rectangle coordinates of RotateRect
-                        box = cv2.boxPoints(areaRect)
-
-                        # push into the list
-                        box_list.append(box)
-
-                else:
-                    print("find mask but can not get any contour", file=sys.stderr)
+                # get a score
+                score = object_one["score"]
+                score_list.append(score)
         else:
-            print("find mask in mask_list", file=sys.stderr)
+            print("can't find any object in object_list", file=sys.stderr)
 
-        return (box_list, angle_list)
+        print("center_list: ", center_list)
+        print("angle_list: ", angle_list)
+        print("score_list: ", score_list)
+
+        return (center_list, angle_list, score_list)
 
     def create_line_iterator(self, P1, P2, img):
         """

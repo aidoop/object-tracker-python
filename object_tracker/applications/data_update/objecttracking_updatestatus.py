@@ -60,8 +60,6 @@ class ObjectUpdateStatus(object):
         status = {"objectStatus": self.ObjStatusList}
 
         if AppConfig.ObjTrackingDebugMode == False:
-            # print('-------------------')
-            # print(status)
             self.gqlClient.update_tracking_workspace_status(
                 name=self.vision_workspace_name, status=status
             )
