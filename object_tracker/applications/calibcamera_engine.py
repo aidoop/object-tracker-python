@@ -147,13 +147,15 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
             if cameraObject.type == "realsense-camera":
                 color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
+            color_view_image = color_image.copy()
+
             # create info text
-            infoText.draw(color_image)
+            infoText.draw(color_view_image)
 
             # display the captured image
             if bridge_ip.isActive() is True:
                 color_image_resized = cv2.resize(
-                    color_image, dsize=(640, 480), interpolation=cv2.INTER_AREA
+                    color_view_image, dsize=(640, 480), interpolation=cv2.INTER_AREA
                 )
                 bridge_ip.send_dict_data(
                     "video",
@@ -165,7 +167,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
                     },
                 )
             else:
-                cv2.imshow(cameraName, color_image)
+                cv2.imshow(cameraName, color_view_image)
 
             # TODO: arrange these opencv key events based on other key event handler class
             # handle key inputs

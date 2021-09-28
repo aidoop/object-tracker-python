@@ -49,10 +49,15 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
     bridge_ip = BridgeInterprocess(interproc_dict, ve, cq)
 
-    objecttracking_update_status(bridge_ip, "Fetching Data")
+    objecttracking_update_status(bridge_ip, "Tracking Preparation Stage")
 
     # create application data
     try:
+        #########################################################################
+        #########################################################################
+        # Tracking Preparation Stage
+        #########################################################################
+        #########################################################################
         objtracking_info("grpahql client parsing started..")
         app_data = ObjectTrakcingAppData()
         if (
@@ -88,7 +93,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
             app_data.get_gql_client(), vision_workspace_name
         )
 
-        # if app_data.tracking_method == ObjectTrackingMethod.COUNTOUR:
+        # if app_data.tracking_method == ObjectTrackingMethod.BOX:
         #     cams = app_data.get_camera_list()
         #     for cam in cams:
         #         cv2.namedWindow(cam.camera_name, cv2.WINDOW_NORMAL)
@@ -101,9 +106,15 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
         objtracking_err(f"Prepartion stage error: {ex}")
         print(f"Prepartion stage error: {ex}")
 
-    objtracking_info("video frame processing starts..")
+    objtracking_info("Camera Frame Aqusition Stage")
     try:
         while True:
+
+            #########################################################################
+            #########################################################################
+            # Camera Frame Aqusition Stage
+            #########################################################################
+            #########################################################################
 
             # get markable object
             tobjIDList = app_data.get_mark_id_list_of_camera(0).copy()
@@ -126,6 +137,12 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 # assert color_image is not None, 'no captured frame'
                 if color_image is None:
                     continue
+
+                #########################################################################
+                #########################################################################
+                # Object Tracking Stage
+                #########################################################################
+                #########################################################################
 
                 # check if core variables are available..
                 if app_data.tracking_method == ObjectTrackingMethod.ARUCO:
@@ -234,6 +251,12 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                 #     cv2.rectangle(
                 #         color_image, (ROIRegion[0], ROIRegion[1]), (ROIRegion[2], ROIRegion[3]), (255, 0, 0), 3)
 
+                #########################################################################
+                #########################################################################
+                # Display Stage
+                #########################################################################
+                #########################################################################
+
                 # display a frame image
                 show_width = 640
                 show_height = 360
@@ -251,7 +274,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                     vtc_image_buffers.append(color_image_half)
                     vtc_image_index += 1
                     # cv2.imshow(vtc.camera_name, color_image_half)
-                elif app_data.tracking_method == ObjectTrackingMethod.COUNTOUR:
+                elif app_data.tracking_method == ObjectTrackingMethod.BOX:
                     # BGR to RGB for opencv imshow function
                     color_image_view = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
@@ -275,7 +298,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
                     show_width = 1280
                     show_height = 360
-                elif app_data.tracking_method == ObjectTrackingMethod.ODAPI:
+                elif app_data.tracking_method == ObjectTrackingMethod.PACK:
                     # BGR to RGB for opencv imshow function
                     color_image_view = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
@@ -355,6 +378,12 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
             # sleep for the specified duration.
             # if app_data.tracking_method == ObjectTrackingMethod.ARUCO:
             #     time.sleep(0.2)
+
+            #########################################################################
+            #########################################################################
+            # Key Event Process Stage
+            #########################################################################
+            #########################################################################
 
             # handle key inputs
             pressedKey = cv2.waitKey(1) & 0xFF

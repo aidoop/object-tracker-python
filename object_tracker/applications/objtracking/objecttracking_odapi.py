@@ -23,9 +23,14 @@ class ODApiObject:
 class ODApiObjectTracker(ObjectTracker):
 
     # a best candidate...
-    MODEL_PATH = "/home/jinwon/Documents/github/pyaidoop-pickpoint-finder/exported_model/ssd_mobilenet_v2_kimchi_1/saved_model/"
-    LABELMAP_PATH = "/home/jinwon/Documents/github/pyaidoop-pickpoint-finder/models/sample_labelmap.pbtxt"
+    MODEL_PATH = "/home/jinwon/Documents/github/pyaidoop-pickpoint-finder/exported_model/ssd_mobilenet_v2_kimchislice/saved_model/"
+    LABELMAP_PATH = "/home/jinwon/Documents/github/pyaidoop-pickpoint-finder/models/kimchislice_labelmap.pbtxt"
+
+    # detecton probability threshold
     DETECTION_THRESHOLD = 0.9  # 0.5
+
+    # maximun depth value
+    CRITERIA_DEPTH = (0.1, 0.3)
 
     def __init__(self):
         # the list for input mark objects
@@ -55,6 +60,13 @@ class ODApiObjectTracker(ObjectTracker):
             class_id=None,
             threshold=self.DETECTION_THRESHOLD,
         )
+
+    def set_model_path(self, model_path, labelmap_path):
+        self.MODEL_PATH = model_path
+        self.LABELMAP_PATH = labelmap_path
+
+    def set_detection_threshold(self, threshold):
+        self.DETECTION_THRESHOLD = threshold
 
     # set detectable features like marker id of aruco marker
     def set_tracking_object(self, object):
@@ -92,8 +104,8 @@ class ODApiObjectTracker(ObjectTracker):
                         line_depth_average += line_point[2]
                         line_depth_average_index += 1
                     # else:
-                    #    line_depth_average_index = 0
-                    #    break
+                    #     line_depth_average_index = 0
+                    #     break
 
                 if line_depth_average_index > 0:
                     line_depth_average = line_depth_average / line_depth_average_index
@@ -173,8 +185,8 @@ class ODApiObjectTracker(ObjectTracker):
                         }
                     )
 
-            # TODO: go next
-            print(self.detected_objects)
+            # TODO: need to debug this but be commented later
+            # print(self.detected_objects)
 
             (
                 self.object_center_list,
@@ -226,21 +238,25 @@ class ODApiObjectTracker(ObjectTracker):
                 # this conversion is moved to Operato, but come back by making robot move policy consistent
                 if xyzuvw != None:
                     [x, y, z, u, v, w] = xyzuvw
-                    # indy7 base position to gripper position
-                    # xyzuvw = [x, y, z, u*(-1), v+180.0, w]
-                    # NOTE: using the fixed rotation information
-                    # TODO: adjust 'w' value by input angle value
-                    object_angle = (
-                        object_angle + 180.0 if object_angle <= -90.0 else object_angle
-                    )  # TEST
-                    xyzuvw = [x, y, z, 180.0, 0.0, 180.0 - object_angle]
 
-                # set final target position..
-                markerObject.targetPos = xyzuvw
+                    if z > self.CRITERIA_DEPTH[0] and z < self.CRITERIA_DEPTH[1]:
+                        # indy7 base position to gripper position
+                        # xyzuvw = [x, y, z, u*(-1), v+180.0, w]
+                        # NOTE: using the fixed rotation information
+                        # TODO: adjust 'w' value by input angle value
+                        object_angle = (
+                            object_angle + 180.0
+                            if object_angle <= -90.0
+                            else object_angle
+                        )  # TEST
+                        xyzuvw = [x, y, z, 180.0, 0.0, 180.0 - object_angle]
 
-                # append this object to the list to be returned
-                print(resultList)
-                resultList.append(markerObject)
+                        # set final target position..
+                        markerObject.targetPos = xyzuvw
+
+                        # append this object to the list to be returned
+                        print(resultList)
+                        resultList.append(markerObject)
         else:
             pass
 
@@ -292,9 +308,9 @@ class ODApiObjectTracker(ObjectTracker):
         else:
             print("can't find any object in object_list", file=sys.stderr)
 
-        print("center_list: ", center_list)
-        print("angle_list: ", angle_list)
-        print("score_list: ", score_list)
+        # print("center_list: ", center_list)
+        # print("angle_list: ", angle_list)
+        # print("score_list: ", score_list)
 
         return (center_list, angle_list, score_list)
 

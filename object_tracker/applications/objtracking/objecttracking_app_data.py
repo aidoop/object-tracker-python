@@ -47,12 +47,12 @@ class ObjectTrakcingAppData(object):
             # self.ai_detection_model = self.gqlDataClient.aiDetectionModel
             # self.model_weight_path = self.gqlDataClient.modelWeightPath
 
-            if self.tracking_method == ObjectTrackingMethod.COUNTOUR:
+            if self.tracking_method == ObjectTrackingMethod.BOX:
                 from applications.objtracking.objecttracking_box import (
                     BoxObject,
                     BoxObjectTracker,
                 )
-            elif self.tracking_method == ObjectTrackingMethod.ODAPI:
+            elif self.tracking_method == ObjectTrackingMethod.PACK:
                 from applications.objtracking.objecttracking_odapi import (
                     ODApiObject,
                     ODApiObjectTracker,
@@ -143,9 +143,9 @@ class ObjectTrakcingAppData(object):
                 # create an object tracker
                 objTracker = (
                     BoxObjectTracker()
-                    if self.tracking_method == ObjectTrackingMethod.COUNTOUR
+                    if self.tracking_method == ObjectTrackingMethod.BOX
                     else ODApiObjectTracker()
-                    if self.tracking_method == ObjectTrackingMethod.ODAPI
+                    if self.tracking_method == ObjectTrackingMethod.PACK
                     else ArucoMarkerTracker()
                     if self.tracking_method == ObjectTrackingMethod.ARUCO
                     else None
@@ -199,9 +199,9 @@ class ObjectTrakcingAppData(object):
                 # marks doesn't have any dependency with camera, so all marks should be registered for all cameras
                 obj = (
                     BoxObject(trackableMark.endpoint, trackableMark.poseOffset)
-                    if self.tracking_method == ObjectTrackingMethod.COUNTOUR
+                    if self.tracking_method == ObjectTrackingMethod.BOX
                     else ODApiObject(trackableMark.endpoint, trackableMark.poseOffset)
-                    if self.tracking_method == ObjectTrackingMethod.ODAPI
+                    if self.tracking_method == ObjectTrackingMethod.PACK
                     else ArucoMarkerObject(
                         int(trackableMark.endpoint), trackableMark.poseOffset
                     )

@@ -40,7 +40,7 @@ def objecttracking_engine():
     # prepare object update status
     objStatusUpdate = ObjectUpdateStatus(app_data.get_gql_client())
 
-    if app_data.tracking_method == ObjectTrackingMethod.COUNTOUR:
+    if app_data.tracking_method == ObjectTrackingMethod.BOX:
         cams = app_data.get_camera_list()
         for cam in cams:
             cv2.namedWindow(cam.camera_name, cv2.WINDOW_NORMAL)

@@ -118,7 +118,8 @@ def run_application_main(app_type, app_args):
     # start method with 'spawn'
     mp.set_start_method(method="spawn")
 
-    # create an event for inter-process syncronization
+    # create an event for inte
+    # r-process syncronization
     video_sync = mp.Event()
 
     # create command queue among processes
