@@ -149,11 +149,8 @@ class ODApiObjectTracker(ObjectTracker):
         if len(queue_estimated_result) < self.ESTIMATED_RESULT_COUNT:
             return None
 
-        def takeZ(elem):
-            return elem[2]
-
         queue_estimated_list = list(queue_estimated_result)
-        queue_estimated_list.sort(key=takeZ)
+        queue_estimated_list.sort(key=lambda x: x[2])
 
         return queue_estimated_list[5]
 
