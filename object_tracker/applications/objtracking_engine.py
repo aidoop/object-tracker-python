@@ -132,8 +132,11 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
             vtc_image_buffers = list()
             for vtc in vtcList:
                 # get a frame
-                # color_image = vtc.vcap.get_video_frame()
-                (color_image, depth_image) = vtc.vcap.get_frames()
+                if app_data.tracking_method == ObjectTrackingMethod.ARUCO:
+                    color_image = vtc.vcap.get_video_frame()
+                    depth_image = None
+                else:
+                    (color_image, depth_image) = vtc.vcap.get_frames()
                 # assert color_image is not None, 'no captured frame'
                 if color_image is None:
                     continue
