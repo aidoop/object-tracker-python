@@ -24,11 +24,11 @@ class ODApiObject:
 class ODApiObjectTracker(ObjectTracker):
 
     # a best candidate...
-    MODEL_PATH = "/home/jinwon/Documents/github/pyaidoop-pickpoint-finder/exported_model/ssd_mobilenet_v2_kimchislice/saved_model/"
+    MODEL_PATH = "/home/jinwon/Documents/github/pyaidoop-pickpoint-finder/exported_model/ssd_mobilenet_v2_kimchislice_3/saved_model/"
     LABELMAP_PATH = "/home/jinwon/Documents/github/pyaidoop-pickpoint-finder/models/kimchislice_labelmap.pbtxt"
 
     # detecton probability threshold
-    DETECTION_THRESHOLD = 0.9  # 0.5
+    DETECTION_THRESHOLD = 0.8  # 0.5
 
     # maximun depth value
     CRITERIA_DEPTH = (0.1, 0.3)
@@ -132,9 +132,7 @@ class ODApiObjectTracker(ObjectTracker):
                     line_depth_averages.append(min_line_depth_average)
 
             min_value = min(line_depth_averages)
-            # print(min_value)
             min_index = line_depth_averages.index(min_value)
-            # print(min_index)
 
         detected_line = lines[min_index] if len(lines) > 0 else None
         return detected_line
@@ -213,7 +211,6 @@ class ODApiObjectTracker(ObjectTracker):
                 self.scores_list,
             ) = self.estimate_pose(self.detected_objects)
 
-            object_best_score = 0.0
             for idx, (markerObject, object_center, object_angle,) in enumerate(
                 zip(
                     self.markerObjectList,
@@ -295,18 +292,51 @@ class ODApiObjectTracker(ObjectTracker):
     def get_boxed_image(self, input_image):
         return self.detector.get_bboxes_on_image(input_image, self.box_list)
 
-    def get_pickpint_image(self, input_image):
+    def get_pickpoint_image(self, input_image):
         boxed_image = self.detector.get_bboxes_on_image(input_image, self.box_list)
 
-        for detected_object in self.detected_objects:
+        # draw a object box
+
+        for idx, (detected_object, object_angle) in enumerate(
+            zip(self.detected_objects, self.object_angle_list)
+        ):
             x1 = detected_object["line"][0]
             y1 = detected_object["line"][1]
             x2 = detected_object["line"][2]
             y2 = detected_object["line"][3]
             boxed_image = cv2.line(boxed_image, (x1, y1), (x2, y2), (0, 0, 128), 3)
 
-        for center_point in self.object_center_list:
-            boxed_image = cv2.circle(boxed_image, center_point, 5, (128, 128, 0), -1)
+            # draw an angle information
+            angle_text = f"Angle: {object_angle}"
+            text_size, _ = cv2.getTextSize(angle_text, cv2.FONT_HERSHEY_SIMPLEX, 1.0, 2)
+            cv2.putText(
+                boxed_image,
+                angle_text,
+                (self.box_list[idx][2] + 3, self.box_list[idx][1] + text_size[1]),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                (0, 255, 255),
+                2,
+            )
+
+        # # draw a picking point
+        # for center_point in self.object_center_list:
+        #     boxed_image = cv2.circle(boxed_image, center_point, 5, (128, 128, 0), -1)
+
+        # draw text information
+        object_count_text = f"Object Count: {len(self.detected_objects)}"
+        text_size, _ = cv2.getTextSize(
+            object_count_text, cv2.FONT_HERSHEY_SIMPLEX, 1.0, 2
+        )
+        cv2.putText(
+            boxed_image,
+            object_count_text,
+            (3, text_size[1]),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1.0,
+            (0, 255, 255),
+            2,
+        )
 
         return boxed_image
 
@@ -334,10 +364,6 @@ class ODApiObjectTracker(ObjectTracker):
                 score_list.append(score)
         else:
             print("can't find any object in object_list", file=sys.stderr)
-
-        # print("center_list: ", center_list)
-        # print("angle_list: ", angle_list)
-        # print("score_list: ", score_list)
 
         return (center_list, angle_list, score_list)
 

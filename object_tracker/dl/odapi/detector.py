@@ -69,9 +69,9 @@ class ObjectDetector:
                 text,
                 (x_min + 5, y_min - 7),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                0.5,
+                1.0,
                 (0, 255, 0),
-                1,
+                2,
             )
 
         if det_time != None:

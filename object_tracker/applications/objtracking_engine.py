@@ -302,17 +302,15 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                     # BGR to RGB for opencv imshow function
                     color_image_view = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
-                    # create images to show
+                    # get a depth image
                     depth_image_view = cv2.applyColorMap(
                         cv2.convertScaleAbs(depth_image, alpha=0.07), cv2.COLORMAP_JET
                     )
-                    # sub_image = vtc.objectMarkTracker.get_boxed_image(color_image_view)
-                    sub_image = vtc.objectMarkTracker.get_pickpint_image(
+
+                    # get a color image
+                    sub_image = vtc.objectMarkTracker.get_pickpoint_image(
                         color_image_view
                     )
-                    # sub_image = maskcv2.cvtColor(mask_image, cv2.COLOR_GRAY2RGB)
-
-                    # draw pose axis in the mask image
 
                     # # show scores
                     # vtc.objectMarkTracker.put_info_text(color_image_view)
