@@ -3,6 +3,7 @@ import cv2
 import sys
 import numpy as np
 import traceback
+import time
 
 from pyaidoop.log import Logger
 
@@ -379,6 +380,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
             # sleep for the specified duration.
             # if app_data.tracking_method == ObjectTrackingMethod.ARUCO:
             #     time.sleep(0.2)
+            time.sleep(0.2)
 
             #########################################################################
             #########################################################################

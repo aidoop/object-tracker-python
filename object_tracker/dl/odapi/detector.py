@@ -61,7 +61,7 @@ class ObjectDetector:
             cls = str(boxes_list[idx][4])
             score = str(np.round(boxes_list[idx][-1], 2))
 
-            text = cls + ": " + score
+            text = cls
             cv2.rectangle(img, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
             cv2.rectangle(img, (x_min, y_min - 20), (x_min, y_min), (255, 255, 255), -1)
             cv2.putText(

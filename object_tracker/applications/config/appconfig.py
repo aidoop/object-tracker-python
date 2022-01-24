@@ -14,7 +14,7 @@ class AppConfig:
     # Server IP
     ServerIP = "localhost"
 
-    APP_TRACKING_METHOD = ObjectTrackingMethod.ARUCO
+    APP_TRACKING_METHOD = ObjectTrackingMethod.PACK
 
     # realsense camera parameters
     UseRealSenseInternalMatrix = False
@@ -51,3 +51,9 @@ class AppConfig:
     ObjTrackingDebugMode = False
     # debug without robot (Default = False)
     ObjTrackingDebugWoRobot = False
+
+    #################################################
+    # Debug Parameters
+    #################################################
+    # Fixed Depth (default: 0)
+    FixedDepthPose = 0.17

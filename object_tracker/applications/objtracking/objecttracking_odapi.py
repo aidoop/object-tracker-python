@@ -11,6 +11,8 @@ from applications.objtracking.objecttracking_base import ObjectTracker
 
 from dl.odapi.detector import ObjectDetector
 
+from applications.config.appconfig import AppConfig
+
 
 # tensorflow object detection api(ODApi) object
 class ODApiObject:
@@ -24,8 +26,8 @@ class ODApiObject:
 class ODApiObjectTracker(ObjectTracker):
 
     # a best candidate...
-    MODEL_PATH = "/home/jinwon/Documents/github/pyaidoop-pickpoint-finder/exported_model/ssd_mobilenet_v2_kimchislice_3/saved_model/"
-    LABELMAP_PATH = "/home/jinwon/Documents/github/pyaidoop-pickpoint-finder/models/kimchislice_labelmap.pbtxt"
+    MODEL_PATH = "/home/jinwon/Documents/github/pyaidoop-pickpoint-finder/exported_model/ssd_mobilenet_v2_pack_1/saved_model/"
+    LABELMAP_PATH = "/home/jinwon/Documents/github/pyaidoop-pickpoint-finder/models/pack_labelmap.pbtxt"
 
     # detecton probability threshold
     DETECTION_THRESHOLD = 0.8  # 0.5
@@ -51,6 +53,11 @@ class ODApiObjectTracker(ObjectTracker):
         # pose information
         self.object_center_list = []
         self.object_angle_list = []
+
+        # detected line info.
+        self.detected_line = None
+        self.detected_line_length = 0
+        self.detected_line_angle = 0
 
         # result collection
         self.queue_estimated_result = collections.deque(
@@ -185,10 +192,20 @@ class ODApiObjectTracker(ObjectTracker):
 
                 # find a line with minium average depth value in the lines of the image
                 detected_line = self.find_optimal_line(lines, object_depth_image)
+                x1_det, y1_det, x2_det, y2_det = detected_line[0]
+                detected_line_length = math.sqrt(
+                    (x1_det - x2_det) * (x1_det - x2_det)
+                    + (y1_det - y2_det) * (y1_det - y2_det)
+                )
+
+                # check the availability of the detected line
+                if detected_line_length > self.detected_line_length:
+                    self.detected_line = detected_line
+                    self.detected_line_length = detected_line_length
 
                 # set the optimal line to member list variable
-                if detected_line is not None:
-                    x1_det, y1_det, x2_det, y2_det = detected_line[0]
+                if self.detected_line is not None:
+                    x1_det, y1_det, x2_det, y2_det = self.detected_line[0]
                     self.detected_objects.append(
                         {
                             "line": (
@@ -201,6 +218,10 @@ class ODApiObjectTracker(ObjectTracker):
                             "score": score,
                         }
                     )
+
+            if len(self.detected_objects) == 0:
+                self.detected_line = None
+                self.detected_line_length = 0
 
             # TODO: need to debug this but be commented later
             # print(self.detected_objects)
@@ -220,67 +241,83 @@ class ODApiObjectTracker(ObjectTracker):
             ):
                 # process coord. translation & send it to the server in case with first index only
                 if idx == 0:
-                    tvec = vtc.vcap.get_3D_pos(object_center[0], object_center[1])
-                    # print("---------------------------------------------")
-                    # print(vtc.vcap.get_3D_pos(cpoint[0], cpoint[1]))
-                    # print("---------------------------------------------")
-                    # NOTE: don't need to consider rotation here. we don't have any pose inforation except translation
-                    rvec = np.array([0.0, 0.0, 0.0])
+                    # if abs(self.detected_line_angle - object_angle) > 30:
+                    #     self.detected_line = None
+                    #     self.detected_line_length = 0
+                    # self.detected_line_angle = object_angle
 
-                    # change a rotation vector to a rotation matrix
-                    rotMatrix = np.zeros(shape=(3, 3))
+                    try:
 
-                    cv2.Rodrigues(rvec, rotMatrix)
+                        tvec = vtc.vcap.get_3D_pos(object_center[0], object_center[1])
+                        # print("---------------------------------------------")
+                        # print(vtc.vcap.get_3D_pos(cpoint[0], cpoint[1]))
+                        # print("---------------------------------------------")
+                        # NOTE: don't need to consider rotation here. we don't have any pose inforation except translation
+                        rvec = np.array([0.0, 0.0, 0.0])
 
-                    # make a homogeneous matrix using a rotation matrix and a translation matrix
-                    hmCal2Cam = HMUtil.create_homogeneous_matrix(rotMatrix, tvec)
+                        # change a rotation vector to a rotation matrix
+                        rotMatrix = np.zeros(shape=(3, 3))
 
-                    # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
-                    # hmWanted = HMUtil.convert_xyzabc_to_hm_by_deg(
-                    #     offsetPoint) if offsetPoint is not None else np.eye(4)
-                    # hmInput = np.dot(hmCal2Cam, hmWanted)
+                        cv2.Rodrigues(rvec, rotMatrix)
 
-                    # get a final position
-                    hmResult = np.dot(self.handEyeMat, hmCal2Cam)
-                    xyzuvw_list = HMUtil.convert_hm_to_xyzabc_by_deg(hmResult)
-                    xyzuvw_arr = np.array(xyzuvw_list)
+                        # make a homogeneous matrix using a rotation matrix and a translation matrix
+                        hmCal2Cam = HMUtil.create_homogeneous_matrix(rotMatrix, tvec)
 
-                    offsetPoint = (
-                        markerObject.pivotOffset + vtc.camObjOffset
-                        if vtc.camObjOffset is not None
-                        else markerObject.pivotOffset
-                    )
+                        # fix z + 0.01 regardless of some input offsets like tool offset, poi offset,...
+                        # hmWanted = HMUtil.convert_xyzabc_to_hm_by_deg(
+                        #     offsetPoint) if offsetPoint is not None else np.eye(4)
+                        # hmInput = np.dot(hmCal2Cam, hmWanted)
 
-                    xyzuvw_arr += offsetPoint.tolist()
-                    xyzuvw = xyzuvw_arr.tolist()
+                        # get a final position
+                        hmResult = np.dot(self.handEyeMat, hmCal2Cam)
+                        xyzuvw_list = HMUtil.convert_hm_to_xyzabc_by_deg(hmResult)
+                        xyzuvw_arr = np.array(xyzuvw_list)
 
-                    # this conversion is moved to Operato, but come back by making robot move policy consistent
-                    if xyzuvw != None:
-                        [x, y, z, u, v, w] = xyzuvw
+                        offsetPoint = (
+                            markerObject.pivotOffset + vtc.camObjOffset
+                            if vtc.camObjOffset is not None
+                            else markerObject.pivotOffset
+                        )
 
-                        if z > self.CRITERIA_DEPTH[0] and z < self.CRITERIA_DEPTH[1]:
-                            # indy7 base position to gripper position
-                            # xyzuvw = [x, y, z, u*(-1), v+180.0, w]
-                            # NOTE: using the fixed rotation information
-                            # TODO: adjust 'w' value by input angle value
-                            object_angle = (
-                                object_angle + 180.0
-                                if object_angle <= -90.0
-                                else object_angle
-                            )  # TEST
-                            xyzuvw = [x, y, z, 180.0, 0.0, 180.0 - object_angle]
+                        xyzuvw_arr += offsetPoint.tolist()
+                        xyzuvw = xyzuvw_arr.tolist()
 
-                            # result queing
-                            self.queue_estimated_result.append(xyzuvw)
-                            determined_xyzuvw = self.determine_best_pick(
-                                self.queue_estimated_result
-                            )
+                        # this conversion is moved to Operato, but come back by making robot move policy consistent
+                        if xyzuvw != None:
+                            [x, y, z, u, v, w] = xyzuvw
 
-                            # set final target position..
-                            markerObject.targetPos = determined_xyzuvw
+                            if (
+                                z > self.CRITERIA_DEPTH[0]
+                                and z < self.CRITERIA_DEPTH[1]
+                            ):
+                                # indy7 base position to gripper position
+                                # xyzuvw = [x, y, z, u*(-1), v+180.0, w]
+                                # NOTE: using the fixed rotation information
+                                # TODO: adjust 'w' value by input angle value
+                                object_angle = (
+                                    object_angle + 180.0
+                                    if object_angle <= -90.0
+                                    else object_angle
+                                )  # TEST
+                                xyzuvw = [x, y, z, 180.0, 0.0, 180.0 - object_angle]
 
-                            # append this object to the list to be returned
-                            resultList.append(markerObject)
+                                # result queing
+                                self.queue_estimated_result.append(xyzuvw)
+                                determined_xyzuvw = self.determine_best_pick(
+                                    self.queue_estimated_result
+                                )
+
+                                if AppConfig.FixedDepthPose != 0:
+                                    determined_xyzuvw[2] = AppConfig.FixedDepthPose
+
+                                # set final target position..
+                                markerObject.targetPos = determined_xyzuvw
+
+                                # append this object to the list to be returned
+                                resultList.append(markerObject)
+                    except Exception as ex:
+                        resultList = list()
+
         else:
             pass
 
@@ -306,22 +343,53 @@ class ODApiObjectTracker(ObjectTracker):
             y2 = detected_object["line"][3]
             boxed_image = cv2.line(boxed_image, (x1, y1), (x2, y2), (0, 0, 128), 3)
 
-            # draw an angle information
-            angle_text = f"Angle: {object_angle}"
-            text_size, _ = cv2.getTextSize(angle_text, cv2.FONT_HERSHEY_SIMPLEX, 1.0, 2)
+            # draw an score information
+            score = str(np.round(self.box_list[idx][-1], 2))
+            score_text = f"Score: {score}"
+            score_text_size, _ = cv2.getTextSize(
+                score_text, cv2.FONT_HERSHEY_SIMPLEX, 1.0, 2
+            )
             cv2.putText(
                 boxed_image,
-                angle_text,
-                (self.box_list[idx][2] + 3, self.box_list[idx][1] + text_size[1]),
+                score_text,
+                (
+                    self.box_list[idx][2] + 3,
+                    self.box_list[idx][1] + score_text_size[1],
+                ),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 1.0,
-                (0, 255, 255),
+                (0, 0, 255),
                 2,
             )
 
-        # # draw a picking point
-        # for center_point in self.object_center_list:
-        #     boxed_image = cv2.circle(boxed_image, center_point, 5, (128, 128, 0), -1)
+            # draw an angle information
+            angle_text = f"Angle: {object_angle:.2f}"
+            angle_text_size, _ = cv2.getTextSize(
+                angle_text, cv2.FONT_HERSHEY_SIMPLEX, 1.0, 2
+            )
+            cv2.putText(
+                boxed_image,
+                angle_text,
+                (
+                    self.box_list[idx][2] + 3,
+                    self.box_list[idx][1] + angle_text_size[1] + score_text_size[1] + 3,
+                ),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                (0, 0, 255),
+                2,
+            )
+
+        # draw a picking point
+        for center_point in self.object_center_list:
+            cv2.drawMarker(
+                boxed_image,
+                center_point,
+                (200, 30, 30),
+                markerType=cv2.MARKER_TRIANGLE_UP,
+                markerSize=20,
+                thickness=3,
+            )
 
         # draw text information
         object_count_text = f"Object Count: {len(self.detected_objects)}"
