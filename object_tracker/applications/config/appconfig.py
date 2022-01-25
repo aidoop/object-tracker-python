@@ -22,19 +22,24 @@ class AppConfig:
     # default: 848x480 (for realsense)
     VideoFrameWidth = 848
     VideoFrameHeight = 480
-
     VideoFramePerSec = 30
 
+    #################################################
     # default aruco parameters
+    #################################################
     ArucoDict = aruco.DICT_5X5_250
     ArucoSize = 0.05
 
+    #################################################
     # camera calibration parameters
+    #################################################
     UseCalibChessBoard = False
     ChessWidth = 10
     ChessHeight = 7
 
+    #################################################
     # handeye calibration parameters
+    #################################################
     UseHandEyePrecisionTest = False
     UseNewCameraMatrix = False
     HandEyeTargetZ = 0.20
@@ -43,6 +48,12 @@ class AppConfig:
     UseArucoBoard = True
     HandEyeArucoDict = aruco.DICT_7X7_1000
     HandEyeArucoSize = 0.075
+
+    #################################################
+    # PACK Detection
+    #################################################
+    EnableBoxIOU = True
+    BoxIOUCriteria = 0.90
 
     #################################################
     # Debug Parameters

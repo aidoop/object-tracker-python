@@ -196,6 +196,10 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
                                 if resultObj.targetPos is not None:
                                     [x, y, z, u, v, w] = resultObj.targetPos
 
+                                    # [CUSTOM] fixed Z
+                                    if AppConfig.FixedDepthPose != 0:
+                                        z = AppConfig.FixedDepthPose
+
                                     objStatusUpdate.add_tracking_object_status(
                                         resultObj.markerID,
                                         [vtc.camera_name],
@@ -233,6 +237,10 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
 
                         if resultObj.targetPos is not None:
                             [x, y, z, u, v, w] = resultObj.targetPos
+
+                            # [CUSTOM] fixed Z
+                            if AppConfig.FixedDepthPose != 0:
+                                z = AppConfig.FixedDepthPose
 
                             # replace roi regions to camera name
                             objStatusUpdate.add_tracking_object_status(

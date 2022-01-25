@@ -55,9 +55,9 @@ class ODApiObjectTracker(ObjectTracker):
         self.object_angle_list = []
 
         # detected line info.
-        self.detected_line = None
-        self.detected_line_length = 0
-        self.detected_line_angle = 0
+        self.max_detected_line = None
+        self.max_detected_line_length = 0
+        self.max_detected_line_angle = 0
 
         # result collection
         self.queue_estimated_result = collections.deque(
@@ -159,7 +159,14 @@ class ODApiObjectTracker(ObjectTracker):
 
         return queue_estimated_list[5]
 
-    def get_box_iou(boxA: list, boxB: list) -> float:
+    def get_box_iou(self, boxListA: list, boxListB: list) -> float:
+        if len(boxListA) == 0 or len(boxListB) == 0:
+            return 0.0
+
+        # get the first box all the time
+        boxA = boxListA[0]
+        boxB = boxListB[0]
+
         # determine the (x, y)-coordinates of the intersection rectangle
         xA = max(boxA[0], boxB[0])
         yA = max(boxA[1], boxB[1])
@@ -178,9 +185,14 @@ class ODApiObjectTracker(ObjectTracker):
         # area and dividing it by the sum of prediction + ground-truth
         # areas - the interesection area
         iou = interArea / float(boxAArea + boxBArea - interArea)
-        
+
         # return the intersection over union value
         return iou
+
+    # initialize the maximum length of detected line
+    def initialize_maximum_detected_line(self):
+        self.max_detected_line = None
+        self.max_detected_line_length = 0
 
     # set detectable features and return the 2D or 3D positons in case that objects are detected..
     def find_tracking_object(self, *args):
@@ -221,13 +233,13 @@ class ODApiObjectTracker(ObjectTracker):
                 )
 
                 # check the availability of the detected line
-                if detected_line_length > self.detected_line_length:
-                    self.detected_line = detected_line
-                    self.detected_line_length = detected_line_length
+                if detected_line_length > self.max_detected_line_length:
+                    self.max_detected_line = detected_line
+                    self.max_detected_line_length = detected_line_length
 
                 # set the optimal line to member list variable
-                if self.detected_line is not None:
-                    x1_det, y1_det, x2_det, y2_det = self.detected_line[0]
+                if self.max_detected_line is not None:
+                    x1_det, y1_det, x2_det, y2_det = self.max_detected_line[0]
                     self.detected_objects.append(
                         {
                             "line": (
@@ -242,15 +254,17 @@ class ODApiObjectTracker(ObjectTracker):
                     )
 
             # get IOU value of two boxes.
-            box_iou = self.get_box_iou(box_list[0], self.box_list[0])
-            print("box_iou: ", box_iou)
-            # TODO: check if IOU < TBD then self.detected_line is initialized.
+            if AppConfig.EnableBoxIOU == True:
+                box_iou = self.get_box_iou(box_list, self.box_list)
+                if box_iou < AppConfig.BoxIOUCriteria:
+                    self.initialize_maximum_detected_line()
 
-            self.box_list = box_list
-
+            # if detected object cannot be found, initialize saved detected line(the maximum length)
             if len(self.detected_objects) == 0:
-                self.detected_line = None
-                self.detected_line_length = 0
+                self.initialize_maximum_detected_line()
+
+            # set internal box list
+            self.box_list = box_list
 
             # TODO: need to debug this but be commented later
             # print(self.detected_objects)
@@ -270,10 +284,10 @@ class ODApiObjectTracker(ObjectTracker):
             ):
                 # process coord. translation & send it to the server in case with first index only
                 if idx == 0:
-                    # if abs(self.detected_line_angle - object_angle) > 30:
-                    #     self.detected_line = None
-                    #     self.detected_line_length = 0
-                    # self.detected_line_angle = object_angle
+                    # if abs(self.max_detected_line_angle - object_angle) > 30:
+                    #     self.max_detected_line = None
+                    #     self.max_detected_line_length = 0
+                    # self.max_detected_line_angle = object_angle
 
                     try:
 
@@ -335,9 +349,6 @@ class ODApiObjectTracker(ObjectTracker):
                                 determined_xyzuvw = self.determine_best_pick(
                                     self.queue_estimated_result
                                 )
-
-                                if AppConfig.FixedDepthPose != 0:
-                                    determined_xyzuvw[2] = AppConfig.FixedDepthPose
 
                                 # set final target position..
                                 markerObject.targetPos = determined_xyzuvw
