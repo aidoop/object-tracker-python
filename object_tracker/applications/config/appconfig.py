@@ -54,6 +54,7 @@ class AppConfig:
     #################################################
     EnableBoxIOU = True
     BoxIOUCriteria = 0.90
+    AvailableObectRegion = (400, 100, 900, 500)
 
     #################################################
     # Debug Parameters

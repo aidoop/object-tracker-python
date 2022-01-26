@@ -1,4 +1,5 @@
 import cv2
+from matplotlib.style import available
 import numpy as np
 import sys
 import math
@@ -194,6 +195,19 @@ class ODApiObjectTracker(ObjectTracker):
         self.max_detected_line = None
         self.max_detected_line_length = 0
 
+    # 임시 코드
+    def validate_box_region(self, x_min, y_min, x_max, y_max):
+        available_region = AppConfig.AvailableObectRegion
+        if len(available_region) == 4:
+            if (
+                x_min < available_region[0]
+                or y_min < available_region[1]
+                or x_max > available_region[2]
+                or y_max > available_region[3]
+            ):
+                return False
+        return True
+
     # set detectable features and return the 2D or 3D positons in case that objects are detected..
     def find_tracking_object(self, *args):
         color_image = args[0]
@@ -217,6 +231,9 @@ class ODApiObjectTracker(ObjectTracker):
                 y_max = box_list[idx][3]
                 cls = str(box_list[idx][4])
                 score = str(np.round(box_list[idx][-1], 2))
+
+                if self.validate_box_region(x_min, y_min, x_max, y_max) == False:
+                    continue
 
                 object_image = color_image[y_min:y_max, x_min:x_max]
                 object_depth_image = depth_image[y_min:y_max, x_min:x_max]
