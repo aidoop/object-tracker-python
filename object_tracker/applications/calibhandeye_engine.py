@@ -117,11 +117,7 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
         else:
             pass
 
-        # # create the camera device object
-        # if(args.camType == 'rs'):
-        #     rsCamDev = RealsenseCapture(args.camIndex)
-        # elif(args.camType == 'uvc'):
-        #     rsCamDev = OpencvCapture(args.camIndex)
+        # create the camera device object
         handeyecalib_info("video capture started..")
         AppConfig.VideoFrameWidth = cameraObject.width or AppConfig.VideoFrameWidth
         AppConfig.VideoFrameHeight = cameraObject.height or AppConfig.VideoFrameHeight
@@ -143,8 +139,6 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
         # Start streaming
         vcap.start()
 
-        # get instrinsics
-        # mtx, dist = vcap.getIntrinsicsMat(int(cameraObject.endpoint), AppConfig.UseRealSenseInternalMatrix)
         # get internal intrinsics & extrinsics in D435
         if AppConfig.UseRealSenseInternalMatrix == True:
             mtx, dist = vcap.getInternalIntrinsicsMat()
@@ -161,9 +155,6 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
             AppConfig.HandEyeArucoDict, AppConfig.HandEyeArucoSize, mtx, dist
         )
         handeyeAruco.setCalibMarkerID(AppConfig.CalibMarkerID)
-
-        # start indy7 as a direct-teaching mode as default
-        # indy7.set_teaching_mode(True)
 
         # create info text
         infoText = DisplayInfoText(
@@ -350,26 +341,14 @@ def calibhandeye_engine(app_args, interproc_dict=None, ve=None, cq=None):
         )
 
     finally:
-        # direct teaching mode is disalbe before exit
-        # if( 1.get_teaching_mode() == True):
-        #     indy7.set_teaching_mode(False)
-        # Stop streaming
         vcap.stop()
 
         bridge_ip.send_dict_data("app_exit", True)
 
         handeyecalib_info("handeye calibration ends..")
-    # arrange all to finitsh this application here
-    # cv2.destroyAllWindows()
-    # indy7.finalize()
 
 
 if __name__ == "__main__":
-    # parse program parameters to get necessary aruments
-    # argPar = argparse.ArgumentParser(description="HandEye Calibration")
-    # argPar.add_argument('camType', type= str, default='rs', choices=['rs', 'uvc'], metavar='CameraType', help = 'rs: Intel Realsense, uvc: UVC-Supported')
-    # argPar.add_argument('camIndex', type= int, metavar='CameraIndex', help = '0, 1, ...')
-    # args = argPar.parse_args()
     if len(sys.argv) < 2:
         print("Invalid paramters..")
         sys.exit()

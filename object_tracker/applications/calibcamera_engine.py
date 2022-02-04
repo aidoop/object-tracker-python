@@ -218,7 +218,6 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
     finally:
         # Stop streaming
         vcap.stop()
-        # cv2.destroyAllWindows()
 
         bridge_ip.send_dict_data("app_exit", True)
         camcalib_info("camera calibration ends..")
