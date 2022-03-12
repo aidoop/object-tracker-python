@@ -1,3 +1,5 @@
 pyaidoop
 #pyaidoop-dl-models
 pyaidoop-graphql-client
+# requests 
+requests-toolbelt
