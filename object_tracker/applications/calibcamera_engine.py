@@ -56,7 +56,7 @@ def calibcamera_engine(app_args, interproc_dict=None, ve=None, cq=None):
             gqlDataClient.connect(
                 f"http://{AppConfig.ServerIP}:3000",
                 "system",
-                "admin@hatiolab.com",
+                "admin@ai-doop.com",
                 "admin",
             )
             is False

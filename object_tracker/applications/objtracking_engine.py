@@ -65,7 +65,7 @@ def objecttracking_engine(app_args, interproc_dict=None, ve=None, cq=None):
             app_data.connect_server(
                 f"http://{AppConfig.ServerIP}:3000",
                 "system",
-                "admin@hatiolab.com",
+                "admin@ai-doop.com",
                 "admin",
             )
             == False
